@@ -23,50 +23,89 @@
 }
 
 .nik-vd-admin-console {
-    background: #f8fafc;
+    background: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     color: #1e293b;
-    border-radius: 8px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     overflow: hidden;
 }
 
-/* Header Bar */
+/* Header Bar (Light Mode Default) */
 .nik-vd-header-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #0f172a;
-    color: #ffffff;
+    background: #ffffff;
+    color: #0f172a;
+    border-bottom: 1px solid #e2e8f0;
     padding: 16px 24px;
     flex-wrap: wrap;
     gap: 16px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Listing Header Bar on VoiceDesk Tickets list page */
+.nik-vd-listing-header-bar {
+    margin: 16px 0 20px 0;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.nik-vd-listing-header-bar .nik-vd-header-bar {
+    border-bottom: none;
+    padding: 14px 20px;
+}
+
+.nik-vd-settings-link-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 5px 12px !important;
+    font-size: 13px !important;
+    border-radius: 6px !important;
+    height: auto !important;
+    line-height: 1.4 !important;
+    color: #334155 !important;
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+}
+
+.nik-vd-settings-link-btn:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
 }
 
 .nik-vd-header-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
 }
 
 .nik-vd-ticket-id {
     display: flex;
     align-items: center;
-    background: #1e293b;
+    background: #f1f5f9;
     padding: 6px 14px;
     border-radius: 6px;
-    font-size: 15px;
+    font-size: 14.5px;
     gap: 8px;
-    border: 1px solid #334155;
+    border: 1px solid #e2e8f0;
 }
 
 .nik-vd-id-label {
-    color: #94a3b8;
+    color: #64748b;
     font-weight: 500;
 }
 
 .nik-vd-id-value {
-    color: #38bdf8;
+    color: #0284c7;
     font-weight: 700;
     letter-spacing: 0.5px;
 }
@@ -74,14 +113,14 @@
 .nik-vd-copy-btn {
     background: transparent !important;
     border: none !important;
-    color: #94a3b8 !important;
+    color: #64748b !important;
     padding: 0 4px !important;
     cursor: pointer;
     box-shadow: none !important;
 }
 
 .nik-vd-copy-btn:hover {
-    color: #ffffff !important;
+    color: #0f172a !important;
 }
 
 .nik-vd-customer-pill, .nik-vd-date-pill {
@@ -89,12 +128,21 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #cbd5e1;
+    color: #475569;
+    background: #f8fafc;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
 }
 
 .nik-vd-customer-pill a {
-    color: #93c5fd;
+    color: #2563eb;
     text-decoration: none;
+    font-weight: 600;
+}
+
+.nik-vd-customer-pill a:hover {
+    text-decoration: underline;
 }
 
 .nik-vd-header-right {
@@ -563,34 +611,36 @@
 
 .nik-vd-settings-tabs-bar {
     display: flex;
-    background: #1e293b;
-    border-bottom: 1px solid #334155;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
     padding: 0 16px;
     overflow-x: auto;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .nik-vd-tab-link {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 12px 18px;
-    color: #94a3b8;
+    gap: 7px;
+    padding: 13px 18px;
+    color: #64748b;
     text-decoration: none;
     font-size: 13.5px;
     font-weight: 600;
     border-bottom: 3px solid transparent;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition: all 0.15s ease;
     white-space: nowrap;
 }
 
 .nik-vd-tab-link:hover {
-    color: #ffffff;
+    color: #0f172a;
+    background: #f1f5f9;
 }
 
 .nik-vd-tab-link.is-active {
-    color: #38bdf8;
-    border-bottom-color: #38bdf8;
-    background: rgba(56, 189, 248, 0.05);
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    background: #ffffff;
 }
 
 .nik-vd-settings-body {
@@ -672,26 +722,40 @@
     text-decoration: underline;
 }
 
-/* Post list table adjustments */
+/* Post list table adjustments (Light Mode Default) */
 .post-type-voicedesk_ticket .wp-list-table {
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
+    background: #ffffff;
 }
 
 .post-type-voicedesk_ticket .wp-list-table thead th {
-    background: #0f172a;
-    color: #ffffff;
-    font-weight: 600;
+    background: #f8fafc;
+    color: #1e293b;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 12px 10px;
 }
 
 .post-type-voicedesk_ticket .wp-list-table thead th a {
-    color: #ffffff;
+    color: #1e293b;
+    font-weight: 700;
 }
 
-.post-type-voicedesk_ticket .wp-list-table tr:hover {
+.post-type-voicedesk_ticket .wp-list-table tbody tr {
+    background: #ffffff;
+    transition: background 0.15s ease;
+}
+
+.post-type-voicedesk_ticket .wp-list-table tbody tr:hover {
     background-color: #f8fafc;
+}
+
+.post-type-voicedesk_ticket .wp-list-table td {
+    padding: 12px 10px;
+    vertical-align: middle;
 }
 
 /* ==========================================================================
@@ -1118,7 +1182,76 @@ body.nik-vd-dark-mode .nik-vd-admin-console,
 body.nik-vd-dark-mode .nik-vd-settings-console {
     background: #0f172a !important;
     color: #e2e8f0 !important;
-    border: 1px solid #1e293b;
+    border: 1px solid #1e293b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-header-bar {
+    background: #0f172a !important;
+    border-bottom-color: #1e293b !important;
+    color: #ffffff !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-listing-header-bar {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-ticket-id {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-id-label {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-id-value {
+    color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-copy-btn {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-copy-btn:hover {
+    color: #ffffff !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-customer-pill,
+body.nik-vd-dark-mode .nik-vd-date-pill {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-customer-pill a {
+    color: #93c5fd !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-theme-btn {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    color: #f1f5f9 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-theme-btn:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-settings-link-btn,
+body.nik-vd-dark-mode .nik-vd-back-btn {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-settings-link-btn:hover,
+body.nik-vd-dark-mode .nik-vd-back-btn:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+    border-color: #475569 !important;
 }
 
 body.nik-vd-dark-mode .nik-vd-card,

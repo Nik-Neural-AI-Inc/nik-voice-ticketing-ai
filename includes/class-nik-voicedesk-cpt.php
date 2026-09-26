@@ -23,7 +23,58 @@ class Nik_VoiceDesk_CPT {
 		global $pagenow, $post_type;
 		if ( 'edit.php' === $pagenow && 'voicedesk_ticket' === $post_type ) {
 			Nik_VoiceDesk_Settings::render_leaderboard_banner();
+			$this->render_listing_header_bar();
 		}
+	}
+
+	/**
+	 * Render unified top header bar on the VoiceDesk Tickets listing page.
+	 */
+	public function render_listing_header_bar() {
+		$counts = wp_count_posts( 'voicedesk_ticket' );
+		$total_tickets = (int) ( ( $counts->publish ?? 0 ) + ( $counts->draft ?? 0 ) + ( $counts->pending ?? 0 ) );
+		$is_enterprise = Nik_VoiceDesk_Settings::is_enterprise();
+		?>
+		<div class="nik-vd-admin-console nik-vd-listing-header-bar">
+			<div class="nik-vd-header-bar">
+				<div class="nik-vd-header-left">
+					<div class="nik-vd-ticket-id">
+						<span class="dashicons dashicons-tickets-alt" style="color: #0284c7;"></span>
+						<span class="nik-vd-id-label"><?php esc_html_e( 'VoiceDesk', 'nik-voicedesk' ); ?></span>
+						<span class="nik-vd-id-value"><?php esc_html_e( 'Tickets Queue', 'nik-voicedesk' ); ?></span>
+					</div>
+
+					<div class="nik-vd-customer-pill">
+						<span class="dashicons dashicons-tag"></span>
+						<strong>v<?php echo esc_html( NIK_VOICEDESK_VERSION ); ?></strong>
+					</div>
+
+					<div class="nik-vd-customer-pill">
+						<span class="dashicons dashicons-chart-bar"></span>
+						<span><?php printf( esc_html__( '%d Total Tickets', 'nik-voicedesk' ), $total_tickets ); ?></span>
+					</div>
+
+					<?php if ( $is_enterprise ) : ?>
+						<span class="nik-status-pill nik-status-resolved">ENTERPRISE ACTIVE</span>
+					<?php else : ?>
+						<span class="nik-status-pill nik-status-open">FREE TIER</span>
+					<?php endif; ?>
+				</div>
+
+				<div class="nik-vd-header-right">
+					<button type="button" class="nik-vd-theme-btn" id="nik-vd-theme-toggle" aria-label="<?php esc_attr_e( 'Toggle Dark or Light Mode', 'nik-voicedesk' ); ?>">
+						<span class="nik-vd-theme-icon">🌙</span>
+						<span class="nik-vd-theme-text"><?php esc_html_e( 'Dark Mode', 'nik-voicedesk' ); ?></span>
+					</button>
+
+					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=voicedesk_ticket&page=nik-voicedesk-settings' ) ); ?>" class="button button-secondary nik-vd-settings-link-btn">
+						<span class="dashicons dashicons-admin-generic" style="font-size:16px;width:16px;height:16px;vertical-align:text-bottom;"></span>
+						<?php esc_html_e( 'Settings', 'nik-voicedesk' ); ?>
+					</a>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 
 	public function register_post_type() {

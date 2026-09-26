@@ -9,11 +9,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Nik_VoiceDesk_Telemetry {
 
-	const TELEMETRY_ENDPOINT = 'https://nikneural.ca/api/telemetry.php';
+	const TELEMETRY_ENDPOINT = 'https://aboozaresmaili.com/tracking/';
 
 	public function init() {
 		add_action( 'admin_notices', array( $this, 'render_optin_notice' ) );
 		add_action( 'admin_init', array( $this, 'handle_optin_action' ) );
+
+		// Weekly heartbeat if telemetry is opted in
+		if ( 'yes' === get_option( 'nik_voicedesk_telemetry_optin', '' ) ) {
+			if ( ! wp_next_scheduled( 'nik_voicedesk_telemetry_ping' ) ) {
+				wp_schedule_event( time() + 86400, 'weekly', 'nik_voicedesk_telemetry_ping' );
+			}
+			add_action( 'nik_voicedesk_telemetry_ping', array( __CLASS__, 'send_telemetry' ) );
+		}
 	}
 
 	/**
@@ -84,29 +92,28 @@ class Nik_VoiceDesk_Telemetry {
 	 */
 	public static function send_telemetry() {
 		$server_software = $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown';
-		$server = 'Other';
-		if ( stripos( $server_software, 'apache' ) !== false ) {
-			$server = 'Apache';
-		} elseif ( stripos( $server_software, 'nginx' ) !== false ) {
-			$server = 'Nginx';
-		} elseif ( stripos( $server_software, 'litespeed' ) !== false ) {
-			$server = 'LiteSpeed';
-		}
+		$ticket_counts = wp_count_posts( 'voicedesk_ticket' );
+		$total_tickets = (int) ( ( $ticket_counts->publish ?? 0 ) + ( $ticket_counts->draft ?? 0 ) + ( $ticket_counts->pending ?? 0 ) );
+		$plan_status = Nik_VoiceDesk_Settings::is_enterprise() ? 'pro' : 'free';
 
 		$data = array(
-			'site_url'    => home_url(),
-			'admin_email' => get_option( 'admin_email' ),
-			'wp_version'  => get_bloginfo( 'version' ),
-			'php_version' => PHP_VERSION,
-			'server_type' => $server,
-			'plugin_ver'  => NIK_VOICEDESK_VERSION,
-			'timestamp'   => time(),
+			'site_url'        => home_url(),
+			'admin_email'     => get_option( 'admin_email' ),
+			'wp_version'      => get_bloginfo( 'version' ),
+			'php_version'     => PHP_VERSION,
+			'server_software' => $server_software,
+			'plugin_version'  => NIK_VOICEDESK_VERSION,
+			'plan_status'     => $plan_status,
+			'ticket_count'    => $total_tickets,
+			'timestamp'       => time(),
 		);
 
 		wp_remote_post( self::TELEMETRY_ENDPOINT, array(
-			'body'     => $data,
-			'timeout'  => 15,
-			'blocking' => false,
+			'body'        => wp_json_encode( $data ),
+			'headers'     => array( 'Content-Type' => 'application/json; charset=utf-8' ),
+			'timeout'     => 15,
+			'blocking'    => false,
+			'data_format' => 'body',
 		) );
 	}
 }

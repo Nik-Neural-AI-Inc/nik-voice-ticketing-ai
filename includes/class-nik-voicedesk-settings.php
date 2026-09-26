@@ -97,21 +97,22 @@ class Nik_VoiceDesk_Settings {
 						<span class="nik-vd-badge-dot"></span> 👑 NIK NEURAL AI PRO
 					</div>
 					<h3 class="nik-vd-banner-title">
-						<?php esc_html_e( 'Supercharge your Support with Automated Workflows & Unlimited Transcripts', 'nik-voicedesk' ); ?>
+						<?php esc_html_e( 'Supercharge your Support with White-Label VoiceDesk', 'nik-voicedesk' ); ?>
 					</h3>
 					<p class="nik-vd-banner-desc">
-						<?php esc_html_e( 'Upgrade to remove all branding, unlock Modulate.ai toxicity & emotion detection, and customize customer routing.', 'nik-voicedesk' ); ?>
+						<?php esc_html_e( 'Upgrade to Enterprise Pro to remove all "Powered by Nik Neural AI" branding, remove admin ad banners, and enjoy a 100% white-label experience for your brand and clients.', 'nik-voicedesk' ); ?>
 					</p>
 					<div class="nik-vd-banner-tags">
-						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Zero Branding', 'nik-voicedesk' ); ?></span>
-						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Modulate.ai Voice Intelligence', 'nik-voicedesk' ); ?></span>
-						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Priority AI Routing', 'nik-voicedesk' ); ?></span>
+						<span class="nik-vd-tag-item">✓ <?php esc_html_e( '100% Ad-Free Experience', 'nik-voicedesk' ); ?></span>
+						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Remove Frontend Attribution Bar', 'nik-voicedesk' ); ?></span>
+						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Remove Admin Leaderboard Banners', 'nik-voicedesk' ); ?></span>
+						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Clean White-Label for Clients', 'nik-voicedesk' ); ?></span>
 						<span class="nik-vd-tag-item nik-vd-tag-price"><?php esc_html_e( '$29.99 USD / year', 'nik-voicedesk' ); ?></span>
 					</div>
 				</div>
 				<div class="nik-vd-banner-right">
 					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="nik-vd-banner-cta-btn">
-						<span><?php esc_html_e( 'Upgrade to Enterprise →', 'nik-voicedesk' ); ?></span>
+						<span><?php esc_html_e( 'Upgrade to Enterprise ($29.99/yr) →', 'nik-voicedesk' ); ?></span>
 					</a>
 				</div>
 			</div>
@@ -401,18 +402,19 @@ class Nik_VoiceDesk_Settings {
 							<span class="nik-vd-period">/ forever</span>
 						</div>
 						<p class="nik-vd-price-desc">
-							<?php esc_html_e( 'Essential voice ticketing for personal blogs and emerging websites.', 'nik-voicedesk' ); ?>
+							<?php esc_html_e( '100% full-featured AI voice ticketing with community attribution.', 'nik-voicedesk' ); ?>
 						</p>
 					</div>
 
 					<ul class="nik-vd-price-features">
 						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Vanilla JS Floating Mic Button', 'nik-voicedesk' ); ?></li>
-						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Whisper & Modulate Speech-to-Text', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Whisper & Modulate.ai Speech-to-Text', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Automated AI Summary & Department Triage', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Interactive Click Tracking & Element Highlighting', 'nik-voicedesk' ); ?></li>
 						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Unique Ticket ID & Email Delivery', 'nik-voicedesk' ); ?></li>
-						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Customer Portal Shortcode', 'nik-voicedesk' ); ?></li>
-						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'WooCommerce My Account Integration', 'nik-voicedesk' ); ?></li>
-						<li class="is-dimmed"><span class="dashicons dashicons-minus" style="color: #94a3b8;"></span> <?php esc_html_e( 'Includes "Powered by Nik Neural AI" branding', 'nik-voicedesk' ); ?></li>
-						<li class="is-dimmed"><span class="dashicons dashicons-minus" style="color: #94a3b8;"></span> <?php esc_html_e( 'No advanced Modulate voice toxicity/emotion triage', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Customer Portal Shortcode & WooCommerce Integration', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Unlimited Voice Ticket Processing', 'nik-voicedesk' ); ?></li>
+						<li class="is-dimmed"><span class="dashicons dashicons-minus" style="color: #94a3b8;"></span> <?php esc_html_e( 'Includes "Powered by Nik Neural AI" branding & ad banners', 'nik-voicedesk' ); ?></li>
 					</ul>
 
 					<div class="nik-vd-price-footer">
@@ -431,7 +433,7 @@ class Nik_VoiceDesk_Settings {
 				<!-- Enterprise Pro Card -->
 				<div class="nik-vd-price-card nik-vd-price-card-pro <?php echo $is_valid ? 'is-active-plan' : ''; ?>">
 					<div class="nik-vd-badge-popular">
-						⭐ <?php esc_html_e( 'RECOMMENDED', 'nik-voicedesk' ); ?>
+						⭐ <?php esc_html_e( 'RECOMMENDED — 100% AD-FREE', 'nik-voicedesk' ); ?>
 					</div>
 
 					<div class="nik-vd-price-header">
@@ -442,23 +444,23 @@ class Nik_VoiceDesk_Settings {
 							<span class="nik-vd-period">USD / year</span>
 						</div>
 						<p class="nik-vd-price-desc">
-							<?php esc_html_e( 'White-label voice intelligence, automated triage, and unlimited queue for businesses.', 'nik-voicedesk' ); ?>
+							<?php esc_html_e( '100% White-Label: Removes all ads, frontend attribution, and banners for your brand and clients.', 'nik-voicedesk' ); ?>
 						</p>
 					</div>
 
 					<ul class="nik-vd-price-features">
-						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <strong><?php esc_html_e( '100% White-Label (All branding & banners removed globally)', 'nik-voicedesk' ); ?></strong></li>
-						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <strong><?php esc_html_e( 'Modulate.ai Voice Intelligence (Toxicity, Emotion & Sentiment)', 'nik-voicedesk' ); ?></strong></li>
-						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'Automated AI Department & Priority Triage', 'nik-voicedesk' ); ?></li>
-						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'Unlimited Voice Ticket Processing', 'nik-voicedesk' ); ?></li>
-						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'Interactive Click Tracking & Element Highlighting', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <strong><?php esc_html_e( '100% Ad-Free (All leaderboard ad banners removed)', 'nik-voicedesk' ); ?></strong></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <strong><?php esc_html_e( 'Completely remove "Powered by Nik Neural AI" frontend attribution', 'nik-voicedesk' ); ?></strong></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <strong><?php esc_html_e( 'Completely remove admin console footer credits', 'nik-voicedesk' ); ?></strong></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( '100% White-Label ready for client websites and agencies', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'All current & future AI features included', 'nik-voicedesk' ); ?></li>
 						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'Priority Technical Support & All Future Pro Updates', 'nik-voicedesk' ); ?></li>
 					</ul>
 
 					<div class="nik-vd-price-footer">
 						<?php if ( $is_valid ) : ?>
 							<span class="nik-vd-plan-badge-current nik-vd-pro-active">
-								✓ <?php esc_html_e( 'Enterprise Pro Active', 'nik-voicedesk' ); ?>
+								✓ <?php esc_html_e( 'Enterprise Pro Active (Ad-Free)', 'nik-voicedesk' ); ?>
 							</span>
 						<?php else : ?>
 							<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="nik-vd-buy-pro-btn">
