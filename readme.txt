@@ -1,5 +1,5 @@
-=== Nik VoiceDesk AI ===
-Contributors: nikneural, aboozar
+=== Nik Voice Ticketing AI ===
+Contributors: nikneuralaiinc, aboozar, nikneural
 Donate link: https://nikneural.ca/
 Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
@@ -13,7 +13,7 @@ Zero-friction, AI-powered voice ticketing system for WordPress with Whisper & Mo
 
 == Description ==
 
-Nik VoiceDesk AI is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by Nik Neural AI Inc. It allows website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (OpenAI Whisper or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models (OpenAI GPT-4o-mini), and track click interactions on the page during the recording session.
+Nik Voice Ticketing AI is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by Nik Neural AI Inc. It allows website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (OpenAI Whisper or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models (OpenAI GPT-4o-mini), and track click interactions on the page during the recording session.
 
 = Core Features =
 
@@ -24,7 +24,7 @@ Nik VoiceDesk AI is a production-ready, zero-friction, AI-powered voice ticketin
 * **Automated AI Summary & Triage**: Uses LLMs to generate a concise summary and intelligently categorize issues into departments (Sales, Technical Support, Billing, General Support).
 * **Unique Ticket ID & Email Delivery**: Generates a unique Ticket ID and sends an email confirmation directly to the user.
 * **Comprehensive Admin Console**: Clean 2-column layout with dark mode/light mode switcher, audio playback, download link, click timeline, and deduplicated reply thread.
-* **Customer Ticket Portal & WooCommerce Integration**: Embed ticket portal via `[nik_voicedesk_tickets]` shortcode or access via WooCommerce "My Account" dashboard endpoint.
+* **Customer Ticket Portal & WooCommerce Integration**: Embed ticket portal via `[nikvotia_tickets]` shortcode or access via WooCommerce "My Account" dashboard endpoint.
 * **Advanced Visibility Controls**: Target specific post types, pages, user login states, or specific User IDs.
 * **Zero 3rd-Party Frontend Dependencies**: Built entirely with pure Vanilla JavaScript and CSS. No jQuery, React, or bulky frameworks.
 
@@ -43,8 +43,8 @@ This plugin connects to external third-party APIs to process voice audio recordi
 * Purpose: Fast multilingual speech-to-text transcription and voice intelligence via Velma-2.
 * Data Sent: Voice audio recording file.
 * Service URL: https://api.modulate.ai
-* Terms of Service: https://modulate.ai/terms
-* Privacy Policy: https://modulate.ai/privacy
+* Terms of Service: https://www.modulate.ai/terms-and-conditions
+* Privacy Policy: https://www.modulate.ai/privacy-policy
 
 3. **Nik Neural AI Telemetry** (Optional - Explicit Opt-In Only)
 * Purpose: Anonymous diagnostic telemetry (WordPress version, PHP version, server environment, and site URL) to improve plugin compatibility.
@@ -52,19 +52,18 @@ This plugin connects to external third-party APIs to process voice audio recordi
 * Service URL: https://nikneural.ca/tracking/
 * Privacy Policy: https://nikneural.ca/
 
-4. **Nik Neural Enterprise Licensing & Stripe** (Optional - For Pro Licensees)
-* Purpose: Remote validation of optional Enterprise Pro licenses (to remove administrative ad banners and white-label the plugin) and Stripe checkout processing.
-* Data Sent: License key, requesting website domain/URL.
-* Service URL: https://nikneural.ca/tracking/ and https://buy.stripe.com/
+4. **Nik Neural AI Cloud & Add-ons** (Optional)
+* Purpose: Commercial support and custom enterprise AI model integrations provided by Nik Neural AI Inc.
+* Service URL: https://nikneural.ca/
 * Terms of Service: https://nikneural.ca/
-* Stripe Privacy Policy: https://stripe.com/privacy
+* Privacy Policy: https://nikneural.ca/
 
 == Installation ==
 
-1. Upload the `nik-voicedesk` folder to the `/wp-content/plugins/` directory.
+1. Upload the `nik-voice-ticketing-ai` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Navigate to **VoiceDesk Tickets > Settings** to configure your API keys (OpenAI or Modulate.ai) and portal page.
-4. (Optional) Add the `[nik_voicedesk_tickets]` shortcode to a WordPress page for your customer support portal.
+4. (Optional) Add the `[nikvotia_tickets]` shortcode to a WordPress page for your customer support portal.
 
 == Frequently Asked Questions ==
 

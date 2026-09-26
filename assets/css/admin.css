@@ -12,13 +12,13 @@
     margin-right: 0 !important;
 }
 
-.post-type-voicedesk_ticket #nik_voicedesk_ticket_console .inside {
+.post-type-voicedesk_ticket #nikvotia_ticket_console .inside {
     padding: 0 !important;
     margin: 0 !important;
 }
 
-.post-type-voicedesk_ticket #nik_voicedesk_ticket_console .hndle,
-.post-type-voicedesk_ticket #nik_voicedesk_ticket_console .handlediv {
+.post-type-voicedesk_ticket #nikvotia_ticket_console .hndle,
+.post-type-voicedesk_ticket #nikvotia_ticket_console .handlediv {
     display: none !important;
 }
 
@@ -1960,7 +1960,7 @@ body.nik-vd-dark-mode.post-type-voicedesk_ticket input[type="checkbox"]:checked:
 body.nik-vd-dark-mode textarea,
 body.nik-vd-dark-mode textarea.code,
 body.nik-vd-dark-mode .nik-vd-textarea,
-body.nik-vd-dark-mode #nik_voicedesk_custom_icon {
+body.nik-vd-dark-mode #nikvotia_custom_icon {
     background: #090d16 !important;
     color: #38bdf8 !important;
     border: 1px solid #334155 !important;
@@ -1970,7 +1970,7 @@ body.nik-vd-dark-mode #nik_voicedesk_custom_icon {
 }
 
 body.nik-vd-dark-mode textarea:focus,
-body.nik-vd-dark-mode #nik_voicedesk_custom_icon:focus {
+body.nik-vd-dark-mode #nikvotia_custom_icon:focus {
     border-color: #38bdf8 !important;
     box-shadow: 0 0 0 1px #38bdf8 !important;
 }

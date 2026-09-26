@@ -18,6 +18,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalSummary = document.getElementById('nik-vd-modal-summary');
     const processingIndicator = document.getElementById('nik-vd-processing');
 
+    // Initialize Customer Portal Dark/Light mode if present on page
+    (function initPortalTheme() {
+        const portalBtn = document.getElementById('nik-portal-theme-btn');
+        const portalRoot = document.getElementById('nik-portal-root');
+        const detailBtn = document.getElementById('nik-detail-theme-btn');
+        const detailRoot = document.getElementById('nik-detail-root');
+
+        const savedTheme = localStorage.getItem('nikvotia_portal_theme') ;
+
+        if (portalBtn && portalRoot) {
+            if (savedTheme === 'dark') {
+                portalRoot.classList.add('nik-portal-dark');
+                const icon = portalBtn.querySelector('.nik-portal-theme-icon');
+                const txt = portalBtn.querySelector('.nik-portal-theme-text');
+                if (icon) icon.textContent = '☀️';
+                if (txt) txt.textContent = 'Light Mode';
+            }
+            portalBtn.addEventListener('click', function() {
+                const isDark = portalRoot.classList.toggle('nik-portal-dark');
+                localStorage.setItem('nikvotia_portal_theme', isDark ? 'dark' : 'light');
+                const icon = portalBtn.querySelector('.nik-portal-theme-icon');
+                const txt = portalBtn.querySelector('.nik-portal-theme-text');
+                if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+                if (txt) txt.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            });
+        }
+
+        if (detailBtn && detailRoot) {
+            if (savedTheme === 'dark') {
+                detailRoot.classList.add('nik-portal-dark');
+                const icon = detailBtn.querySelector('.nik-detail-theme-icon');
+                const txt = detailBtn.querySelector('.nik-detail-theme-text');
+                if (icon) icon.textContent = '☀️';
+                if (txt) txt.textContent = 'Light Mode';
+            }
+            detailBtn.addEventListener('click', function() {
+                const isDark = detailRoot.classList.toggle('nik-portal-dark');
+                localStorage.setItem('nikvotia_portal_theme', isDark ? 'dark' : 'light');
+                const icon = detailBtn.querySelector('.nik-detail-theme-icon');
+                const txt = detailBtn.querySelector('.nik-detail-theme-text');
+                if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+                if (txt) txt.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            });
+        }
+    })();
+
     if (!micBtn) return;
 
     let mediaRecorder = null;
@@ -259,11 +305,13 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('environment', navigator.userAgent);
         formData.append('clicked_elements', JSON.stringify(clickedElements));
 
+        const apiData = window.nikvotiaData  || {};
+
         try {
-            const response = await fetch(nikVoiceDeskData.restUrl, {
+            const response = await fetch(apiData.restUrl, {
                 method: 'POST',
                 headers: {
-                    'X-WP-Nonce': nikVoiceDeskData.nonce
+                    'X-WP-Nonce': apiData.nonce
                 },
                 body: formData
             });
@@ -287,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (result.ticket_url) {
                         viewTicketBtn.href = result.ticket_url;
                     } else if (result.ticket_number) {
-                        const basePortal = nikVoiceDeskData.portalUrl || window.location.href;
+                        const basePortal = apiData.portalUrl || window.location.href;
                         viewTicketBtn.href = basePortal + (basePortal.indexOf('?') !== -1 ? '&' : '?') + 'ticket=' + encodeURIComponent(result.ticket_number);
                     }
                 }

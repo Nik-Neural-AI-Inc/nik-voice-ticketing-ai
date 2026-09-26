@@ -1,11 +1,11 @@
-# Nik VoiceDesk AI
+# Nik Voice Ticketing AI
 
 [![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://nikneural.ca/voicedesk.php)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 [![PIPEDA Compliant](https://img.shields.io/badge/Compliance-PIPEDA-green.svg)](https://nikneural.ca/)
 [![Nik Neural AI Inc.](https://img.shields.io/badge/Developed%20by-Nik%20Neural%20AI%20Inc.-orange.svg)](https://nikneural.ca/)
 
-**Nik VoiceDesk AI** is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by **Nik Neural AI Inc.** It enables website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (OpenAI Whisper or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models, and track click interactions on the page during the recording session.
+**Nik Voice Ticketing AI** is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by **Nik Neural AI Inc.** It enables website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (OpenAI Whisper or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models, and track click interactions on the page during the recording session.
 
 ---
 
@@ -40,16 +40,12 @@
 - **Deduplicated Reply System**: Reply to customers with automatic email notifications. Includes built-in duplicate detection and Post-Redirect-Get (PRG) patterns to eliminate duplicate messages or emails on page refresh.
 
 ### Customer Ticket Portal & WooCommerce Integration
-- **Shortcode `[nik_voicedesk_tickets]`**: Embed a dedicated ticket portal anywhere on your site allowing customers to view status, listen to voice notes, and reply to staff.
+- **Shortcode `[nikvotia_tickets]`**: Embed a dedicated ticket portal anywhere on your site allowing customers to view status, listen to voice notes, and reply to staff.
 - **WooCommerce My Account Endpoint**: Seamlessly registers a new "Voice Support Tickets" tab in the WooCommerce customer dashboard.
 
 ### Advanced Visibility & Audience Controls
 - Control which pages, posts, or custom post types display the floating recording button.
 - Restrict visibility by user status: All visitors, logged-in users only, logged-out users only, or specific User IDs.
-
-### Licensing & Freemium Model
-- **Free Community Edition**: Full functionality with discreet "Powered by Nik Neural AI Inc." branding and admin leaderboard banner.
-- **Enterprise Pro ($29.99 USD / year)**: Removes all frontend attribution bars, admin ad banners, and console footer credits for a 100% white-label client experience.
 
 ---
 

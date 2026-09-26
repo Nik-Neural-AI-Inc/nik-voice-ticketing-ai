@@ -621,3 +621,75 @@ body.nik-vd-recording-active {
 .nik-portal-footer-attribution a:hover {
     text-decoration: underline;
 }
+
+/* ==========================================================================
+   Customer Portal & Ticket Dashboard Styles
+   ========================================================================== */
+.nik-portal-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; max-width: 960px; margin: 20px auto; transition: background-color 0.2s ease, color 0.2s ease; }
+.nik-portal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edf2f7; padding-bottom: 16px; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.nik-portal-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.nik-portal-theme-btn { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+.nik-portal-theme-btn:hover { background: #e2e8f0; color: #0f172a; }
+.nik-portal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; gap: 16px; flex-wrap: wrap; }
+.nik-portal-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.nik-portal-card-left { flex: 1; min-width: 250px; }
+.nik-portal-ticket-id { font-weight: 700; font-size: 16px; color: #0284c7; margin-right: 10px; }
+.nik-portal-dept-pill { background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
+.nik-portal-summary { font-size: 13.5px; color: #64748b; margin-top: 6px; line-height: 1.5; }
+.nik-portal-card-right { display: flex; align-items: center; gap: 14px; }
+.nik-portal-btn { background: #2563eb; color: #ffffff !important; text-decoration: none !important; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; display: inline-block; white-space: nowrap; }
+.nik-portal-btn:hover { background: #1d4ed8; }
+.nik-portal-pill { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 3px 9px; border-radius: 12px; }
+.nik-p-open { background: #dbeafe; color: #1e40af; }
+.nik-p-in-progress { background: #fef3c7; color: #92400e; }
+.nik-p-resolved { background: #dcfce7; color: #166534; }
+.nik-p-closed { background: #f1f5f9; color: #475569; }
+.nik-portal-empty { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; text-align: center; color: #64748b; }
+
+/* Portal Dark Mode Styles */
+.nik-portal-wrap.nik-portal-dark { color: #cbd5e1 !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-header { border-bottom-color: #1e293b !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-title { color: #f8fafc !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-count-label,
+.nik-portal-wrap.nik-portal-dark .nik-portal-summary { color: #94a3b8 !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-card { background: #0f172a !important; border-color: #1e293b !important; color: #cbd5e1 !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-card:hover { border-color: #334155 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-dept-pill { background: #1e293b !important; color: #38bdf8 !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-theme-btn { background: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-theme-btn:hover { background: #334155 !important; }
+.nik-portal-wrap.nik-portal-dark .nik-portal-empty { background: #0f172a !important; border-color: #334155 !important; color: #94a3b8 !important; }
+.nik-portal-wrap.nik-portal-dark .nik-vd-logo-light { display: none !important; }
+.nik-portal-wrap.nik-portal-dark .nik-vd-logo-dark { display: inline-block !important; }
+.nik-portal-wrap:not(.nik-portal-dark) .nik-vd-logo-dark { display: none !important; }
+
+/* ==========================================================================
+   Single Ticket Detail View Styles
+   ========================================================================== */
+.nik-detail-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; max-width: 860px; margin: 20px auto; transition: all 0.2s ease; }
+.nik-detail-back { display: inline-flex; align-items: center; color: #2563eb; text-decoration: none; font-size: 14px; font-weight: 600; }
+.nik-detail-header { background: #0f172a; color: #ffffff; padding: 22px 26px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.nik-detail-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: all 0.2s ease; }
+.nik-detail-box h3 { margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+.nik-audio-player { width: 100%; outline: none; margin-top: 10px; border-radius: 8px; }
+.nik-reply-card { border-radius: 8px; padding: 14px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; }
+.nik-reply-customer { background: #f8fafc; border: 1px solid #e2e8f0; }
+.nik-reply-staff { background: #f0f9ff; border: 1px solid #bae6fd; }
+.nik-reply-btn { background: #2563eb; color: #ffffff; border: none; padding: 10px 22px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+.nik-reply-btn:hover { background: #1d4ed8; }
+.nik-detail-theme-btn { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+.nik-detail-theme-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+/* Single View Dark Mode Styles */
+.nik-detail-wrap.nik-portal-dark { color: #cbd5e1 !important; }
+.nik-detail-wrap.nik-portal-dark .nik-detail-back { color: #38bdf8 !important; }
+.nik-detail-wrap.nik-portal-dark .nik-detail-box { background: #0f172a !important; border-color: #1e293b !important; color: #cbd5e1 !important; }
+.nik-detail-wrap.nik-portal-dark .nik-detail-box h3,
+.nik-detail-wrap.nik-portal-dark .nik-detail-box h4 { color: #f8fafc !important; border-bottom-color: #1e293b !important; }
+.nik-detail-wrap.nik-portal-dark .nik-reply-customer { background: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
+.nik-detail-wrap.nik-portal-dark .nik-reply-customer strong,
+.nik-detail-wrap.nik-portal-dark .nik-reply-staff strong { color: #f8fafc !important; }
+.nik-detail-wrap.nik-portal-dark .nik-reply-staff { background: #0b1e3a !important; border-color: #0369a1 !important; color: #e0f2fe !important; }
+.nik-detail-wrap.nik-portal-dark .nik-detail-box textarea { background: #0f172a !important; border-color: #334155 !important; color: #f8fafc !important; }
+.nik-detail-wrap.nik-portal-dark .nik-detail-box textarea:focus { border-color: #38bdf8 !important; box-shadow: 0 0 0 1px #38bdf8 !important; }
+.nik-detail-wrap.nik-portal-dark .nik-detail-theme-btn { background: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
+.nik-detail-wrap.nik-portal-dark .nik-detail-theme-btn:hover { background: #334155 !important; }

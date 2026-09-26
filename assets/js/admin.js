@@ -6,7 +6,7 @@
     'use strict';
 
     // Apply theme immediately if stored to prevent theme flash
-    const savedTheme = localStorage.getItem('nik_vd_theme');
+    const savedTheme = localStorage.getItem('nikvotia_admin_theme') ;
     if (savedTheme === 'dark') {
         document.body.classList.add('nik-vd-dark-mode');
     }
@@ -21,7 +21,7 @@
      */
     function initThemeToggle() {
         const themeButtons = document.querySelectorAll('.nik-vd-theme-btn, #nik-vd-theme-toggle');
-        const currentTheme = localStorage.getItem('nik_vd_theme') || 'light';
+        const currentTheme = localStorage.getItem('nikvotia_admin_theme')  || 'light';
 
         // Set initial button label and icon based on current state
         updateThemeButtons(themeButtons, currentTheme === 'dark');
@@ -31,7 +31,7 @@
                 e.preventDefault();
                 const isDark = document.body.classList.toggle('nik-vd-dark-mode');
                 const newTheme = isDark ? 'dark' : 'light';
-                localStorage.setItem('nik_vd_theme', newTheme);
+                localStorage.setItem('nikvotia_admin_theme', newTheme);
                 updateThemeButtons(themeButtons, isDark);
             });
         });
