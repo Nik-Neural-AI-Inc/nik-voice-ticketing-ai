@@ -1,0 +1,15 @@
+/* Admin CSS for Nik VoiceDesk AI */
+.nik-voicedesk-wrap .nav-tab-wrapper {
+    margin-bottom: 20px;
+}
+.nik-voicedesk-wrap .form-table th {
+    width: 250px;
+}
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    background: #0073aa;
+    color: #fff;
+    border-radius: 12px;
+    font-size: 12px;
+}

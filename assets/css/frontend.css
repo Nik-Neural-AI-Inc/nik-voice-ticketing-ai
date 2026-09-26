@@ -1,0 +1,122 @@
+/* Frontend CSS for Nik VoiceDesk AI */
+
+#nik-vd-app {
+    position: fixed;
+    z-index: 99998;
+}
+
+#nik-vd-mic-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #ffd700;
+    color: #333;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99998;
+    transition: transform 0.2s ease;
+}
+
+#nik-vd-mic-btn:hover {
+    transform: scale(1.05);
+}
+
+.nik-vd-branding {
+    position: fixed;
+    bottom: 10px;
+    right: 30px;
+    font-size: 10px;
+    color: #888;
+    background: rgba(255,255,255,0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 99998;
+}
+
+#nik-vd-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 215, 0, 0.4);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.nik-vd-hidden {
+    display: none !important;
+}
+
+.nik-vd-overlay-content {
+    text-align: center;
+    pointer-events: none;
+}
+
+#nik-vd-tooltip {
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 30px;
+    font-size: 16px;
+    margin-bottom: 30px;
+    pointer-events: auto;
+}
+
+#nik-vd-pulse {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 0, 0, 0.6);
+    border-radius: 50%;
+    margin: 0 auto 30px auto;
+    animation: nik-vd-pulse-anim 1.5s infinite;
+}
+
+@keyframes nik-vd-pulse-anim {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
+#nik-vd-stop-btn {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#nik-vd-stop-btn:hover {
+    background: #c0392b;
+}
+
+#nik-vd-status {
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    background: rgba(255,255,255,0.9);
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.nik-vd-branding-overlay {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #333;
+}
