@@ -115,7 +115,11 @@ class Nik_VoiceDesk_Frontend {
 			</button>
 			
 			<?php if ( ! $is_enterprise ) : ?>
-				<div id="nik-vd-branding-btn" class="nik-vd-branding"><?php esc_html_e( 'Powered by Nik Neural AI', 'nik-voicedesk' ); ?></div>
+				<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
+					<?php esc_html_e( 'Powered by Nik Neural AI Inc.', 'nik-voicedesk' ); ?>
+					<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
+					<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
+				</a>
 			<?php endif; ?>
 
 			<!-- Floating Modern Recording Dock -->
@@ -144,7 +148,11 @@ class Nik_VoiceDesk_Frontend {
 				<!-- Freemium Attribution Bar (Free Tier) -->
 				<div id="nik-vd-attribution-bar" class="nik-vd-attribution-bar nik-vd-hidden">
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voicedesk' ); ?> 
-					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">Nik Neural AI</a>
+					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
+						Nik Neural AI Inc.
+						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
+						<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
+					</a>
 				</div>
 			<?php endif; ?>
 
@@ -337,7 +345,11 @@ class Nik_VoiceDesk_Frontend {
 			<?php if ( ! Nik_VoiceDesk_Settings::is_enterprise() ) : ?>
 				<div class="nik-portal-footer-attribution">
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voicedesk' ); ?> 
-					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">Nik Neural AI</a>
+					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
+						Nik Neural AI Inc.
+						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
+						<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
+					</a>
 				</div>
 			<?php endif; ?>
 		</div>
@@ -391,7 +403,7 @@ class Nik_VoiceDesk_Frontend {
 			$replies = array();
 		}
 
-		$back_url = remove_query_arg( 'ticket' );
+		$back_url = remove_query_arg( array( 'ticket', 'reply_sent' ) );
 
 		// Process User Reply Submission
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['nik_user_reply_nonce'] ) && wp_verify_nonce( $_POST['nik_user_reply_nonce'], 'nik_user_reply' ) ) {
@@ -400,23 +412,55 @@ class Nik_VoiceDesk_Frontend {
 				$current_user = wp_get_current_user();
 				$author_name = $current_user->display_name ?: $current_user->user_login;
 
-				$replies[] = array(
-					'author'  => $author_name,
-					'role'    => 'customer',
-					'message' => $user_msg,
-					'date'    => current_time( 'mysql' ),
-				);
-				update_post_meta( $post->ID, '_nik_replies', $replies );
-				update_post_meta( $post->ID, '_nik_status', 'Customer Replied' );
+				// Deduplication: prevent duplicate reply on refresh or resubmission
+				$is_duplicate = false;
+				if ( ! empty( $replies ) ) {
+					$last_reply = end( $replies );
+					if (
+						isset( $last_reply['role'], $last_reply['message'] ) &&
+						'customer' === $last_reply['role'] &&
+						trim( $last_reply['message'] ) === trim( $user_msg )
+					) {
+						$is_duplicate = true;
+					}
+				}
 
-				// Notify admin
-				$admin_email = get_option( 'admin_email' );
-				$subject = sprintf( __( '[Ticket #%s] New Customer Reply from %s', 'nik-voicedesk' ), $ticket_number, $author_name );
-				$body = sprintf( __( "Customer %s posted a new reply on Ticket #%s:\n\n\"%s\"\n\nManage Ticket:\n%s", 'nik-voicedesk' ), $author_name, $ticket_number, $user_msg, admin_url( 'post.php?post=' . $post->ID . '&action=edit' ) );
-				wp_mail( $admin_email, $subject, $body );
+				if ( ! $is_duplicate ) {
+					$replies[] = array(
+						'author'  => $author_name,
+						'role'    => 'customer',
+						'message' => $user_msg,
+						'date'    => current_time( 'mysql' ),
+					);
+					update_post_meta( $post->ID, '_nik_replies', $replies );
+					update_post_meta( $post->ID, '_nik_status', 'Customer Replied' );
+
+					// Notify admin
+					$admin_email = get_option( 'admin_email' );
+					$site_name = get_bloginfo( 'name' );
+					$subject = sprintf( __( '[%s] New Customer Reply on Ticket #%s', 'nik-voicedesk' ), $site_name, $ticket_number );
+					$body = sprintf(
+						__( "Customer %s posted a new reply on Ticket #%s:\n\n\"%s\"\n\nManage Ticket:\n%s", 'nik-voicedesk' ),
+						$author_name,
+						$ticket_number,
+						$user_msg,
+						admin_url( 'post.php?post=' . $post->ID . '&action=edit' )
+					);
+					wp_mail( $admin_email, $subject, $body );
+				}
+
+				// If headers not yet sent, redirect with GET to prevent browser refresh re-submission
+				if ( ! headers_sent() ) {
+					wp_safe_redirect( add_query_arg( 'reply_sent', '1' ) );
+					exit;
+				}
 
 				echo '<div style="background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">' . esc_html__( 'Your reply has been sent to our support team.', 'nik-voicedesk' ) . '</div>';
 			}
+		}
+
+		if ( isset( $_GET['reply_sent'] ) ) {
+			echo '<div style="background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">' . esc_html__( 'Your reply has been sent to our support team.', 'nik-voicedesk' ) . '</div>';
 		}
 		?>
 		<style>

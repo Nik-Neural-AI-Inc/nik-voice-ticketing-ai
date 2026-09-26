@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isRecording) return;
 
         // Ignore clicks on VoiceDesk UI components
-        if (e.target.closest('#nik-vd-dock') || e.target.closest('#nik-vd-mic-btn') || e.target.closest('#nik-vd-modal')) {
+        if (e.target.closest('#nik-vd-root') || e.target.closest('#nik-vd-dock') || e.target.closest('#nik-vd-mic-btn') || e.target.closest('#nik-vd-modal')) {
             return;
         }
 
@@ -198,6 +198,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function showDock() {
         if (dock) dock.classList.remove('nik-vd-hidden');
         if (micBtn) micBtn.classList.add('nik-vd-hidden');
+        const brandingBtn = document.getElementById('nik-vd-branding-btn');
+        if (brandingBtn) brandingBtn.classList.add('nik-vd-hidden');
         const attrBar = document.getElementById('nik-vd-attribution-bar');
         if (attrBar) attrBar.classList.remove('nik-vd-hidden');
         if (clickCounter) {
@@ -209,6 +211,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function resetUI() {
         if (dock) dock.classList.add('nik-vd-hidden');
         if (micBtn) micBtn.classList.remove('nik-vd-hidden');
+        const brandingBtn = document.getElementById('nik-vd-branding-btn');
+        if (brandingBtn) brandingBtn.classList.remove('nik-vd-hidden');
         if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
         const attrBar = document.getElementById('nik-vd-attribution-bar');
         if (attrBar) attrBar.classList.add('nik-vd-hidden');

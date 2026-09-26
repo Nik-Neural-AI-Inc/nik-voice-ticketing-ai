@@ -13,7 +13,7 @@
 /* Floating Trigger Mic Button */
 #nik-vd-mic-btn {
     position: fixed;
-    bottom: 30px;
+    bottom: 50px;
     right: 30px;
     width: 60px;
     height: 60px;
@@ -32,7 +32,7 @@
 }
 
 #nik-vd-mic-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.08);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -44,17 +44,51 @@
 
 .nik-vd-branding {
     position: fixed;
-    bottom: 8px;
+    bottom: 14px;
     right: 30px;
-    font-size: 10px;
-    color: #64748b;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 2px 6px;
-    border-radius: 4px;
-    pointer-events: none;
-    z-index: 99998;
-    font-family: -apple-system, sans-serif;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #475569;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    pointer-events: auto !important;
+    cursor: pointer;
+    z-index: 99997;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+.nik-vd-branding:hover {
+    background: #ffffff;
+    color: #0f172a;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+.nik-vd-company-logo {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    margin-left: 2px;
+    border-radius: 2px;
+}
+
+.nik-vd-logo-light {
+    display: inline-block;
+}
+
+.nik-vd-logo-dark {
+    display: none;
 }
 
 /* Screen Recording Active Border */
@@ -463,11 +497,23 @@ body.nik-vd-recording-active {
     color: #38bdf8 !important;
     text-decoration: none !important;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
 }
 
 .nik-vd-attribution-bar a:hover {
     text-decoration: underline !important;
     color: #7dd3fc !important;
+}
+
+.nik-vd-attribution-bar .nik-vd-logo-light {
+    display: none !important;
+}
+
+.nik-vd-attribution-bar .nik-vd-logo-dark {
+    display: inline-block !important;
 }
 
 .nik-portal-footer-attribution {

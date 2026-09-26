@@ -489,7 +489,12 @@ class Nik_VoiceDesk_CPT {
 
 			<?php if ( ! Nik_VoiceDesk_Settings::is_enterprise() ) : ?>
 				<div class="nik-vd-console-footer-credit">
-					<?php esc_html_e( 'Powered by', 'nik-voicedesk' ); ?> <a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">Nik Neural AI</a>
+					<?php esc_html_e( 'Powered by', 'nik-voicedesk' ); ?> 
+					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
+						Nik Neural AI Inc.
+						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="16" height="16" />
+						<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="16" height="16" />
+					</a>
 				</div>
 			<?php endif; ?>
 		</div>
@@ -548,39 +553,67 @@ class Nik_VoiceDesk_CPT {
 				$replies = array();
 			}
 
-			$replies[] = array(
-				'author'  => $staff_name,
-				'role'    => 'staff',
-				'message' => $reply_text,
-				'date'    => current_time( 'mysql' ),
-			);
-			update_post_meta( $post_id, '_nik_replies', $replies );
-			update_post_meta( $post_id, '_nik_status', 'In Progress' );
-
-			// Send Email if checked
-			if ( ! empty( $_POST['nik_email_reply'] ) ) {
-				$customer_email = get_post_meta( $post_id, '_nik_user_email', true );
-				$customer_name = get_post_meta( $post_id, '_nik_username', true ) ?: 'Customer';
-				$ticket_num = get_post_meta( $post_id, '_nik_ticket_number', true );
-
-				if ( ! empty( $customer_email ) ) {
-					$site_name = get_bloginfo( 'name' );
-					$subject = sprintf( __( '[%s] New Reply on Ticket #%s', 'nik-voicedesk' ), $site_name, $ticket_num );
-					$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
-					$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
-
-					$body = sprintf(
-						__( "Hello %s,\n\nA member of our support team has replied to your ticket #%s:\n\n\"%s\"\n\nYou can view and reply to this ticket directly in your customer portal:\n%s\n\nBest regards,\n%s Support Team", 'nik-voicedesk' ),
-						$customer_name,
-						$ticket_num,
-						$reply_text,
-						$portal_url,
-						$site_name
-					);
-
-					wp_mail( $customer_email, $subject, $body );
+			// Deduplication: prevent duplicate reply and duplicate email on browser refresh or resubmission
+			$is_duplicate = false;
+			if ( ! empty( $replies ) ) {
+				$last_reply = end( $replies );
+				if (
+					isset( $last_reply['role'], $last_reply['message'] ) &&
+					'staff' === $last_reply['role'] &&
+					trim( $last_reply['message'] ) === trim( $reply_text )
+				) {
+					$is_duplicate = true;
 				}
 			}
+
+			if ( ! $is_duplicate && ! empty( $reply_text ) ) {
+				$replies[] = array(
+					'author'  => $staff_name,
+					'role'    => 'staff',
+					'message' => $reply_text,
+					'date'    => current_time( 'mysql' ),
+				);
+				update_post_meta( $post_id, '_nik_replies', $replies );
+				update_post_meta( $post_id, '_nik_status', 'In Progress' );
+
+				// Send Email if checked
+				if ( ! empty( $_POST['nik_email_reply'] ) ) {
+					$customer_email = get_post_meta( $post_id, '_nik_user_email', true );
+					$customer_name = get_post_meta( $post_id, '_nik_username', true ) ?: 'Customer';
+					$ticket_num = get_post_meta( $post_id, '_nik_ticket_number', true );
+
+					if ( ! empty( $customer_email ) ) {
+						$site_name = get_bloginfo( 'name' );
+						$subject = sprintf( __( '[%s] New Reply on Ticket #%s', 'nik-voicedesk' ), $site_name, $ticket_num );
+						$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
+						$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
+
+						$body = sprintf(
+							__( "Hello %s,\n\nA member of our support team has replied to your ticket #%s:\n\n\"%s\"\n\nYou can view and reply to this ticket directly in your customer portal:\n%s\n\nBest regards,\n%s Support Team", 'nik-voicedesk' ),
+							$customer_name,
+							$ticket_num,
+							$reply_text,
+							$portal_url,
+							$site_name
+						);
+
+						wp_mail( $customer_email, $subject, $body );
+					}
+				}
+			}
+
+			// Clear POST variable to prevent re-submission in current lifecycle
+			unset( $_POST['nik_admin_reply'] );
+
+			// Hook PRG (Post-Redirect-Get) to clean the redirect URL
+			add_filter( 'redirect_post_location', array( $this, 'clean_redirect_url' ), 10, 2 );
 		}
+	}
+
+	/**
+	 * Ensure clean GET redirect after saving ticket to prevent form re-submission on refresh.
+	 */
+	public function clean_redirect_url( $location, $post_id ) {
+		return add_query_arg( 'ticket_updated', '1', remove_query_arg( array( 'nik_admin_reply', 'nik_email_reply' ), $location ) );
 	}
 }

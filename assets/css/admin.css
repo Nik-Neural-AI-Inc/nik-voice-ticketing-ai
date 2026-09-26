@@ -157,23 +157,56 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #cbd5e1;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.nik-vd-control-group label {
+    color: #334155 !important;
+    font-weight: 600 !important;
 }
 
 .nik-vd-select {
-    background: #1e293b !important;
-    color: #f8fafc !important;
-    border: 1px solid #334155 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
     border-radius: 6px !important;
-    padding: 4px 10px !important;
+    padding: 5px 12px !important;
     font-size: 13px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    height: auto !important;
+    line-height: 1.4 !important;
+}
+
+.nik-vd-select:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 1px #2563eb !important;
+    outline: none !important;
 }
 
 .nik-vd-save-btn {
     background: #2563eb !important;
     border-color: #1d4ed8 !important;
+    color: #ffffff !important;
     font-weight: 600 !important;
     border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3) !important;
+}
+
+.nik-vd-save-btn .dashicons,
+.nik-vd-save-btn .dashicons-saved {
+    color: #ffffff !important;
+}
+
+/* Post & Send Reply Button & Icon */
+.nik-vd-composer .button-primary,
+.nik-vd-composer .button-primary .dashicons {
+    color: #ffffff !important;
+    fill: #ffffff !important;
 }
 
 /* Grid Layout */
@@ -716,10 +749,37 @@
     color: #0284c7;
     text-decoration: none;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .nik-vd-console-footer-credit a:hover {
     text-decoration: underline;
+}
+
+.nik-vd-company-logo {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    margin-left: 2px;
+    border-radius: 2px;
+}
+
+.nik-vd-logo-light {
+    display: inline-block;
+}
+
+.nik-vd-logo-dark {
+    display: none;
+}
+
+body.nik-vd-dark-mode .nik-vd-logo-light {
+    display: none !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-logo-dark {
+    display: inline-block !important;
 }
 
 /* Post list table adjustments (Light Mode Default) */
@@ -895,23 +955,27 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.12) !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    color: #f1f5f9 !important;
-    padding: 6px 12px !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    padding: 6px 14px !important;
     border-radius: 6px !important;
-    font-size: 12.5px !important;
+    font-size: 13px !important;
     font-weight: 600 !important;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
-    box-shadow: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     line-height: 1.4 !important;
 }
 
+.nik-vd-theme-btn .nik-vd-theme-text {
+    color: #1e293b !important;
+}
+
 .nik-vd-theme-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    color: #ffffff !important;
+    background: #e2e8f0 !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
 }
 
 .nik-vd-theme-icon {
@@ -1294,6 +1358,18 @@ body.nik-vd-dark-mode .nik-vd-tab-link.is-active {
 }
 
 /* Dark Mode Table & Inputs */
+body.nik-vd-dark-mode .nik-vd-control-group {
+    color: #f1f5f9 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-control-group label {
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-theme-btn .nik-vd-theme-text {
+    color: #f1f5f9 !important;
+}
+
 body.nik-vd-dark-mode .nik-vd-table th {
     color: #cbd5e1 !important;
 }
@@ -1483,6 +1559,27 @@ body.nik-vd-dark-mode .nik-vd-console-footer-credit {
 
 body.nik-vd-dark-mode .nik-vd-console-footer-credit a {
     color: #38bdf8 !important;
+}
+
+/* Company Logo Icons in Admin / Footer / Credits */
+.nik-vd-company-logo {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 6px;
+    width: 16px;
+    height: 16px;
+}
+.nik-vd-logo-dark {
+    display: none !important;
+}
+.nik-vd-logo-light {
+    display: inline-block !important;
+}
+body.nik-vd-dark-mode .nik-vd-logo-dark {
+    display: inline-block !important;
+}
+body.nik-vd-dark-mode .nik-vd-logo-light {
+    display: none !important;
 }
 
 /* Post list table in dark mode */
