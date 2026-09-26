@@ -28,12 +28,17 @@ class Nik_VoiceDesk_Settings {
 	 */
 	public static function is_plugin_admin_page() {
 		global $post_type;
-		$current_pt = $post_type ?: ( $_GET['post_type'] ?? '' );
-		$page = $_GET['page'] ?? '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page detection.
+		$get_pt = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
+		$current_pt = $post_type ?: $get_pt;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page detection.
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 		if ( 'voicedesk_ticket' === $current_pt || 'nik-voicedesk-settings' === $page || 'nik-voicedesk-about' === $page ) {
 			return true;
 		}
-		if ( isset( $_GET['post'] ) && get_post_type( (int) $_GET['post'] ) === 'voicedesk_ticket' ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page detection.
+		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0;
+		if ( $post_id && get_post_type( $post_id ) === 'voicedesk_ticket' ) {
 			return true;
 		}
 		return false;
@@ -96,7 +101,7 @@ class Nik_VoiceDesk_Settings {
 		) );
 		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_telemetry_optin', array(
 			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_text_field',
+			'sanitize_callback' => array( $this, 'sanitize_telemetry_optin' ),
 			'default'           => 'no',
 		) );
 
@@ -155,6 +160,20 @@ class Nik_VoiceDesk_Settings {
 			'sanitize_callback' => 'sanitize_text_field',
 			'default'           => '',
 		) );
+	}
+
+	/**
+	 * Sanitize telemetry opt-in and trigger immediate sync whenever saved as enabled.
+	 *
+	 * @param string $input Submitted value.
+	 * @return string
+	 */
+	public function sanitize_telemetry_optin( $input ) {
+		$sanitized = ( 'yes' === $input ) ? 'yes' : 'no';
+		if ( 'yes' === $sanitized ) {
+			Nik_VoiceDesk_Telemetry::send_telemetry( true );
+		}
+		return $sanitized;
 	}
 
 	public function sanitize_array_of_strings( $input ) {
@@ -252,6 +271,7 @@ class Nik_VoiceDesk_Settings {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only active tab parameter.
 		$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'general';
 		?>
 		<div class="wrap nik-vd-settings-wrap">
@@ -353,9 +373,9 @@ class Nik_VoiceDesk_Settings {
 						wp_dropdown_pages( array(
 							'name'              => 'nik_voicedesk_portal_page_id',
 							'id'                => 'nik_voicedesk_portal_page_id',
-							'show_option_none'  => __( '— Select a Page —', 'nik-voicedesk' ),
+							'show_option_none'  => esc_html__( '— Select a Page —', 'nik-voicedesk' ),
 							'option_none_value' => '0',
-							'selected'          => $portal_page_id,
+							'selected'          => absint( $portal_page_id ),
 							'class'             => 'nik-vd-input-select',
 						) );
 						?>
@@ -424,6 +444,7 @@ class Nik_VoiceDesk_Settings {
 					<td>
 						<?php $telemetry_optin = get_option( 'nik_voicedesk_telemetry_optin', 'no' ); ?>
 						<label class="nik-vd-checkbox-label" style="display: flex; align-items: center; gap: 8px;">
+							<input type="hidden" name="nik_voicedesk_telemetry_optin" value="no" />
 							<input type="checkbox" name="nik_voicedesk_telemetry_optin" value="yes" <?php checked( $telemetry_optin, 'yes' ); ?> />
 							<strong><?php esc_html_e( 'Enable Anonymous Diagnostic & Telemetry Sync', 'nik-voicedesk' ); ?></strong>
 						</label>
@@ -656,7 +677,10 @@ class Nik_VoiceDesk_Settings {
 
 				<?php if ( $last_checked > 0 ) : ?>
 					<p style="font-size: 12px; color: #64748b; margin-top: 8px;">
-						<?php printf( esc_html__( 'Last validated with remote server: %s', 'nik-voicedesk' ), date_i18n( 'M j, Y g:i A', $last_checked ) ); ?>
+						<?php
+						/* translators: %s: Formatted date and time string */
+						echo esc_html( sprintf( __( 'Last validated with remote server: %s', 'nik-voicedesk' ), date_i18n( 'M j, Y g:i A', $last_checked ) ) );
+						?>
 					</p>
 				<?php endif; ?>
 
@@ -711,7 +735,7 @@ class Nik_VoiceDesk_Settings {
 				<div style="background: linear-gradient(135deg, #0A1128 0%, #001F54 50%, #0B618D 100%); color: #ffffff; border-radius: 12px; padding: 32px 28px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
 					<div style="max-width: 680px;">
 						<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(18, 130, 162, 0.25); border: 1px solid rgba(18, 130, 162, 0.5); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-							<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." width="16" height="16" style="vertical-align: middle;" />
+							<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." width="16" height="16" style="vertical-align: middle;" />
 							<?php esc_html_e( 'Canadian Enterprise AI &bull; Self-Hosted', 'nik-voicedesk' ); ?>
 						</div>
 						<h2 style="font-size: 26px; font-weight: 800; margin: 0 0 10px 0; color: #ffffff; line-height: 1.25;">
@@ -867,8 +891,8 @@ class Nik_VoiceDesk_Settings {
 						<?php esc_html_e( 'Powered by', 'nik-voicedesk' ); ?> 
 						<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
 							Nik Neural AI Inc.
-							<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="16" height="16" />
-							<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="16" height="16" />
+							<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="16" height="16" />
+							<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-dark-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="16" height="16" />
 						</a>
 					</div>
 				<?php endif; ?>

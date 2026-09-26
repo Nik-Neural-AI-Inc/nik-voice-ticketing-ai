@@ -65,30 +65,31 @@ class Nik_VoiceDesk_API {
 		}
 
 		// 1. Clean Environment (OS + Browser only)
-		$clean_environment = self::parse_user_agent( ! empty( $raw_env ) ? $raw_env : ( $_SERVER['HTTP_USER_AGENT'] ?? '' ) );
+		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+		$clean_environment = self::parse_user_agent( ! empty( $raw_env ) ? $raw_env : $user_agent );
 
-		// 2. Save Audio File
-		$upload_dir = wp_upload_dir();
-		$plugin_upload_dir = $upload_dir['basedir'] . '/nik-voicedesk';
-		if ( ! file_exists( $plugin_upload_dir ) ) {
-			wp_mkdir_p( $plugin_upload_dir );
+		// 2. Save Audio File using standard WordPress upload handler
+		if ( ! function_exists( 'wp_handle_upload' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 
-		$filename = 'ticket_' . time() . '_' . wp_generate_password( 8, false ) . '.webm';
-		$filepath = $plugin_upload_dir . '/' . $filename;
-		$file_url = $upload_dir['baseurl'] . '/nik-voicedesk/' . $filename;
+		$upload_overrides = array(
+			'test_form' => false,
+			'test_type' => false,
+		);
 
-		// Move or copy file
-		$saved = false;
-		if ( ! empty( $audio_file['tmp_name'] ) && file_exists( $audio_file['tmp_name'] ) ) {
-			if ( @move_uploaded_file( $audio_file['tmp_name'], $filepath ) ) {
-				$saved = true;
-			} elseif ( @copy( $audio_file['tmp_name'], $filepath ) ) {
-				$saved = true;
-			}
+		$movefile = wp_handle_upload( $audio_file, $upload_overrides );
+		$saved    = false;
+		$filepath = '';
+		$file_url = '';
+
+		if ( $movefile && empty( $movefile['error'] ) ) {
+			$filepath = $movefile['file'];
+			$file_url = $movefile['url'];
+			$saved    = true;
 		}
 
-		if ( ! $saved || ! file_exists( $filepath ) || filesize( $filepath ) === 0 ) {
+		if ( ! $saved || empty( $filepath ) || ! file_exists( $filepath ) || filesize( $filepath ) === 0 ) {
 			return new WP_Error( 'upload_failed', __( 'Could not save audio recording file.', 'nik-voicedesk' ), array( 'status' => 500 ) );
 		}
 
@@ -110,6 +111,7 @@ class Nik_VoiceDesk_API {
 
 		// 4. Create Support Ticket Post
 		$post_data = array(
+			/* translators: %s: Ticket unique identifier */
 			'post_title'   => sprintf( __( 'Ticket %s - Processing', 'nik-voicedesk' ), $ticket_number ),
 			'post_content' => '',
 			'post_status'  => 'publish',
@@ -155,6 +157,7 @@ class Nik_VoiceDesk_API {
 
 		if ( is_wp_error( $transcript ) ) {
 			$transcript_error = $transcript->get_error_message();
+			/* translators: %s: Speech transcription error message */
 			update_post_meta( $post_id, '_nik_transcript', sprintf( __( 'STT Error: %s', 'nik-voicedesk' ), $transcript_error ) );
 			update_post_meta( $post_id, '_nik_status', 'Open' );
 		} else {
@@ -184,7 +187,8 @@ class Nik_VoiceDesk_API {
 			// Update post title with department
 			wp_update_post( array(
 				'ID'         => $post_id,
-				'post_title' => sprintf( __( 'Ticket %s - %s', 'nik-voicedesk' ), $ticket_number, $department ),
+				/* translators: 1: Ticket unique identifier, 2: Department name */
+				'post_title' => sprintf( __( 'Ticket %1$s - %2$s', 'nik-voicedesk' ), $ticket_number, $department ),
 			) );
 		}
 
@@ -205,10 +209,15 @@ class Nik_VoiceDesk_API {
 			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
 				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
 			} else {
-				global $wpdb;
-				$found_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_content LIKE %s LIMIT 1", 'page', 'publish', '%nik_voicedesk_tickets%' ) );
-				if ( $found_id ) {
-					$portal_url = get_permalink( $found_id );
+				$pages = get_posts( array(
+					'post_type'      => 'page',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					's'              => 'nik_voicedesk_tickets',
+					'fields'         => 'ids',
+				) );
+				if ( ! empty( $pages ) ) {
+					$portal_url = get_permalink( $pages[0] );
 				}
 			}
 		}
@@ -236,6 +245,7 @@ class Nik_VoiceDesk_API {
 			'post_type'      => 'voicedesk_ticket',
 			'post_status'    => 'publish',
 			'posts_per_page' => 1,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Indexed ticket lookup by unique ticket ID.
 			'meta_query'     => array(
 				array(
 					'key'   => '_nik_ticket_number',
@@ -267,6 +277,7 @@ class Nik_VoiceDesk_API {
 		header( 'Accept-Ranges: bytes' );
 		header( 'Cache-Control: public, max-age=31536000' );
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Direct output streaming of audio file.
 		readfile( $filepath );
 		exit;
 	}
@@ -315,8 +326,20 @@ class Nik_VoiceDesk_API {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$admin_email = get_option( 'admin_email' );
 			$ticket_number = get_post_meta( $ticket_id, '_nik_ticket_number', true );
-			$subject = sprintf( __( '[Ticket #%s] New Customer Reply from %s', 'nik-voicedesk' ), $ticket_number, $author_name );
-			$body = sprintf( __( "Customer %s posted a new reply on Ticket #%s:\n\n\"%s\"\n\nManage ticket: %s", 'nik-voicedesk' ), $author_name, $ticket_number, $message, admin_url( 'post.php?post=' . $ticket_id . '&action=edit' ) );
+			/* translators: 1: Ticket identifier, 2: Author display name */
+			$subject = sprintf( __( '[Ticket #%1$s] New Customer Reply from %2$s', 'nik-voicedesk' ), $ticket_number, $author_name );
+			/* translators: 1: Author display name, 2: Ticket identifier, 3: Customer reply text, 4: Admin ticket URL */
+			$body = sprintf(
+				__( 'Customer %1$s posted a new reply on Ticket #%2$s:
+
+"%3$s"
+
+Manage ticket: %4$s', 'nik-voicedesk' ),
+				$author_name,
+				$ticket_number,
+				$message,
+				admin_url( 'post.php?post=' . $ticket_id . '&action=edit' )
+			);
 			wp_mail( $admin_email, $subject, $body );
 		}
 
@@ -586,7 +609,8 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 	 */
 	public static function send_ticket_confirmation_email( $to_email, $username, $ticket_number, $department, $summary, $page_url ) {
 		$site_name = get_bloginfo( 'name' );
-		$subject = sprintf( __( '[%s] Ticket Confirmation - #%s', 'nik-voicedesk' ), $site_name, $ticket_number );
+		/* translators: 1: Site name, 2: Ticket unique identifier */
+		$subject = sprintf( __( '[%1$s] Ticket Confirmation - #%2$s', 'nik-voicedesk' ), $site_name, $ticket_number );
 
 		// Portal URL
 		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
@@ -617,7 +641,11 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 					<h1>' . esc_html( $site_name ) . ' ' . esc_html__( 'Support', 'nik-voicedesk' ) . '</h1>
 				</div>
 				<div class="ticket-body">
-					<p>' . sprintf( esc_html__( 'Hello %s,', 'nik-voicedesk' ), '<strong>' . esc_html( $username ) . '</strong>' ) . '</p>
+					<p>' . sprintf(
+						/* translators: %s: Customer user name */
+						esc_html__( 'Hello %s,', 'nik-voicedesk' ),
+						esc_html( $username )
+					) . '</p>
 					<p>' . esc_html__( 'Your voice ticket has been received and processed by our AI system. Here are your ticket details:', 'nik-voicedesk' ) . '</p>
 					
 					<div style="text-align: center;">
@@ -651,7 +679,7 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 				</div>
 			</div>
 			<div class="footer">
-				&copy; ' . date( 'Y' ) . ' ' . esc_html( $site_name ) . '. ' . esc_html__( 'All rights reserved.', 'nik-voicedesk' ) . '
+				&copy; ' . wp_date( 'Y' ) . ' ' . esc_html( $site_name ) . '. ' . esc_html__( 'All rights reserved.', 'nik-voicedesk' ) . '
 			</div>
 		</body>
 		</html>';
@@ -669,11 +697,23 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 	 */
 	public static function send_admin_new_ticket_email( $admin_email, $ticket_number, $username, $department, $summary, $post_id ) {
 		$site_name = get_bloginfo( 'name' );
-		$subject = sprintf( __( '[New Ticket #%s] %s - %s', 'nik-voicedesk' ), $ticket_number, $username, $department );
+		/* translators: 1: Ticket identifier, 2: Reporter username, 3: Department name */
+		$subject = sprintf( __( '[New Ticket #%1$s] %2$s - %3$s', 'nik-voicedesk' ), $ticket_number, $username, $department );
 		$admin_url = admin_url( 'post.php?post=' . $post_id . '&action=edit' );
 
 		$message = sprintf(
-			__( "A new voice ticket has been submitted on %s:\n\nTicket Number: %s\nReporter: %s\nDepartment: %s\n\nAI Summary:\n%s\n\nManage Ticket:\n%s", 'nik-voicedesk' ),
+			/* translators: 1: Site name, 2: Ticket number, 3: Reporter username, 4: Department name, 5: AI summary text, 6: Ticket admin URL */
+			__( 'A new voice ticket has been submitted on %1$s:
+
+Ticket Number: %2$s
+Reporter: %3$s
+Department: %4$s
+
+AI Summary:
+%5$s
+
+Manage Ticket:
+%6$s', 'nik-voicedesk' ),
 			$site_name,
 			$ticket_number,
 			$username,

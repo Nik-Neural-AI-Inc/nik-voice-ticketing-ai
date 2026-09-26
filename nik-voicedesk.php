@@ -57,9 +57,6 @@ function nik_voicedesk_ensure_uploads_dir() {
 function nik_voicedesk_init() {
 	nik_voicedesk_ensure_uploads_dir();
 
-	// Load plugin text domain
-	load_plugin_textdomain( 'nik-voicedesk', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-
 	// Initialize the core plugin class
 	$core = new Nik_VoiceDesk_Core();
 	$core->init();

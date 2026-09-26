@@ -64,15 +64,31 @@
 .nik-vd-settings-link-btn {
     display: inline-flex !important;
     align-items: center !important;
+    justify-content: center !important;
     gap: 6px !important;
-    padding: 5px 12px !important;
+    padding: 6px 14px !important;
     font-size: 13px !important;
+    font-weight: 500 !important;
     border-radius: 6px !important;
     height: auto !important;
-    line-height: 1.4 !important;
+    line-height: 1 !important;
     color: #334155 !important;
     border-color: #cbd5e1 !important;
     background: #f8fafc !important;
+    vertical-align: middle !important;
+}
+
+.nik-vd-settings-link-btn .dashicons {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    vertical-align: middle !important;
 }
 
 .nik-vd-settings-link-btn:hover {
@@ -1242,6 +1258,95 @@ body.nik-vd-dark-mode {
     background-color: #090d16 !important;
 }
 
+/* Make page headings and post listing elements crisp and light in Dark Mode */
+body.nik-vd-dark-mode .wrap h1,
+body.nik-vd-dark-mode .wrap h1.wp-heading-inline,
+body.nik-vd-dark-mode .wp-heading-inline,
+body.nik-vd-dark-mode h1.wp-heading-inline {
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .page-title-action {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .page-title-action:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+
+body.nik-vd-dark-mode .subsubsub,
+body.nik-vd-dark-mode .subsubsub a,
+body.nik-vd-dark-mode .subsubsub .count {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .subsubsub a.current {
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+}
+
+body.nik-vd-dark-mode .subsubsub a:hover {
+    color: #ffffff !important;
+}
+
+body.nik-vd-dark-mode .wp-list-table,
+body.nik-vd-dark-mode .wp-list-table thead th,
+body.nik-vd-dark-mode .wp-list-table tfoot th {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .wp-list-table thead th a,
+body.nik-vd-dark-mode .wp-list-table tfoot th a {
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .wp-list-table tbody tr {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+    border-color: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .wp-list-table tbody tr:hover,
+body.nik-vd-dark-mode .wp-list-table tbody tr.hover {
+    background: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .wp-list-table td,
+body.nik-vd-dark-mode .wp-list-table th {
+    color: #cbd5e1 !important;
+    border-top-color: #1e293b !important;
+    border-bottom-color: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .wp-list-table td.column-title strong a,
+body.nik-vd-dark-mode .wp-list-table td.post-title strong a,
+body.nik-vd-dark-mode .wp-list-table a {
+    color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode .tablenav .displaying-num,
+body.nik-vd-dark-mode .tablenav .pagination-links,
+body.nik-vd-dark-mode .tablenav .tablenav-pages {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .tablenav .tablenav-pages a {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .tablenav .tablenav-pages .current-page {
+    background: #0f172a !important;
+    border-color: #38bdf8 !important;
+    color: #f8fafc !important;
+}
+
 body.nik-vd-dark-mode .nik-vd-admin-console,
 body.nik-vd-dark-mode .nik-vd-settings-console {
     background: #0f172a !important;
@@ -1549,6 +1654,76 @@ body.nik-vd-dark-mode .nik-vd-msg-head {
 
 body.nik-vd-dark-mode .nik-vd-msg-body {
     color: #e2e8f0 !important;
+}
+
+/* Dark Mode Reply Composer */
+body.nik-vd-dark-mode .nik-vd-composer {
+    border-top: 1px solid #1e293b !important;
+    background: transparent !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-composer h4 {
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-composer textarea {
+    background: #090d16 !important;
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;
+    border-radius: 8px !important;
+    padding: 12px 14px !important;
+    font-size: 13.5px !important;
+    line-height: 1.5 !important;
+    box-shadow: none !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-composer textarea::placeholder {
+    color: #64748b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-composer textarea:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 1px #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-checkbox-label {
+    color: #cbd5e1 !important;
+    font-size: 13px !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-checkbox-label strong,
+body.nik-vd-dark-mode .nik-vd-checkbox-label span {
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-composer .button-primary {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 7px 18px !important;
+    height: auto !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    background: #2563eb !important;
+    border-color: #1d4ed8 !important;
+    color: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.4) !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-composer .button-primary .dashicons {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #ffffff !important;
+    vertical-align: middle !important;
 }
 
 body.nik-vd-dark-mode .nik-vd-console-footer-credit {

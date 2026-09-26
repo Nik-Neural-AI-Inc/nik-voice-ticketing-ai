@@ -70,10 +70,15 @@ class Nik_VoiceDesk_Frontend {
 			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
 				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
 			} else {
-				global $wpdb;
-				$found_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_content LIKE %s LIMIT 1", 'page', 'publish', '%nik_voicedesk_tickets%' ) );
-				if ( $found_id ) {
-					$portal_url = get_permalink( $found_id );
+				$pages = get_posts( array(
+					'post_type'      => 'page',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					's'              => 'nik_voicedesk_tickets',
+					'fields'         => 'ids',
+				) );
+				if ( ! empty( $pages ) ) {
+					$portal_url = get_permalink( $pages[0] );
 				}
 			}
 		}
@@ -84,22 +89,16 @@ class Nik_VoiceDesk_Frontend {
 			'portalUrl'    => esc_url( $portal_url ),
 			'isEnterprise' => Nik_VoiceDesk_Settings::is_enterprise(),
 		) );
+
+		// Dynamic styles via standard wp_add_inline_style
+		$btn_color = sanitize_hex_color( get_option( 'nik_voicedesk_btn_color', '#ffd700' ) ) ?: '#ffd700';
+		$icon_color = sanitize_hex_color( get_option( 'nik_voicedesk_icon_color', '#333333' ) ) ?: '#333333';
+		$custom_css = ":root { --nik-vd-btn-bg: {$btn_color} !important; --nik-vd-icon-color: {$icon_color} !important; }";
+		wp_add_inline_style( 'nik-voicedesk-frontend', $custom_css );
 	}
 
 	public function inject_custom_css() {
-		if ( ! $this->is_visible() ) {
-			return;
-		}
-
-		$btn_color = get_option( 'nik_voicedesk_btn_color', '#ffd700' );
-		$icon_color = get_option( 'nik_voicedesk_icon_color', '#333333' );
-		
-		echo "<style id='nik-vd-dynamic-css'>
-			:root {
-				--nik-vd-btn-bg: {$btn_color} !important;
-				--nik-vd-icon-color: {$icon_color} !important;
-			}
-		</style>";
+		// Handled cleanly via wp_add_inline_style in enqueue_assets
 	}
 
 	/**
@@ -119,10 +118,15 @@ class Nik_VoiceDesk_Frontend {
 			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
 				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
 			} else {
-				global $wpdb;
-				$found_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_content LIKE %s LIMIT 1", 'page', 'publish', '%nik_voicedesk_tickets%' ) );
-				if ( $found_id ) {
-					$portal_url = get_permalink( $found_id );
+				$pages = get_posts( array(
+					'post_type'      => 'page',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					's'              => 'nik_voicedesk_tickets',
+					'fields'         => 'ids',
+				) );
+				if ( ! empty( $pages ) ) {
+					$portal_url = get_permalink( $pages[0] );
 				}
 			}
 		}
@@ -176,7 +180,7 @@ class Nik_VoiceDesk_Frontend {
 				<?php if ( $show_attribution && ! $is_enterprise ) : ?>
 					<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
 						<?php esc_html_e( 'Powered by', 'nik-voicedesk' ); ?>
-						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo" width="14" height="14" />
+						<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo" width="14" height="14" />
 					</a>
 				<?php endif; ?>
 			</div>
@@ -209,7 +213,7 @@ class Nik_VoiceDesk_Frontend {
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voicedesk' ); ?> 
 					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
 						Nik Neural AI Inc.
-						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
+						<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
 					</a>
 				</div>
 			<?php endif; ?>
@@ -268,8 +272,9 @@ class Nik_VoiceDesk_Frontend {
 
 		ob_start();
 		
-		// If viewing a specific ticket
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket identifier parameter in URL.
 		if ( isset( $_GET['ticket'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket identifier parameter in URL.
 			$this->render_single_ticket_view( sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) );
 		} else {
 			$this->render_user_tickets_list();
@@ -288,7 +293,9 @@ class Nik_VoiceDesk_Frontend {
 	}
 
 	public function wc_endpoint_content() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket identifier parameter in URL.
 		if ( isset( $_GET['ticket'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket identifier parameter in URL.
 			$this->render_single_ticket_view( sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) );
 		} else {
 			$this->render_user_tickets_list();
@@ -323,10 +330,12 @@ class Nik_VoiceDesk_Frontend {
 		$current_url = remove_query_arg( array( 'ticket', 'reply_saved' ) );
 		?>
 		<style>
-			.nik-portal-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; max-width: 960px; margin: 20px auto; }
+			.nik-portal-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; max-width: 960px; margin: 20px auto; transition: background-color 0.2s ease, color 0.2s ease; }
 			.nik-portal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edf2f7; padding-bottom: 16px; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
 			.nik-portal-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
-			.nik-portal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; transition: box-shadow 0.2s ease; gap: 16px; flex-wrap: wrap; }
+			.nik-portal-theme-btn { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+			.nik-portal-theme-btn:hover { background: #e2e8f0; color: #0f172a; }
+			.nik-portal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; gap: 16px; flex-wrap: wrap; }
 			.nik-portal-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
 			.nik-portal-card-left { flex: 1; min-width: 250px; }
 			.nik-portal-ticket-id { font-weight: 700; font-size: 16px; color: #0284c7; margin-right: 10px; }
@@ -341,14 +350,39 @@ class Nik_VoiceDesk_Frontend {
 			.nik-p-resolved { background: #dcfce7; color: #166534; }
 			.nik-p-closed { background: #f1f5f9; color: #475569; }
 			.nik-portal-empty { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; text-align: center; color: #64748b; }
+			
+			/* Portal Dark Mode Styles */
+			.nik-portal-wrap.nik-portal-dark { color: #cbd5e1 !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-header { border-bottom-color: #1e293b !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-title { color: #f8fafc !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-count-label,
+			.nik-portal-wrap.nik-portal-dark .nik-portal-summary { color: #94a3b8 !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-card { background: #0f172a !important; border-color: #1e293b !important; color: #cbd5e1 !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-card:hover { border-color: #334155 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-dept-pill { background: #1e293b !important; color: #38bdf8 !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-theme-btn { background: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-theme-btn:hover { background: #334155 !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-portal-empty { background: #0f172a !important; border-color: #334155 !important; color: #94a3b8 !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-vd-logo-light { display: none !important; }
+			.nik-portal-wrap.nik-portal-dark .nik-vd-logo-dark { display: inline-block !important; }
+			.nik-portal-wrap:not(.nik-portal-dark) .nik-vd-logo-dark { display: none !important; }
 		</style>
 
-		<div class="nik-portal-wrap">
+		<div class="nik-portal-wrap" id="nik-portal-root">
 			<div class="nik-portal-header">
-				<h2 class="nik-portal-title"><?php esc_html_e( 'My Voice Support Tickets', 'nik-voicedesk' ); ?></h2>
-				<span style="color: #64748b; font-size: 14px;">
-					<?php printf( esc_html__( '%d Tickets Total', 'nik-voicedesk' ), $query->found_posts ); ?>
-				</span>
+				<div>
+					<h2 class="nik-portal-title"><?php esc_html_e( 'My Voice Support Tickets', 'nik-voicedesk' ); ?></h2>
+					<span class="nik-portal-count-label" style="color: #64748b; font-size: 14px;">
+						<?php
+						/* translators: %d: Total number of tickets */
+						echo esc_html( sprintf( __( '%d Tickets Total', 'nik-voicedesk' ), (int) $query->found_posts ) );
+						?>
+					</span>
+				</div>
+				<button type="button" class="nik-portal-theme-btn" id="nik-portal-theme-btn" aria-label="<?php esc_attr_e( 'Toggle Dark or Light Mode', 'nik-voicedesk' ); ?>">
+					<span class="nik-portal-theme-icon">🌙</span>
+					<span class="nik-portal-theme-text"><?php esc_html_e( 'Dark Mode', 'nik-voicedesk' ); ?></span>
+				</button>
 			</div>
 
 			<?php if ( $query->have_posts() ) : ?>
@@ -403,12 +437,31 @@ class Nik_VoiceDesk_Frontend {
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voicedesk' ); ?> 
 					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
 						Nik Neural AI Inc.
-						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
-						<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
+						<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
+						<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-dark-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
 					</a>
 				</div>
 			<?php endif; ?>
 		</div>
+		<script>
+		(function() {
+			var btn = document.getElementById('nik-portal-theme-btn');
+			var root = document.getElementById('nik-portal-root');
+			if (!btn || !root) return;
+			var savedTheme = localStorage.getItem('nik_portal_theme');
+			if (savedTheme === 'dark') {
+				root.classList.add('nik-portal-dark');
+				btn.querySelector('.nik-portal-theme-icon').textContent = '☀️';
+				btn.querySelector('.nik-portal-theme-text').textContent = 'Light Mode';
+			}
+			btn.addEventListener('click', function() {
+				var isDark = root.classList.toggle('nik-portal-dark');
+				localStorage.setItem('nik_portal_theme', isDark ? 'dark' : 'light');
+				btn.querySelector('.nik-portal-theme-icon').textContent = isDark ? '☀️' : '🌙';
+				btn.querySelector('.nik-portal-theme-text').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+			});
+		})();
+		</script>
 		<?php
 	}
 
@@ -423,6 +476,7 @@ class Nik_VoiceDesk_Frontend {
 			'post_type'      => 'voicedesk_ticket',
 			'post_status'    => 'publish',
 			'posts_per_page' => 1,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Indexed ticket lookup by unique ticket ID.
 			'meta_query'     => array(
 				array(
 					'key'   => '_nik_ticket_number',
@@ -462,7 +516,7 @@ class Nik_VoiceDesk_Frontend {
 		$back_url = remove_query_arg( array( 'ticket', 'reply_sent' ) );
 
 		// Process User Reply Submission
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['nik_user_reply_nonce'] ) && wp_verify_nonce( $_POST['nik_user_reply_nonce'], 'nik_user_reply' ) ) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['nik_user_reply_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nik_user_reply_nonce'] ) ), 'nik_user_reply' ) ) {
 			$user_msg = sanitize_textarea_field( wp_unslash( $_POST['nik_user_message'] ?? '' ) );
 			if ( ! empty( $user_msg ) ) {
 				$current_user = wp_get_current_user();
@@ -494,9 +548,16 @@ class Nik_VoiceDesk_Frontend {
 					// Notify admin
 					$admin_email = get_option( 'admin_email' );
 					$site_name = get_bloginfo( 'name' );
-					$subject = sprintf( __( '[%s] New Customer Reply on Ticket #%s', 'nik-voicedesk' ), $site_name, $ticket_number );
+					/* translators: 1: Site name, 2: Ticket number */
+					$subject = sprintf( __( '[%1$s] New Customer Reply on Ticket #%2$s', 'nik-voicedesk' ), $site_name, $ticket_number );
 					$body = sprintf(
-						__( "Customer %s posted a new reply on Ticket #%s:\n\n\"%s\"\n\nManage Ticket:\n%s", 'nik-voicedesk' ),
+						/* translators: 1: Customer name, 2: Ticket number, 3: Staff reply message, 4: Ticket admin URL */
+						__( 'Customer %1$s posted a new reply on Ticket #%2$s:
+
+"%3$s"
+
+Manage Ticket:
+%4$s', 'nik-voicedesk' ),
 						$author_name,
 						$ticket_number,
 						$user_msg,
@@ -520,10 +581,10 @@ class Nik_VoiceDesk_Frontend {
 		}
 		?>
 		<style>
-			.nik-detail-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; max-width: 860px; margin: 20px auto; }
-			.nik-detail-back { display: inline-flex; align-items: center; color: #2563eb; text-decoration: none; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+			.nik-detail-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; max-width: 860px; margin: 20px auto; transition: all 0.2s ease; }
+			.nik-detail-back { display: inline-flex; align-items: center; color: #2563eb; text-decoration: none; font-size: 14px; font-weight: 600; }
 			.nik-detail-header { background: #0f172a; color: #ffffff; padding: 22px 26px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-			.nik-detail-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+			.nik-detail-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: all 0.2s ease; }
 			.nik-detail-box h3 { margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
 			.nik-audio-player { width: 100%; outline: none; margin-top: 10px; border-radius: 8px; }
 			.nik-reply-card { border-radius: 8px; padding: 14px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; }
@@ -531,12 +592,35 @@ class Nik_VoiceDesk_Frontend {
 			.nik-reply-staff { background: #f0f9ff; border: 1px solid #bae6fd; }
 			.nik-reply-btn { background: #2563eb; color: #ffffff; border: none; padding: 10px 22px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
 			.nik-reply-btn:hover { background: #1d4ed8; }
+			.nik-detail-theme-btn { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+			.nik-detail-theme-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+			/* Single View Dark Mode Styles */
+			.nik-detail-wrap.nik-portal-dark { color: #cbd5e1 !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-detail-back { color: #38bdf8 !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-detail-box { background: #0f172a !important; border-color: #1e293b !important; color: #cbd5e1 !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-detail-box h3,
+			.nik-detail-wrap.nik-portal-dark .nik-detail-box h4 { color: #f8fafc !important; border-bottom-color: #1e293b !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-reply-customer { background: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-reply-customer strong,
+			.nik-detail-wrap.nik-portal-dark .nik-reply-staff strong { color: #f8fafc !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-reply-staff { background: #0b1e3a !important; border-color: #0369a1 !important; color: #e0f2fe !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-detail-box textarea { background: #0f172a !important; border-color: #334155 !important; color: #f8fafc !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-detail-box textarea:focus { border-color: #38bdf8 !important; box-shadow: 0 0 0 1px #38bdf8 !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-detail-theme-btn { background: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
+			.nik-detail-wrap.nik-portal-dark .nik-detail-theme-btn:hover { background: #334155 !important; }
 		</style>
 
-		<div class="nik-detail-wrap">
-			<a href="<?php echo esc_url( $back_url ); ?>" class="nik-detail-back">
-				← <?php esc_html_e( 'Back to All Tickets', 'nik-voicedesk' ); ?>
-			</a>
+		<div class="nik-detail-wrap" id="nik-detail-root">
+			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+				<a href="<?php echo esc_url( $back_url ); ?>" class="nik-detail-back">
+					← <?php esc_html_e( 'Back to All Tickets', 'nik-voicedesk' ); ?>
+				</a>
+				<button type="button" class="nik-detail-theme-btn" id="nik-detail-theme-btn" aria-label="<?php esc_attr_e( 'Toggle Dark or Light Mode', 'nik-voicedesk' ); ?>">
+					<span class="nik-detail-theme-icon">🌙</span>
+					<span class="nik-detail-theme-text"><?php esc_html_e( 'Dark Mode', 'nik-voicedesk' ); ?></span>
+				</button>
+			</div>
 
 			<!-- Header -->
 			<div class="nik-detail-header">
@@ -594,7 +678,7 @@ class Nik_VoiceDesk_Frontend {
 									<span style="color: #94a3b8;"><?php echo esc_html( date_i18n( 'M j, g:i A', strtotime( $r['date'] ?? 'now' ) ) ); ?></span>
 								</div>
 								<div style="margin: 0; color: #1e293b;">
-									<?php echo wpautop( esc_html( $r['message'] ) ); ?>
+									<?php echo wp_kses_post( wpautop( esc_html( $r['message'] ) ) ); ?>
 								</div>
 							</div>
 						<?php endforeach; ?>
@@ -614,6 +698,25 @@ class Nik_VoiceDesk_Frontend {
 				</form>
 			</div>
 		</div>
+		<script>
+		(function() {
+			var btn = document.getElementById('nik-detail-theme-btn');
+			var root = document.getElementById('nik-detail-root');
+			if (!btn || !root) return;
+			var savedTheme = localStorage.getItem('nik_portal_theme');
+			if (savedTheme === 'dark') {
+				root.classList.add('nik-portal-dark');
+				btn.querySelector('.nik-detail-theme-icon').textContent = '☀️';
+				btn.querySelector('.nik-detail-theme-text').textContent = 'Light Mode';
+			}
+			btn.addEventListener('click', function() {
+				var isDark = root.classList.toggle('nik-portal-dark');
+				localStorage.setItem('nik_portal_theme', isDark ? 'dark' : 'light');
+				btn.querySelector('.nik-detail-theme-icon').textContent = isDark ? '☀️' : '🌙';
+				btn.querySelector('.nik-detail-theme-text').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+			});
+		})();
+		</script>
 		<?php
 	}
 

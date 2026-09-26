@@ -51,7 +51,8 @@ class Nik_VoiceDesk_CPT {
 
 					<div class="nik-vd-customer-pill">
 						<span class="dashicons dashicons-chart-bar"></span>
-						<span><?php printf( esc_html__( '%d Total Tickets', 'nik-voicedesk' ), $total_tickets ); ?></span>
+						<?php /* translators: %d: Total number of tickets */ ?>
+						<span><?php echo esc_html( sprintf( __( '%d Total Tickets', 'nik-voicedesk' ), $total_tickets ) ); ?></span>
 					</div>
 
 					<?php if ( $is_enterprise ) : ?>
@@ -68,8 +69,8 @@ class Nik_VoiceDesk_CPT {
 					</button>
 
 					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=voicedesk_ticket&page=nik-voicedesk-settings' ) ); ?>" class="button button-secondary nik-vd-settings-link-btn">
-						<span class="dashicons dashicons-admin-generic" style="font-size:16px;width:16px;height:16px;vertical-align:text-bottom;"></span>
-						<?php esc_html_e( 'Settings', 'nik-voicedesk' ); ?>
+						<span class="dashicons dashicons-admin-generic"></span>
+						<span><?php esc_html_e( 'Settings', 'nik-voicedesk' ); ?></span>
 					</a>
 				</div>
 			</div>
@@ -335,7 +336,7 @@ class Nik_VoiceDesk_CPT {
 						</div>
 						<div class="nik-vd-card-body">
 							<div class="nik-vd-summary-box">
-								<?php echo wpautop( esc_html( $summary ?: __( 'No AI summary available.', 'nik-voicedesk' ) ) ); ?>
+								<?php echo wp_kses_post( wpautop( esc_html( $summary ?: __( 'No AI summary available.', 'nik-voicedesk' ) ) ) ); ?>
 							</div>
 
 							<div class="nik-vd-transcript-section">
@@ -451,7 +452,7 @@ class Nik_VoiceDesk_CPT {
 												<span class="nik-vd-msg-time"><?php echo esc_html( date_i18n( 'M j, g:i A', strtotime( $r['date'] ?? 'now' ) ) ); ?></span>
 											</div>
 											<div class="nik-vd-msg-body">
-												<?php echo wpautop( esc_html( $r['message'] ) ); ?>
+												<?php echo wp_kses_post( wpautop( esc_html( $r['message'] ) ) ); ?>
 											</div>
 										</div>
 									<?php endforeach; ?>
@@ -471,9 +472,14 @@ class Nik_VoiceDesk_CPT {
 									<label class="nik-vd-checkbox-label">
 										<input type="checkbox" name="nik_email_reply" value="1" <?php checked( ! empty( $user_email ) ); ?> <?php disabled( empty( $user_email ) ); ?>>
 										<?php if ( ! empty( $user_email ) ) : ?>
-											<?php printf( esc_html__( 'Email reply to %s', 'nik-voicedesk' ), '<strong>' . esc_html( $user_email ) . '</strong>' ); ?>
+											<span>
+												<?php
+												/* translators: %s: Customer email address */
+												printf( esc_html__( 'Email reply to %s', 'nik-voicedesk' ), esc_html( $user_email ) );
+												?>
+											</span>
 										<?php else : ?>
-											<?php esc_html_e( 'No customer email on file to notify', 'nik-voicedesk' ); ?>
+											<span><?php esc_html_e( 'No customer email on file to notify', 'nik-voicedesk' ); ?></span>
 										<?php endif; ?>
 									</label>
 
@@ -492,8 +498,8 @@ class Nik_VoiceDesk_CPT {
 					<?php esc_html_e( 'Powered by', 'nik-voicedesk' ); ?> 
 					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
 						Nik Neural AI Inc.
-						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="16" height="16" />
-						<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="16" height="16" />
+						<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="16" height="16" />
+						<img src="<?php echo esc_url( NIK_VOICEDESK_URL . 'assets/images/favicon-dark-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="16" height="16" />
 					</a>
 				</div>
 			<?php endif; ?>
@@ -505,7 +511,7 @@ class Nik_VoiceDesk_CPT {
 	 * Save updated ticket metadata and replies.
 	 */
 	public function save_ticket_data( $post_id, $post ) {
-		if ( ! isset( $_POST['nik_voicedesk_ticket_nonce'] ) || ! wp_verify_nonce( $_POST['nik_voicedesk_ticket_nonce'], 'nik_voicedesk_save_ticket' ) ) {
+		if ( ! isset( $_POST['nik_voicedesk_ticket_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nik_voicedesk_ticket_nonce'] ) ), 'nik_voicedesk_save_ticket' ) ) {
 			return;
 		}
 
@@ -532,7 +538,8 @@ class Nik_VoiceDesk_CPT {
 			remove_action( 'save_post_voicedesk_ticket', array( $this, 'save_ticket_data' ), 10 );
 			wp_update_post( array(
 				'ID'         => $post_id,
-				'post_title' => sprintf( __( 'Ticket %s - %s', 'nik-voicedesk' ), $ticket_num, $dept ),
+				/* translators: 1: Ticket identifier, 2: Department name */
+				'post_title' => sprintf( __( 'Ticket %1$s - %2$s', 'nik-voicedesk' ), $ticket_num, $dept ),
 			) );
 			add_action( 'save_post_voicedesk_ticket', array( $this, 'save_ticket_data' ), 10, 2 );
 		}
@@ -584,12 +591,24 @@ class Nik_VoiceDesk_CPT {
 
 					if ( ! empty( $customer_email ) ) {
 						$site_name = get_bloginfo( 'name' );
-						$subject = sprintf( __( '[%s] New Reply on Ticket #%s', 'nik-voicedesk' ), $site_name, $ticket_num );
+						/* translators: 1: Site name, 2: Ticket number */
+						$subject = sprintf( __( '[%1$s] New Reply on Ticket #%2$s', 'nik-voicedesk' ), $site_name, $ticket_num );
 						$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
 						$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
 
 						$body = sprintf(
-							__( "Hello %s,\n\nA member of our support team has replied to your ticket #%s:\n\n\"%s\"\n\nYou can view and reply to this ticket directly in your customer portal:\n%s\n\nBest regards,\n%s Support Team", 'nik-voicedesk' ),
+							/* translators: 1: Customer name, 2: Ticket number, 3: Staff reply message, 4: Customer portal URL, 5: Site name */
+							__( 'Hello %1$s,
+
+A member of our support team has replied to your ticket #%2$s:
+
+"%3$s"
+
+You can view and reply to this ticket directly in your customer portal:
+%4$s
+
+Best regards,
+%5$s Support Team', 'nik-voicedesk' ),
 							$customer_name,
 							$ticket_num,
 							$reply_text,

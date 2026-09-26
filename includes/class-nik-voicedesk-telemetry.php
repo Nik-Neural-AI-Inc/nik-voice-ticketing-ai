@@ -15,12 +15,50 @@ class Nik_VoiceDesk_Telemetry {
 		add_action( 'admin_notices', array( $this, 'render_optin_notice' ) );
 		add_action( 'admin_init', array( $this, 'handle_optin_action' ) );
 
+		// Automatically trigger telemetry sync when enabled via settings
+		add_action( 'update_option_nik_voicedesk_telemetry_optin', array( $this, 'on_telemetry_option_updated' ), 10, 2 );
+		add_action( 'add_option_nik_voicedesk_telemetry_optin', array( $this, 'on_telemetry_option_added' ), 10, 2 );
+		add_action( 'admin_init', array( $this, 'check_settings_saved_sync' ) );
+
 		// Weekly heartbeat if telemetry is opted in
 		if ( 'yes' === get_option( 'nik_voicedesk_telemetry_optin', '' ) ) {
 			if ( ! wp_next_scheduled( 'nik_voicedesk_telemetry_ping' ) ) {
 				wp_schedule_event( time() + 86400, 'weekly', 'nik_voicedesk_telemetry_ping' );
 			}
 			add_action( 'nik_voicedesk_telemetry_ping', array( __CLASS__, 'send_telemetry' ) );
+		}
+	}
+
+	/**
+	 * Check if plugin settings were just saved and sync telemetry if opted in.
+	 */
+	public function check_settings_saved_sync() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( isset( $_GET['page'], $_GET['settings-updated'] ) && 'nik-voicedesk-settings' === $_GET['page'] && 'true' === $_GET['settings-updated'] ) {
+			if ( 'yes' === get_option( 'nik_voicedesk_telemetry_optin', 'no' ) ) {
+				self::send_telemetry();
+			}
+		}
+	}
+
+	/**
+	 * Immediately sync telemetry when option is updated to 'yes'.
+	 */
+	public function on_telemetry_option_updated( $old_value, $new_value ) {
+		if ( 'yes' === $new_value ) {
+			self::send_telemetry( true );
+		}
+	}
+
+	/**
+	 * Immediately sync telemetry when option is added as 'yes'.
+	 */
+	public function on_telemetry_option_added( $option, $value ) {
+		if ( 'yes' === $value ) {
+			self::send_telemetry( true );
 		}
 	}
 
@@ -75,7 +113,7 @@ class Nik_VoiceDesk_Telemetry {
 			return;
 		}
 
-		$action = sanitize_text_field( $_GET['nik_vd_telemetry'] );
+		$action = isset( $_GET['nik_vd_telemetry'] ) ? sanitize_text_field( wp_unslash( $_GET['nik_vd_telemetry'] ) ) : '';
 		if ( 'allow' === $action ) {
 			update_option( 'nik_voicedesk_telemetry_optin', 'yes' );
 			self::send_telemetry();
@@ -89,9 +127,18 @@ class Nik_VoiceDesk_Telemetry {
 
 	/**
 	 * Send collected non-sensitive metrics.
+	 *
+	 * @param bool $force Whether to force sync and bypass throttle.
 	 */
-	public static function send_telemetry() {
-		$server_software = $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown';
+	public static function send_telemetry( $force = false ) {
+		// Prevent duplicate back-to-back requests within 5 seconds unless forced
+		$throttle_key = 'nik_vd_telem_throttle';
+		if ( ! $force && get_transient( $throttle_key ) ) {
+			return;
+		}
+		set_transient( $throttle_key, time(), 5 );
+
+		$server_software = isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'Unknown';
 		$ticket_counts = wp_count_posts( 'voicedesk_ticket' );
 		$total_tickets = (int) ( ( $ticket_counts->publish ?? 0 ) + ( $ticket_counts->draft ?? 0 ) + ( $ticket_counts->pending ?? 0 ) );
 		$plan_status = Nik_VoiceDesk_Settings::is_enterprise() ? 'pro' : 'free';
@@ -112,7 +159,7 @@ class Nik_VoiceDesk_Telemetry {
 			'body'        => wp_json_encode( $data ),
 			'headers'     => array( 'Content-Type' => 'application/json; charset=utf-8' ),
 			'timeout'     => 10,
-			'blocking'    => true,
+			'blocking'    => false,
 			'data_format' => 'body',
 		) );
 	}
