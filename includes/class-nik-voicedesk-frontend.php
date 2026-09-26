@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend class for injecting assets, the mic button, and shortcodes.
+ * Frontend class for asset injection, modern recording dock, modal, and customer User Panel.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,9 +13,9 @@ class Nik_VoiceDesk_Frontend {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_footer', array( $this, 'inject_ui' ) );
 		add_action( 'wp_head', array( $this, 'inject_custom_css' ) );
-		add_shortcode( 'nik_voicedesk_tickets', array( $this, 'render_shortcode' ) );
+		add_shortcode( 'nik_voicedesk_tickets', array( $this, 'render_user_panel_shortcode' ) );
 
-		// WooCommerce Integration
+		// WooCommerce "My Account" Endpoint
 		add_action( 'init', array( $this, 'wc_add_endpoint' ) );
 		add_filter( 'woocommerce_account_menu_items', array( $this, 'wc_add_menu_item' ) );
 		add_action( 'woocommerce_account_voicedesk-tickets_endpoint', array( $this, 'wc_endpoint_content' ) );
@@ -42,11 +42,9 @@ class Nik_VoiceDesk_Frontend {
 		// 2. Post Type Check
 		$allowed_post_types = get_option( 'nik_voicedesk_visibility_post_types', array() );
 		if ( ! empty( $allowed_post_types ) ) {
-			// If we are not on a singular page (e.g. archive), and it's not allowed
 			if ( ! is_singular( $allowed_post_types ) && ! is_front_page() && ! is_home() ) {
 				return false;
 			}
-			// Special handling for front page/home if they are pages
 			if ( ( is_front_page() || is_home() ) && ! in_array( 'page', (array) $allowed_post_types, true ) ) {
 				return false;
 			}
@@ -63,19 +61,14 @@ class Nik_VoiceDesk_Frontend {
 		wp_enqueue_style( 'nik-voicedesk-frontend', NIK_VOICEDESK_URL . 'assets/css/frontend.css', array(), NIK_VOICEDESK_VERSION );
 		wp_enqueue_script( 'nik-voicedesk-frontend', NIK_VOICEDESK_URL . 'assets/js/frontend.js', array(), NIK_VOICEDESK_VERSION, true );
 
-		$tooltip_text = get_option( 'nik_voicedesk_tooltip_text', __( 'Speak your issue and click on the problematic areas on this page.', 'nik-voicedesk' ) );
+		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
+		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : '';
 
 		wp_localize_script( 'nik-voicedesk-frontend', 'nikVoiceDeskData', array(
-			'restUrl'  => esc_url_raw( rest_url( 'nik-voicedesk/v1/submit' ) ),
-			'nonce'    => wp_create_nonce( 'wp_rest' ),
-			'strings'  => array(
-				'recording'  => esc_js( $tooltip_text ),
-				'processing' => __( 'Processing your request...', 'nik-voicedesk' ),
-				'success'    => __( 'Ticket submitted successfully! ID: ', 'nik-voicedesk' ),
-				'error'      => __( 'An error occurred. Please try again.', 'nik-voicedesk' ),
-				'stop'       => __( 'Stop & Send', 'nik-voicedesk' ),
-			),
-			'isEnterprise' => Nik_VoiceDesk_Settings::is_enterprise()
+			'restUrl'      => esc_url_raw( rest_url( 'nik-voicedesk/v1/submit' ) ),
+			'nonce'        => wp_create_nonce( 'wp_rest' ),
+			'portalUrl'    => esc_url( $portal_url ),
+			'isEnterprise' => Nik_VoiceDesk_Settings::is_enterprise(),
 		) );
 	}
 
@@ -86,34 +79,35 @@ class Nik_VoiceDesk_Frontend {
 
 		$btn_color = get_option( 'nik_voicedesk_btn_color', '#ffd700' );
 		$icon_color = get_option( 'nik_voicedesk_icon_color', '#333333' );
-		$overlay_color = get_option( 'nik_voicedesk_overlay_color', 'rgba(255, 215, 0, 0.4)' );
 		
-		echo "<style>
+		echo "<style id='nik-vd-dynamic-css'>
 			:root {
-				--nik-vd-btn-bg: {$btn_color};
-				--nik-vd-icon-color: {$icon_color};
-				--nik-vd-overlay-bg: {$overlay_color};
+				--nik-vd-btn-bg: {$btn_color} !important;
+				--nik-vd-icon-color: {$icon_color} !important;
 			}
-			#nik-vd-mic-btn { background-color: var(--nik-vd-btn-bg) !important; color: var(--nik-vd-icon-color) !important; }
-			#nik-vd-overlay { background-color: var(--nik-vd-overlay-bg) !important; }
 		</style>";
 	}
 
+	/**
+	 * Inject modern floating dock, click pins, and permanent success modal.
+	 */
 	public function inject_ui() {
 		if ( ! $this->is_visible() ) {
 			return;
 		}
 		
 		$is_enterprise = Nik_VoiceDesk_Settings::is_enterprise();
-		$tooltip_text = get_option( 'nik_voicedesk_tooltip_text', __( 'Speak your issue and click on the problematic areas on this page.', 'nik-voicedesk' ) );
 		$custom_icon = get_option( 'nik_voicedesk_custom_icon', '' );
+		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
+		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
 
 		if ( empty( $custom_icon ) ) {
-			$custom_icon = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>';
+			$custom_icon = '<svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>';
 		}
 		?>
-		<div id="nik-vd-app">
-			<button id="nik-vd-mic-btn" aria-label="<?php esc_attr_e( 'Record Voice Ticket', 'nik-voicedesk' ); ?>">
+		<div id="nik-vd-root">
+			<!-- Floating Mic Button -->
+			<button id="nik-vd-mic-btn" aria-label="<?php esc_attr_e( 'Record Voice Ticket', 'nik-voicedesk' ); ?>" title="<?php esc_attr_e( 'Click to record a voice support ticket', 'nik-voicedesk' ); ?>">
 				<?php echo $custom_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</button>
 			
@@ -121,28 +115,91 @@ class Nik_VoiceDesk_Frontend {
 				<div id="nik-vd-branding-btn" class="nik-vd-branding"><?php esc_html_e( 'Powered by Nik Neural AI', 'nik-voicedesk' ); ?></div>
 			<?php endif; ?>
 
-			<div id="nik-vd-overlay" class="nik-vd-hidden">
-				<div class="nik-vd-overlay-content">
-					<div id="nik-vd-pulse" class="nik-vd-pulse"></div>
-					<div id="nik-vd-tooltip"><?php echo esc_html( $tooltip_text ); ?></div>
-					<button id="nik-vd-stop-btn"><?php esc_html_e( 'Stop & Send', 'nik-voicedesk' ); ?></button>
-					<div id="nik-vd-status" class="nik-vd-hidden"></div>
-					<?php if ( ! $is_enterprise ) : ?>
-						<div class="nik-vd-branding nik-vd-branding-overlay"><?php esc_html_e( 'Powered by Nik Neural AI', 'nik-voicedesk' ); ?></div>
-					<?php endif; ?>
+			<!-- Floating Modern Recording Dock -->
+			<div id="nik-vd-dock" class="nik-vd-hidden">
+				<div class="nik-vd-rec-indicator">
+					<div class="nik-vd-rec-dot"></div>
+					<span id="nik-vd-timer">00:00</span>
+				</div>
+
+				<div class="nik-vd-waveform">
+					<span></span><span></span><span></span><span></span><span></span>
+				</div>
+
+				<div id="nik-vd-click-counter" class="nik-vd-hidden">0 Clicks Logged</div>
+
+				<button id="nik-vd-stop-btn" class="nik-vd-dock-btn">
+					✓ <?php esc_html_e( 'Finish & Submit', 'nik-voicedesk' ); ?>
+				</button>
+
+				<button id="nik-vd-cancel-btn" class="nik-vd-dock-btn" title="<?php esc_attr_e( 'Discard recording', 'nik-voicedesk' ); ?>">
+					✕ <?php esc_html_e( 'Cancel', 'nik-voicedesk' ); ?>
+				</button>
+			</div>
+
+			<!-- Floating Processing Spinner -->
+			<div id="nik-vd-processing" class="nik-vd-hidden">
+				<div class="nik-vd-spinner"></div>
+				<span><?php esc_html_e( 'Analyzing voice with AI...', 'nik-voicedesk' ); ?></span>
+			</div>
+
+			<!-- Dedicated Success Confirmation Modal (Doesn't auto-disappear) -->
+			<div id="nik-vd-modal" class="nik-vd-hidden">
+				<div class="nik-vd-modal-card">
+					<div class="nik-vd-success-icon">✓</div>
+					<h2><?php esc_html_e( 'Ticket Submitted!', 'nik-voicedesk' ); ?></h2>
+					<p class="nik-vd-modal-subtitle"><?php esc_html_e( 'Your voice ticket has been recorded and processed by AI.', 'nik-voicedesk' ); ?></p>
+
+					<div class="nik-vd-id-container">
+						<span id="nik-vd-modal-ticket-id">#VD-000000</span>
+						<button type="button" id="nik-vd-copy-id-btn">
+							📋 <?php esc_html_e( 'Copy ID', 'nik-voicedesk' ); ?>
+						</button>
+					</div>
+
+					<div class="nik-vd-modal-meta">
+						<p><strong><?php esc_html_e( 'Department:', 'nik-voicedesk' ); ?></strong> <span id="nik-vd-modal-dept" class="nik-vd-dept-pill"><?php esc_html_e( 'General Support', 'nik-voicedesk' ); ?></span></p>
+						<p><strong><?php esc_html_e( 'Summary:', 'nik-voicedesk' ); ?></strong> <span id="nik-vd-modal-summary"><?php esc_html_e( 'Voice ticket received.', 'nik-voicedesk' ); ?></span></p>
+					</div>
+
+					<p class="nik-vd-email-notice">
+						✉️ <?php esc_html_e( 'A confirmation with your Ticket ID has been sent to your email.', 'nik-voicedesk' ); ?>
+					</p>
+
+					<div class="nik-vd-modal-actions">
+						<?php if ( is_user_logged_in() ) : ?>
+							<a href="<?php echo esc_url( $portal_url ); ?>" class="nik-vd-btn-primary">
+								<?php esc_html_e( 'View My Tickets', 'nik-voicedesk' ); ?>
+							</a>
+						<?php endif; ?>
+						<button type="button" id="nik-vd-modal-close" class="nik-vd-btn-secondary">
+							<?php esc_html_e( 'Close', 'nik-voicedesk' ); ?>
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
 		<?php
 	}
 
-	public function render_shortcode( $atts ) {
+	/**
+	 * Render the complete, modern Customer User Panel via shortcode.
+	 * [nik_voicedesk_tickets]
+	 */
+	public function render_user_panel_shortcode( $atts ) {
 		if ( ! is_user_logged_in() ) {
-			return '<p>' . esc_html__( 'Please log in to view your tickets.', 'nik-voicedesk' ) . '</p>';
+			return $this->render_guest_login_prompt();
 		}
-		
+
 		ob_start();
-		$this->render_user_tickets();
+		
+		// If viewing a specific ticket
+		if ( isset( $_GET['ticket'] ) ) {
+			$this->render_single_ticket_view( sanitize_text_field( $_GET['ticket'] ) );
+		} else {
+			$this->render_user_tickets_list();
+		}
+
 		return ob_get_clean();
 	}
 
@@ -156,59 +213,289 @@ class Nik_VoiceDesk_Frontend {
 	}
 
 	public function wc_endpoint_content() {
-		$this->render_user_tickets();
+		if ( isset( $_GET['ticket'] ) ) {
+			$this->render_single_ticket_view( sanitize_text_field( $_GET['ticket'] ) );
+		} else {
+			$this->render_user_tickets_list();
+		}
 	}
 
-	private function render_user_tickets() {
+	private function render_guest_login_prompt() {
+		$login_url = wp_login_url( get_permalink() );
+		return '
+		<div style="max-width: 520px; margin: 40px auto; padding: 32px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: -apple-system, sans-serif;">
+			<div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
+			<h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">' . esc_html__( 'Customer Ticket Portal', 'nik-voicedesk' ) . '</h3>
+			<p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">' . esc_html__( 'Please sign in to your account to view your voice tickets, track status, and read replies from our support team.', 'nik-voicedesk' ) . '</p>
+			<a href="' . esc_url( $login_url ) . '" style="display: inline-block; background: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 14px;">' . esc_html__( 'Sign In to Your Account', 'nik-voicedesk' ) . '</a>
+		</div>';
+	}
+
+	/**
+	 * Render user's tickets list in modern responsive UI.
+	 */
+	private function render_user_tickets_list() {
 		$user_id = get_current_user_id();
 		$args = array(
 			'post_type'      => 'voicedesk_ticket',
 			'post_status'    => 'publish',
 			'author'         => $user_id,
 			'posts_per_page' => -1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
 		);
 		$query = new WP_Query( $args );
+		$current_url = remove_query_arg( array( 'ticket', 'reply_saved' ) );
+		?>
+		<style>
+			.nik-portal-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; max-width: 960px; margin: 20px auto; }
+			.nik-portal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edf2f7; padding-bottom: 16px; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+			.nik-portal-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+			.nik-portal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; transition: box-shadow 0.2s ease; gap: 16px; flex-wrap: wrap; }
+			.nik-portal-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+			.nik-portal-card-left { flex: 1; min-width: 250px; }
+			.nik-portal-ticket-id { font-weight: 700; font-size: 16px; color: #0284c7; margin-right: 10px; }
+			.nik-portal-dept-pill { background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
+			.nik-portal-summary { font-size: 13.5px; color: #64748b; margin-top: 6px; line-height: 1.5; }
+			.nik-portal-card-right { display: flex; align-items: center; gap: 14px; }
+			.nik-portal-btn { background: #2563eb; color: #ffffff !important; text-decoration: none !important; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; display: inline-block; white-space: nowrap; }
+			.nik-portal-btn:hover { background: #1d4ed8; }
+			.nik-portal-pill { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 3px 9px; border-radius: 12px; }
+			.nik-p-open { background: #dbeafe; color: #1e40af; }
+			.nik-p-in-progress { background: #fef3c7; color: #92400e; }
+			.nik-p-resolved { background: #dcfce7; color: #166534; }
+			.nik-p-closed { background: #f1f5f9; color: #475569; }
+			.nik-portal-empty { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; text-align: center; color: #64748b; }
+		</style>
 
-		echo '<div class="nik-vd-frontend-dashboard">';
-		echo '<h2>' . esc_html__( 'My Voice Support Tickets', 'nik-voicedesk' ) . '</h2>';
+		<div class="nik-portal-wrap">
+			<div class="nik-portal-header">
+				<h2 class="nik-portal-title"><?php esc_html_e( 'My Voice Support Tickets', 'nik-voicedesk' ); ?></h2>
+				<span style="color: #64748b; font-size: 14px;">
+					<?php printf( esc_html__( '%d Tickets Total', 'nik-voicedesk' ), $query->found_posts ); ?>
+				</span>
+			</div>
 
-		if ( $query->have_posts() ) {
-			echo '<ul class="nik-vd-ticket-list">';
-			while ( $query->have_posts() ) {
-				$query->the_post();
-				$department = get_post_meta( get_the_ID(), '_nik_department', true );
-				$summary = get_post_meta( get_the_ID(), '_nik_summary', true );
-				$ticket_number = get_post_meta( get_the_ID(), '_nik_ticket_number', true );
-				?>
-				<li class="nik-vd-ticket-item" style="border:1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 4px;">
-					<h3><?php echo esc_html( $ticket_number ? 'Ticket ' . $ticket_number : get_the_title() ); ?></h3>
-					<p><strong><?php esc_html_e( 'Department:', 'nik-voicedesk' ); ?></strong> <?php echo esc_html( $department ); ?></p>
-					<div class="nik-vd-ticket-summary">
-						<strong><?php esc_html_e( 'AI Summary:', 'nik-voicedesk' ); ?></strong>
-						<?php echo wp_kses_post( wpautop( $summary ) ); ?>
-					</div>
-					<?php
-					$replies = get_post_meta( get_the_ID(), '_nik_replies', true );
-					if ( ! empty( $replies ) && is_array( $replies ) ) {
-						echo '<div class="nik-vd-ticket-replies" style="margin-top: 15px; background: #f5f5f5; padding: 10px; border-radius: 4px;">';
-						echo '<h4>' . esc_html__( 'Support Replies', 'nik-voicedesk' ) . '</h4>';
-						foreach ( $replies as $reply ) {
-							echo '<div class="nik-vd-reply" style="margin-bottom: 10px;">';
-							echo '<strong>' . esc_html( $reply['author'] ) . '</strong> <em>(' . esc_html( $reply['date'] ) . ')</em>';
-							echo wp_kses_post( wpautop( $reply['message'] ) );
-							echo '</div>';
-						}
-						echo '</div>';
-					}
+			<?php if ( $query->have_posts() ) : ?>
+				<div class="nik-portal-list">
+					<?php while ( $query->have_posts() ) : $query->the_post();
+						$post_id = get_the_ID();
+						$ticket_num = get_post_meta( $post_id, '_nik_ticket_number', true ) ?: $post_id;
+						$dept = get_post_meta( $post_id, '_nik_department', true ) ?: __( 'General Support', 'nik-voicedesk' );
+						$summary = get_post_meta( $post_id, '_nik_summary', true );
+						$status = get_post_meta( $post_id, '_nik_status', true ) ?: 'Open';
+						$status_class = 'nik-p-' . sanitize_html_class( strtolower( str_replace( ' ', '-', $status ) ) );
+						$replies = get_post_meta( $post_id, '_nik_replies', true );
+						$reply_count = is_array( $replies ) ? count( $replies ) : 0;
+						$view_url = add_query_arg( 'ticket', $ticket_num, $current_url );
 					?>
-				</li>
-				<?php
-			}
-			echo '</ul>';
-			wp_reset_postdata();
-		} else {
-			echo '<p>' . esc_html__( 'You have not submitted any voice tickets yet.', 'nik-voicedesk' ) . '</p>';
+						<div class="nik-portal-card">
+							<div class="nik-portal-card-left">
+								<div>
+									<span class="nik-portal-ticket-id">#<?php echo esc_html( $ticket_num ); ?></span>
+									<span class="nik-portal-dept-pill"><?php echo esc_html( $dept ); ?></span>
+									<span style="font-size: 12px; color: #94a3b8; margin-left: 8px;"><?php echo esc_html( get_the_date( 'M j, Y' ) ); ?></span>
+								</div>
+								<div class="nik-portal-summary">
+									<?php echo esc_html( wp_trim_words( $summary ?: __( 'Voice note ticket received.', 'nik-voicedesk' ), 16, '...' ) ); ?>
+								</div>
+							</div>
+
+							<div class="nik-portal-card-right">
+								<span class="nik-portal-pill <?php echo esc_attr( $status_class ); ?>">
+									<?php echo esc_html( $status ); ?>
+								</span>
+								<?php if ( $reply_count > 0 ) : ?>
+									<span style="font-size: 12px; color: #64748b;">💬 <?php echo esc_html( $reply_count ); ?></span>
+								<?php endif; ?>
+								<a href="<?php echo esc_url( $view_url ); ?>" class="nik-portal-btn">
+									<?php esc_html_e( 'View Details →', 'nik-voicedesk' ); ?>
+								</a>
+							</div>
+						</div>
+					<?php endwhile; wp_reset_postdata(); ?>
+				</div>
+			<?php else : ?>
+				<div class="nik-portal-empty">
+					<div style="font-size: 36px; margin-bottom: 8px;">🎙️</div>
+					<h3 style="margin: 0 0 6px 0; color: #0f172a;"><?php esc_html_e( 'No tickets found', 'nik-voicedesk' ); ?></h3>
+					<p style="margin: 0; font-size: 14px;"><?php esc_html_e( 'You haven\'t recorded any voice support tickets yet. Use the microphone button in the bottom right corner of the page to speak your issue!', 'nik-voicedesk' ); ?></p>
+				</div>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render single ticket details with Audio Player, AI summary, and Reply Thread.
+	 */
+	private function render_single_ticket_view( $ticket_number ) {
+		$user_id = get_current_user_id();
+
+		// Query ticket by ticket number
+		$args = array(
+			'post_type'      => 'voicedesk_ticket',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'meta_query'     => array(
+				array(
+					'key'   => '_nik_ticket_number',
+					'value' => $ticket_number,
+				),
+			),
+		);
+		$posts = get_posts( $args );
+
+		if ( empty( $posts ) ) {
+			echo '<p style="color: #ef4444;">' . esc_html__( 'Ticket not found.', 'nik-voicedesk' ) . '</p>';
+			return;
 		}
-		echo '</div>';
+
+		$post = $posts[0];
+
+		// Strict Security Check: only the author or admin can view this ticket
+		if ( (int) $post->post_author !== $user_id && ! current_user_can( 'manage_options' ) ) {
+			echo '<div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 8px; text-align: center;">';
+			echo '<strong>' . esc_html__( 'Access Denied', 'nik-voicedesk' ) . '</strong><br>';
+			echo esc_html__( 'You do not have permission to view this support ticket.', 'nik-voicedesk' );
+			echo '</div>';
+			return;
+		}
+
+		$audio_url = get_post_meta( $post->ID, '_nik_audio_url', true );
+		$stream_url = get_post_meta( $post->ID, '_nik_audio_stream_url', true ) ?: rest_url( 'nik-voicedesk/v1/audio/' . $ticket_number );
+		$transcript = get_post_meta( $post->ID, '_nik_transcript', true );
+		$summary = get_post_meta( $post->ID, '_nik_summary', true );
+		$dept = get_post_meta( $post->ID, '_nik_department', true ) ?: 'General Support';
+		$status = get_post_meta( $post->ID, '_nik_status', true ) ?: 'Open';
+		$replies = get_post_meta( $post->ID, '_nik_replies', true );
+		if ( ! is_array( $replies ) ) {
+			$replies = array();
+		}
+
+		$back_url = remove_query_arg( 'ticket' );
+
+		// Process User Reply Submission
+		if ( 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['nik_user_reply_nonce'] ) && wp_verify_nonce( $_POST['nik_user_reply_nonce'], 'nik_user_reply' ) ) {
+			$user_msg = sanitize_textarea_field( wp_unslash( $_POST['nik_user_message'] ?? '' ) );
+			if ( ! empty( $user_msg ) ) {
+				$current_user = wp_get_current_user();
+				$author_name = $current_user->display_name ?: $current_user->user_login;
+
+				$replies[] = array(
+					'author'  => $author_name,
+					'role'    => 'customer',
+					'message' => $user_msg,
+					'date'    => current_time( 'mysql' ),
+				);
+				update_post_meta( $post->ID, '_nik_replies', $replies );
+				update_post_meta( $post->ID, '_nik_status', 'Customer Replied' );
+
+				// Notify admin
+				$admin_email = get_option( 'admin_email' );
+				$subject = sprintf( __( '[Ticket #%s] New Customer Reply from %s', 'nik-voicedesk' ), $ticket_number, $author_name );
+				$body = sprintf( __( "Customer %s posted a new reply on Ticket #%s:\n\n\"%s\"\n\nManage Ticket:\n%s", 'nik-voicedesk' ), $author_name, $ticket_number, $user_msg, admin_url( 'post.php?post=' . $post->ID . '&action=edit' ) );
+				wp_mail( $admin_email, $subject, $body );
+
+				echo '<div style="background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">' . esc_html__( 'Your reply has been sent to our support team.', 'nik-voicedesk' ) . '</div>';
+			}
+		}
+		?>
+		<style>
+			.nik-detail-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; max-width: 860px; margin: 20px auto; }
+			.nik-detail-back { display: inline-flex; align-items: center; color: #2563eb; text-decoration: none; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+			.nik-detail-header { background: #0f172a; color: #ffffff; padding: 22px 26px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+			.nik-detail-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+			.nik-detail-box h3 { margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+			.nik-audio-player { width: 100%; outline: none; margin-top: 10px; border-radius: 8px; }
+			.nik-reply-card { border-radius: 8px; padding: 14px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; }
+			.nik-reply-customer { background: #f8fafc; border: 1px solid #e2e8f0; }
+			.nik-reply-staff { background: #f0f9ff; border: 1px solid #bae6fd; }
+			.nik-reply-btn { background: #2563eb; color: #ffffff; border: none; padding: 10px 22px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+			.nik-reply-btn:hover { background: #1d4ed8; }
+		</style>
+
+		<div class="nik-detail-wrap">
+			<a href="<?php echo esc_url( $back_url ); ?>" class="nik-detail-back">
+				← <?php esc_html_e( 'Back to All Tickets', 'nik-voicedesk' ); ?>
+			</a>
+
+			<!-- Header -->
+			<div class="nik-detail-header">
+				<div>
+					<div style="font-size: 22px; font-weight: 800; color: #38bdf8;">#<?php echo esc_html( $ticket_number ); ?></div>
+					<div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">
+						<?php echo esc_html( $dept ); ?> &bull; <?php echo esc_html( get_the_date( 'M j, Y \a\t g:i A', $post->ID ) ); ?>
+					</div>
+				</div>
+				<div>
+					<span style="background: #2563eb; color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+						<?php echo esc_html( $status ); ?>
+					</span>
+				</div>
+			</div>
+
+			<!-- Audio Recording & AI Summary -->
+			<div class="nik-detail-box">
+				<h3>🎙️ <?php esc_html_e( 'Your Voice Note & AI Summary', 'nik-voicedesk' ); ?></h3>
+				
+				<?php if ( $audio_url || $stream_url ) : ?>
+					<audio controls class="nik-audio-player">
+						<source src="<?php echo esc_url( $stream_url ); ?>" type="audio/webm">
+						<?php if ( $audio_url ) : ?>
+							<source src="<?php echo esc_url( $audio_url ); ?>" type="audio/webm">
+							<source src="<?php echo esc_url( $audio_url ); ?>" type="audio/wav">
+						<?php endif; ?>
+					</audio>
+				<?php endif; ?>
+
+				<div style="margin-top: 18px; background: #f8fafc; border-left: 4px solid #38bdf8; padding: 14px 18px; border-radius: 0 8px 8px 0; font-size: 14px; line-height: 1.6;">
+					<strong><?php esc_html_e( 'AI Summary:', 'nik-voicedesk' ); ?></strong>
+					<p style="margin: 6px 0 0 0;"><?php echo esc_html( $summary ?: __( 'Voice ticket received and being processed.', 'nik-voicedesk' ) ); ?></p>
+				</div>
+			</div>
+
+			<!-- Conversation & Replies -->
+			<div class="nik-detail-box">
+				<h3>💬 <?php esc_html_e( 'Support Conversation & Updates', 'nik-voicedesk' ); ?></h3>
+
+				<div style="margin-bottom: 20px;">
+					<?php if ( ! empty( $replies ) ) : ?>
+						<?php foreach ( $replies as $r ) :
+							$is_staff = ( $r['role'] ?? '' ) === 'staff' || ( $r['author'] ?? '' ) === 'Admin';
+							$card_class = $is_staff ? 'nik-reply-staff' : 'nik-reply-customer';
+							$badge_title = $is_staff ? __( 'Support Agent', 'nik-voicedesk' ) : __( 'You', 'nik-voicedesk' );
+							$badge_color = $is_staff ? '#0284c7' : '#475569';
+						?>
+							<div class="nik-reply-card <?php echo esc_attr( $card_class ); ?>">
+								<div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12.5px;">
+									<strong>
+										<?php echo esc_html( $r['author'] ); ?> 
+										<span style="background: <?php echo esc_attr( $badge_color ); ?>; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 4px;"><?php echo esc_html( $badge_title ); ?></span>
+									</strong>
+									<span style="color: #94a3b8;"><?php echo esc_html( date_i18n( 'M j, g:i A', strtotime( $r['date'] ?? 'now' ) ) ); ?></span>
+								</div>
+								<div style="margin: 0; color: #1e293b;">
+									<?php echo wpautop( esc_html( $r['message'] ) ); ?>
+								</div>
+							</div>
+						<?php endforeach; ?>
+					<?php else : ?>
+						<p style="color: #64748b; font-size: 13.5px;"><?php esc_html_e( 'Our support team has received your ticket and is preparing a response.', 'nik-voicedesk' ); ?></p>
+					<?php endif; ?>
+				</div>
+
+				<!-- Customer Reply Box -->
+				<form method="post" style="border-top: 1px solid #edf2f7; padding-top: 20px;">
+					<?php wp_nonce_field( 'nik_user_reply', 'nik_user_reply_nonce' ); ?>
+					<h4 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600;"><?php esc_html_e( 'Send a Message to Support', 'nik-voicedesk' ); ?></h4>
+					<textarea name="nik_user_message" rows="4" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; font-size: 14px; margin-bottom: 12px; box-sizing: border-box;" placeholder="<?php esc_attr_e( 'Type your question or additional details here...', 'nik-voicedesk' ); ?>" required></textarea>
+					<button type="submit" class="nik-reply-btn">
+						<?php esc_html_e( 'Submit Reply', 'nik-voicedesk' ); ?>
+					</button>
+				</form>
+			</div>
+		</div>
+		<?php
 	}
 }

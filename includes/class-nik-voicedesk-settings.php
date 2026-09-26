@@ -35,6 +35,7 @@ class Nik_VoiceDesk_Settings {
 
 	public function register_settings() {
 		// General Settings
+		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_portal_page_id' );
 		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_post_types' );
 		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_user_status' );
 		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_specific_users' );
@@ -109,8 +110,33 @@ class Nik_VoiceDesk_Settings {
 		$departments = get_option( 'nik_voicedesk_departments', 'Sales, Technical Support, Billing' );
 		
 		$public_post_types = get_post_types( array( 'public' => true ), 'objects' );
+		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
 		?>
 		<table class="form-table">
+			<tr>
+				<th scope="row"><label for="nik_voicedesk_portal_page_id"><?php esc_html_e( 'Customer Portal Page', 'nik-voicedesk' ); ?></label></th>
+				<td>
+					<?php
+					wp_dropdown_pages( array(
+						'name'              => 'nik_voicedesk_portal_page_id',
+						'id'                => 'nik_voicedesk_portal_page_id',
+						'show_option_none'  => __( '— Select a Page —', 'nik-voicedesk' ),
+						'option_none_value' => '0',
+						'selected'          => $portal_page_id,
+					) );
+					?>
+					<p class="description">
+						<?php esc_html_e( 'Select the page where you added the shortcode [nik_voicedesk_tickets]. Customers will be directed here from confirmation emails and success modals.', 'nik-voicedesk' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label><?php esc_html_e( 'Portal Shortcode', 'nik-voicedesk' ); ?></label></th>
+				<td>
+					<code>[nik_voicedesk_tickets]</code>
+					<p class="description"><?php esc_html_e( 'Insert this shortcode on any page to display the user support ticket portal.', 'nik-voicedesk' ); ?></p>
+				</td>
+			</tr>
 			<tr>
 				<th scope="row"><label><?php esc_html_e( 'Visibility by Content Type', 'nik-voicedesk' ); ?></label></th>
 				<td>

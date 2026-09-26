@@ -1,10 +1,16 @@
-/* Frontend CSS for Nik VoiceDesk AI */
+/* VoiceDesk AI Frontend Styles */
 
-#nik-vd-app {
-    position: fixed;
-    z-index: 99998;
+:root {
+    --nik-vd-btn-bg: #ffd700;
+    --nik-vd-icon-color: #333333;
+    --nik-vd-brand-color: #2563eb;
 }
 
+.nik-vd-hidden {
+    display: none !important;
+}
+
+/* Floating Trigger Mic Button */
 #nik-vd-mic-btn {
     position: fixed;
     bottom: 30px;
@@ -12,111 +18,418 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: #ffd700;
-    color: #333;
+    background-color: var(--nik-vd-btn-bg);
+    color: var(--nik-vd-icon-color);
     border: none;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 99998;
-    transition: transform 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+    padding: 0;
 }
 
 #nik-vd-mic-btn:hover {
-    transform: scale(1.05);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+#nik-vd-mic-btn svg {
+    width: 28px;
+    height: 28px;
+    stroke: currentColor;
 }
 
 .nik-vd-branding {
     position: fixed;
-    bottom: 10px;
+    bottom: 8px;
     right: 30px;
     font-size: 10px;
-    color: #888;
-    background: rgba(255,255,255,0.8);
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.9);
     padding: 2px 6px;
     border-radius: 4px;
     pointer-events: none;
     z-index: 99998;
+    font-family: -apple-system, sans-serif;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
-#nik-vd-overlay {
+/* Screen Recording Active Border */
+body.nik-vd-recording-active {
+    box-shadow: inset 0 0 0 4px rgba(239, 68, 68, 0.85) !important;
+    transition: box-shadow 0.3s ease;
+}
+
+/* Floating Recording Dock */
+#nik-vd-dock {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 40px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    z-index: 99999;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    animation: nik-vd-dock-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes nik-vd-dock-slide {
+    from { transform: translate(-50%, 40px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.nik-vd-rec-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nik-vd-rec-dot {
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: nik-vd-pulse 1.2s infinite ease-in-out;
+}
+
+@keyframes nik-vd-pulse {
+    0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+    100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+#nik-vd-timer {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: 0.5px;
+}
+
+/* Audio wave animation */
+.nik-vd-waveform {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 18px;
+}
+
+.nik-vd-waveform span {
+    width: 3px;
+    background: #38bdf8;
+    border-radius: 2px;
+    animation: nik-vd-wave 1s infinite ease-in-out;
+}
+.nik-vd-waveform span:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+.nik-vd-waveform span:nth-child(2) { height: 14px; animation-delay: 0.2s; }
+.nik-vd-waveform span:nth-child(3) { height: 18px; animation-delay: 0.3s; }
+.nik-vd-waveform span:nth-child(4) { height: 10px; animation-delay: 0.4s; }
+.nik-vd-waveform span:nth-child(5) { height: 7px; animation-delay: 0.5s; }
+
+@keyframes nik-vd-wave {
+    0%, 100% { transform: scaleY(0.4); }
+    50% { transform: scaleY(1); }
+}
+
+#nik-vd-click-counter {
+    background: rgba(56, 189, 248, 0.2);
+    color: #38bdf8;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.nik-vd-dock-btn {
+    border: none;
+    border-radius: 24px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.nik-vd-dock-btn:hover {
+    transform: scale(1.03);
+}
+
+#nik-vd-stop-btn {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+#nik-vd-stop-btn:hover {
+    background: #15803d;
+}
+
+#nik-vd-cancel-btn {
+    background: transparent;
+    color: #94a3b8;
+    padding: 8px 12px;
+}
+
+#nik-vd-cancel-btn:hover {
+    color: #ef4444;
+}
+
+/* Click Pin Animation on Page */
+.nik-vd-click-pin {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #ffffff;
+    font-family: -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99997;
+    pointer-events: none;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    animation: nik-vd-pin-drop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes nik-vd-pin-drop {
+    from { transform: scale(0.2) translateY(-20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.nik-vd-pin-fade {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+.nik-vd-pin-ripple {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    border-radius: 50%;
+    border: 2px solid #ef4444;
+    animation: nik-vd-ripple-out 1.2s infinite ease-out;
+}
+
+@keyframes nik-vd-ripple-out {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Processing Floating State */
+#nik-vd-processing {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 30px;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+    z-index: 99999;
+    font-family: -apple-system, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.nik-vd-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: nik-vd-spin 0.8s linear infinite;
+}
+
+@keyframes nik-vd-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Success Modal */
+#nik-vd-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(255, 215, 0, 0.4);
-    z-index: 99999;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
+    z-index: 100000;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-.nik-vd-hidden {
-    display: none !important;
-}
-
-.nik-vd-overlay-content {
+.nik-vd-modal-card {
+    background: #ffffff;
+    max-width: 480px;
+    width: 100%;
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
     text-align: center;
-    pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+    position: relative;
+    animation: nik-vd-modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-#nik-vd-tooltip {
-    background: rgba(0,0,0,0.8);
-    color: #fff;
-    padding: 15px 25px;
-    border-radius: 30px;
-    font-size: 16px;
-    margin-bottom: 30px;
-    pointer-events: auto;
+@keyframes nik-vd-modal-pop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
-#nik-vd-pulse {
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 0, 0, 0.6);
+.nik-vd-success-icon {
+    width: 56px;
+    height: 56px;
+    background: #dcfce7;
+    color: #16a34a;
     border-radius: 50%;
-    margin: 0 auto 30px auto;
-    animation: nik-vd-pulse-anim 1.5s infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+    font-size: 28px;
 }
 
-@keyframes nik-vd-pulse-anim {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+.nik-vd-modal-card h2 {
+    margin: 0 0 8px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
 }
 
-#nik-vd-stop-btn {
-    background: #e74c3c;
-    color: #fff;
+.nik-vd-modal-subtitle {
+    margin: 0 0 20px 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.nik-vd-id-container {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+#nik-vd-modal-ticket-id {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0284c7;
+    letter-spacing: 0.5px;
+}
+
+#nik-vd-copy-id-btn {
+    background: #0284c7;
+    color: #ffffff;
     border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    pointer-events: auto;
+    transition: background 0.2s ease;
 }
 
-#nik-vd-stop-btn:hover {
-    background: #c0392b;
+#nik-vd-copy-id-btn:hover {
+    background: #0369a1;
 }
 
-#nik-vd-status {
-    margin-top: 20px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-    background: rgba(255,255,255,0.9);
-    padding: 10px 20px;
+.nik-vd-modal-meta {
+    text-align: left;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 24px;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.nik-vd-modal-meta p {
+    margin: 4px 0;
+}
+
+.nik-vd-dept-pill {
+    background: #e2e8f0;
+    color: #334155;
+    padding: 2px 8px;
     border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
 }
 
-.nik-vd-branding-overlay {
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #333;
+.nik-vd-email-notice {
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 20px;
+}
+
+.nik-vd-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.nik-vd-btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-block;
+    transition: background 0.2s ease;
+}
+
+.nik-vd-btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.nik-vd-btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.nik-vd-btn-secondary:hover {
+    background: #e2e8f0;
 }

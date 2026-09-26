@@ -1,116 +1,230 @@
+/**
+ * Nik VoiceDesk AI - Frontend Interactive Script
+ * Zero-dependencies: Pure Vanilla JS
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
     const micBtn = document.getElementById('nik-vd-mic-btn');
-    const overlay = document.getElementById('nik-vd-overlay');
+    const dock = document.getElementById('nik-vd-dock');
     const stopBtn = document.getElementById('nik-vd-stop-btn');
-    const statusMsg = document.getElementById('nik-vd-status');
-    const tooltip = document.getElementById('nik-vd-tooltip');
-    const pulse = document.getElementById('nik-vd-pulse');
-    
+    const cancelBtn = document.getElementById('nik-vd-cancel-btn');
+    const timerDisplay = document.getElementById('nik-vd-timer');
+    const clickCounter = document.getElementById('nik-vd-click-counter');
+    const successModal = document.getElementById('nik-vd-modal');
+    const modalCloseBtn = document.getElementById('nik-vd-modal-close');
+    const copyIdBtn = document.getElementById('nik-vd-copy-id-btn');
+    const modalTicketId = document.getElementById('nik-vd-modal-ticket-id');
+    const modalDept = document.getElementById('nik-vd-modal-dept');
+    const modalSummary = document.getElementById('nik-vd-modal-summary');
+    const processingIndicator = document.getElementById('nik-vd-processing');
+
     if (!micBtn) return;
 
-    let mediaRecorder;
+    let mediaRecorder = null;
     let audioChunks = [];
     let clickedElements = [];
     let isRecording = false;
     let recordingStartTime = 0;
+    let timerInterval = null;
+    let clickCount = 0;
 
+    // Start Recording
     micBtn.addEventListener('click', async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            startRecording(stream);
+            startRecordingSession(stream);
         } catch (err) {
             console.error('Error accessing microphone:', err);
-            alert('Microphone access is required to use VoiceDesk.');
+            alert('Microphone access is required to record a voice ticket. Please grant permission in your browser.');
         }
     });
 
-    stopBtn.addEventListener('click', () => {
-        if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-        }
-    });
+    // Stop and Send
+    if (stopBtn) {
+        stopBtn.addEventListener('click', () => {
+            if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        });
+    }
 
-    // Track clicks on the document while recording
-    document.addEventListener('click', (e) => {
+    // Cancel Recording
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            if (isRecording) {
+                cleanupRecording();
+                resetUI();
+            }
+        });
+    }
+
+    // Close Modal
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', () => {
+            if (successModal) successModal.classList.add('nik-vd-hidden');
+        });
+    }
+
+    // Copy Ticket ID
+    if (copyIdBtn) {
+        copyIdBtn.addEventListener('click', function() {
+            const idText = modalTicketId ? modalTicketId.innerText.replace('#', '').trim() : '';
+            if (!idText) return;
+
+            navigator.clipboard.writeText(idText).then(() => {
+                const orig = copyIdBtn.innerHTML;
+                copyIdBtn.innerHTML = '✓ Copied!';
+                copyIdBtn.style.backgroundColor = '#16a34a';
+                copyIdBtn.style.color = '#fff';
+                setTimeout(() => {
+                    copyIdBtn.innerHTML = orig;
+                    copyIdBtn.style.backgroundColor = '';
+                    copyIdBtn.style.color = '';
+                }, 2000);
+            });
+        });
+    }
+
+    // Global Click Tracker during recording
+    document.addEventListener('click', function(e) {
         if (!isRecording) return;
-        
-        // Don't track clicks on our own UI
-        if (e.target.closest('#nik-vd-overlay') || e.target.closest('#nik-vd-mic-btn')) {
+
+        // Ignore clicks on VoiceDesk UI components
+        if (e.target.closest('#nik-vd-dock') || e.target.closest('#nik-vd-mic-btn') || e.target.closest('#nik-vd-modal')) {
             return;
         }
 
-        const selector = getCssSelector(e.target);
-        clickedElements.push({
-            selector: selector,
-            x: e.clientX,
-            y: e.clientY,
-            timeOffset: Date.now() - recordingStartTime
-        });
-    }, true); // Use capture phase
+        clickCount++;
+        if (clickCounter) {
+            clickCounter.innerText = clickCount + (clickCount === 1 ? ' Click Logged' : ' Clicks Logged');
+            clickCounter.classList.remove('nik-vd-hidden');
+        }
 
-    function startRecording(stream) {
+        // Generate target description
+        const target = e.target;
+        const tag = target.tagName ? target.tagName.toLowerCase() : 'element';
+        let elementText = target.innerText || target.value || target.getAttribute('aria-label') || target.getAttribute('title') || target.getAttribute('alt') || '';
+        elementText = elementText.trim().replace(/\s+/g, ' ').substring(0, 50);
+
+        const selector = getCssSelector(target);
+        const timeOffset = Date.now() - recordingStartTime;
+
+        clickedElements.push({
+            tag: tag,
+            text: elementText,
+            selector: selector,
+            x: Math.round(e.pageX),
+            y: Math.round(e.pageY),
+            timeOffset: timeOffset
+        });
+
+        // Spawn visual numbered click marker on the page
+        spawnClickMarker(e.pageX, e.pageY, clickCount, tag);
+    }, true); // Capture phase ensures we always intercept before stopPropagation
+
+    function startRecordingSession(stream) {
         audioChunks = [];
         clickedElements = [];
+        clickCount = 0;
         isRecording = true;
         recordingStartTime = Date.now();
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        // Use standard webm with opus codec
+        let options = { mimeType: 'audio/webm' };
+        if (!MediaRecorder.isTypeSupported('audio/webm')) {
+            options = { mimeType: 'audio/ogg' };
+        }
+
+        try {
+            mediaRecorder = new MediaRecorder(stream, options);
+        } catch (e) {
+            mediaRecorder = new MediaRecorder(stream);
+        }
 
         mediaRecorder.addEventListener('dataavailable', event => {
-            if (event.data.size > 0) {
+            if (event.data && event.data.size > 0) {
                 audioChunks.push(event.data);
             }
         });
 
         mediaRecorder.addEventListener('stop', () => {
-            isRecording = false;
-            stream.getTracks().forEach(track => track.stop());
-            
+            cleanupRecording();
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            sendData(audioBlob);
+            sendTicketData(audioBlob);
         });
 
-        mediaRecorder.start();
-        showOverlay();
+        mediaRecorder.start(250); // Collect in chunks
+        showDock();
+        startTimer();
+        document.body.classList.add('nik-vd-recording-active');
     }
 
-    function showOverlay() {
-        overlay.classList.remove('nik-vd-hidden');
-        statusMsg.classList.add('nik-vd-hidden');
-        tooltip.classList.remove('nik-vd-hidden');
-        pulse.classList.remove('nik-vd-hidden');
-        stopBtn.classList.remove('nik-vd-hidden');
+    function cleanupRecording() {
+        isRecording = false;
+        clearInterval(timerInterval);
+        if (mediaRecorder && mediaRecorder.stream) {
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+        document.body.classList.remove('nik-vd-recording-active');
     }
 
-    function showProcessing() {
-        tooltip.classList.add('nik-vd-hidden');
-        pulse.classList.add('nik-vd-hidden');
-        stopBtn.classList.add('nik-vd-hidden');
-        statusMsg.innerText = nikVoiceDeskData.strings.processing;
-        statusMsg.classList.remove('nik-vd-hidden');
+    function startTimer() {
+        let seconds = 0;
+        if (timerDisplay) timerDisplay.innerText = '00:00';
+        timerInterval = setInterval(() => {
+            seconds++;
+            const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+            const secs = String(seconds % 60).padStart(2, '0');
+            if (timerDisplay) timerDisplay.innerText = mins + ':' + secs;
+        }, 1000);
     }
 
-    async function sendData(audioBlob) {
-        showProcessing();
+    function showDock() {
+        if (dock) dock.classList.remove('nik-vd-hidden');
+        if (micBtn) micBtn.classList.add('nik-vd-hidden');
+        if (clickCounter) {
+            clickCounter.innerText = '0 Clicks Logged';
+            clickCounter.classList.add('nik-vd-hidden');
+        }
+    }
+
+    function resetUI() {
+        if (dock) dock.classList.add('nik-vd-hidden');
+        if (micBtn) micBtn.classList.remove('nik-vd-hidden');
+        if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
+        removeAllMarkers();
+    }
+
+    function spawnClickMarker(x, y, number, tag) {
+        const marker = document.createElement('div');
+        marker.className = 'nik-vd-click-pin';
+        marker.style.left = (x - 14) + 'px';
+        marker.style.top = (y - 14) + 'px';
+        marker.innerHTML = '<span class="nik-vd-pin-num">' + number + '</span><span class="nik-vd-pin-ripple"></span>';
+        document.body.appendChild(marker);
+
+        // Fade after 3.5 seconds
+        setTimeout(() => {
+            marker.classList.add('nik-vd-pin-fade');
+            setTimeout(() => {
+                if (marker.parentNode) marker.parentNode.removeChild(marker);
+            }, 600);
+        }, 3500);
+    }
+
+    function removeAllMarkers() {
+        const markers = document.querySelectorAll('.nik-vd-click-pin');
+        markers.forEach(m => m.remove());
+    }
+
+    async function sendTicketData(audioBlob) {
+        if (dock) dock.classList.add('nik-vd-hidden');
+        if (processingIndicator) processingIndicator.classList.remove('nik-vd-hidden');
 
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.webm');
         formData.append('page_url', window.location.href);
-        const ua = navigator.userAgent;
-        let browserName = "Unknown Browser";
-        if (ua.indexOf("Firefox") > -1) browserName = "Firefox";
-        else if (ua.indexOf("Edg") > -1) browserName = "Edge";
-        else if (ua.indexOf("Chrome") > -1) browserName = "Chrome";
-        else if (ua.indexOf("Safari") > -1) browserName = "Safari";
-
-        let osName = "Unknown OS";
-        if (ua.indexOf("Win") > -1) osName = "Windows";
-        else if (ua.indexOf("Mac") > -1) osName = "MacOS";
-        else if (ua.indexOf("Linux") > -1) osName = "Linux";
-        else if (ua.indexOf("Android") > -1) osName = "Android";
-        else if (ua.indexOf("like Mac") > -1) osName = "iOS";
-
-        formData.append('environment', osName + ' | ' + browserName);
+        formData.append('environment', navigator.userAgent);
         formData.append('clicked_elements', JSON.stringify(clickedElements));
 
         try {
@@ -124,31 +238,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const result = await response.json();
 
-            if (response.ok) {
-                statusMsg.innerText = nikVoiceDeskData.strings.success + (result.ticket_number || '');
-                setTimeout(() => {
-                    overlay.classList.add('nik-vd-hidden');
-                }, 2000);
+            if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
+            if (micBtn) micBtn.classList.remove('nik-vd-hidden');
+
+            if (response.ok && result.success) {
+                // Show professional Success Modal
+                if (modalTicketId) modalTicketId.innerText = '#' + result.ticket_number;
+                if (modalDept) modalDept.innerText = result.department || 'General Support';
+                if (modalSummary && result.summary) modalSummary.innerText = result.summary;
+
+                if (successModal) {
+                    successModal.classList.remove('nik-vd-hidden');
+                }
             } else {
-                statusMsg.innerText = result.message || nikVoiceDeskData.strings.error;
-                setTimeout(() => {
-                    overlay.classList.add('nik-vd-hidden');
-                }, 4000);
+                alert(result.message || 'There was a problem submitting your voice ticket. Please try again.');
             }
         } catch (error) {
-            console.error('Error sending VoiceDesk data:', error);
-            statusMsg.innerText = nikVoiceDeskData.strings.error;
-            setTimeout(() => {
-                overlay.classList.add('nik-vd-hidden');
-            }, 3000);
+            console.error('Error sending voice ticket:', error);
+            if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
+            if (micBtn) micBtn.classList.remove('nik-vd-hidden');
+            alert('A network error occurred while submitting your ticket. Please try again.');
         }
+
+        removeAllMarkers();
     }
 
     // Helper to generate a unique CSS selector for clicked elements
     function getCssSelector(el) {
-        if (!(el instanceof Element)) return;
+        if (!(el instanceof Element)) return 'unknown';
         let path = [];
-        while (el.nodeType === Node.ELEMENT_NODE) {
+        while (el && el.nodeType === Node.ELEMENT_NODE) {
             let selector = el.nodeName.toLowerCase();
             if (el.id) {
                 selector += '#' + el.id;
@@ -157,14 +276,13 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 let sib = el, nth = 1;
                 while (sib = sib.previousElementSibling) {
-                    if (sib.nodeName.toLowerCase() == selector)
-                       nth++;
+                    if (sib.nodeName.toLowerCase() === selector) nth++;
                 }
-                if (nth != 1)
-                    selector += ":nth-of-type("+nth+")";
+                if (nth !== 1) selector += ":nth-of-type(" + nth + ")";
             }
             path.unshift(selector);
             el = el.parentNode;
+            if (path.length > 5) break; // Keep selector clean and performant
         }
         return path.join(" > ");
     }
