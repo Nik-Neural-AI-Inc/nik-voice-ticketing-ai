@@ -3,7 +3,7 @@
  * Plugin Name: Nik VoiceDesk AI
  * Plugin URI:  https://example.com/nik-voicedesk
  * Description: A zero-friction, AI-powered voice ticketing system for end-users.
- * Version:     1.0.0
+ * Version:     1.2.0
  * Author:      Nik Neural AI
  * Author URI:  https://example.com
  * Text Domain: nik-voicedesk

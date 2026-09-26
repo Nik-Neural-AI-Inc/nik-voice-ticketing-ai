@@ -1,7 +1,7 @@
 <?php
 /**
  * Settings class for Nik VoiceDesk AI.
- * Unified design matching the Ticket Console, Leaderboard Banner, and Automated Licensing.
+ * Unified design matching the Ticket Console, Leaderboard Banner, Pricing Grid, Dark/Light mode, and Automated Licensing.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,12 +16,28 @@ class Nik_VoiceDesk_Settings {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 	}
 
+	/**
+	 * Reliably detect if current admin view is part of VoiceDesk.
+	 */
+	public static function is_plugin_admin_page() {
+		global $post_type;
+		$current_pt = $post_type ?: ( $_GET['post_type'] ?? '' );
+		$page = $_GET['page'] ?? '';
+		if ( 'voicedesk_ticket' === $current_pt || 'nik-voicedesk-settings' === $page ) {
+			return true;
+		}
+		if ( isset( $_GET['post'] ) && get_post_type( (int) $_GET['post'] ) === 'voicedesk_ticket' ) {
+			return true;
+		}
+		return false;
+	}
+
 	public function enqueue_admin_scripts( $hook ) {
-		if ( 'voicedesk_ticket_page_nik-voicedesk-settings' !== $hook && 'edit.php' !== $hook ) {
+		if ( ! self::is_plugin_admin_page() ) {
 			return;
 		}
-		wp_enqueue_style( 'nik-voicedesk-admin', NIK_VOICEDESK_URL . 'assets/css/admin.css', array(), NIK_VOICEDESK_VERSION );
-		wp_enqueue_script( 'nik-voicedesk-admin', NIK_VOICEDESK_URL . 'assets/js/admin.js', array(), NIK_VOICEDESK_VERSION, true );
+		wp_enqueue_style( 'nik-voicedesk-admin', NIK_VOICEDESK_URL . 'assets/css/admin.css', array(), time() );
+		wp_enqueue_script( 'nik-voicedesk-admin', NIK_VOICEDESK_URL . 'assets/js/admin.js', array(), time(), true );
 	}
 
 	public function add_settings_page() {
@@ -67,27 +83,37 @@ class Nik_VoiceDesk_Settings {
 	}
 
 	/**
-	 * Render responsive Leaderboard Ad Banner (Free Tier).
+	 * Render responsive Beauty Leaderboard Ad Banner (Free Tier).
 	 */
 	public static function render_leaderboard_banner() {
 		if ( self::is_enterprise() ) {
 			return;
 		}
 		?>
-		<div class="nik-vd-leaderboard-banner">
-			<div class="nik-vd-banner-left">
-				<div class="nik-vd-banner-badge">NIK NEURAL AI PRO</div>
-				<div class="nik-vd-banner-title">
-					<?php esc_html_e( 'Supercharge your Support with Automated Workflows & Unlimited Transcripts', 'nik-voicedesk' ); ?>
+		<div class="nik-vd-beauty-banner">
+			<div class="nik-vd-banner-inner">
+				<div class="nik-vd-banner-left">
+					<div class="nik-vd-banner-badge">
+						<span class="nik-vd-badge-dot"></span> 👑 NIK NEURAL AI PRO
+					</div>
+					<h3 class="nik-vd-banner-title">
+						<?php esc_html_e( 'Supercharge your Support with Automated Workflows & Unlimited Transcripts', 'nik-voicedesk' ); ?>
+					</h3>
+					<p class="nik-vd-banner-desc">
+						<?php esc_html_e( 'Upgrade to remove all branding, unlock Modulate.ai toxicity & emotion detection, and customize customer routing.', 'nik-voicedesk' ); ?>
+					</p>
+					<div class="nik-vd-banner-tags">
+						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Zero Branding', 'nik-voicedesk' ); ?></span>
+						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Modulate.ai Voice Intelligence', 'nik-voicedesk' ); ?></span>
+						<span class="nik-vd-tag-item">✓ <?php esc_html_e( 'Priority AI Routing', 'nik-voicedesk' ); ?></span>
+						<span class="nik-vd-tag-item nik-vd-tag-price"><?php esc_html_e( '$29.99 USD / year', 'nik-voicedesk' ); ?></span>
+					</div>
 				</div>
-				<div class="nik-vd-banner-desc">
-					<?php esc_html_e( 'Upgrade to remove all branding, unlock Modulate.ai toxicity & emotion detection, and customize customer routing.', 'nik-voicedesk' ); ?>
+				<div class="nik-vd-banner-right">
+					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="nik-vd-banner-cta-btn">
+						<span><?php esc_html_e( 'Upgrade to Enterprise →', 'nik-voicedesk' ); ?></span>
+					</a>
 				</div>
-			</div>
-			<div class="nik-vd-banner-right">
-				<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="nik-vd-banner-btn">
-					<?php esc_html_e( 'Upgrade to Enterprise →', 'nik-voicedesk' ); ?>
-				</a>
 			</div>
 		</div>
 		<?php
@@ -104,13 +130,13 @@ class Nik_VoiceDesk_Settings {
 			<?php self::render_leaderboard_banner(); ?>
 
 			<div class="nik-vd-admin-console nik-vd-settings-console">
-				<!-- Header Bar Matching Ticket Console -->
+				<!-- Header Bar with Unified Styling & Dark/Light Toggle -->
 				<div class="nik-vd-header-bar">
 					<div class="nik-vd-header-left">
 						<div class="nik-vd-ticket-id">
 							<span class="dashicons dashicons-admin-generic" style="color: #38bdf8;"></span>
 							<span class="nik-vd-id-label"><?php esc_html_e( 'VoiceDesk', 'nik-voicedesk' ); ?></span>
-							<span class="nik-vd-id-value"><?php esc_html_e( 'Settings & Configuration', 'nik-voicedesk' ); ?></span>
+							<span class="nik-vd-id-value"><?php esc_html_e( 'Settings', 'nik-voicedesk' ); ?></span>
 						</div>
 						<div class="nik-vd-customer-pill">
 							<span class="dashicons dashicons-tag"></span>
@@ -124,13 +150,19 @@ class Nik_VoiceDesk_Settings {
 					</div>
 
 					<div class="nik-vd-header-right">
-						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=voicedesk_ticket' ) ); ?>" class="button button-secondary">
-							← <?php esc_html_e( 'View All Tickets', 'nik-voicedesk' ); ?>
+						<!-- Theme Switcher Button -->
+						<button type="button" class="nik-vd-theme-btn" id="nik-vd-theme-toggle" aria-label="<?php esc_attr_e( 'Toggle Dark or Light Mode', 'nik-voicedesk' ); ?>">
+							<span class="nik-vd-theme-icon">🌙</span>
+							<span class="nik-vd-theme-text"><?php esc_html_e( 'Dark Mode', 'nik-voicedesk' ); ?></span>
+						</button>
+
+						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=voicedesk_ticket' ) ); ?>" class="button button-secondary nik-vd-back-btn">
+							← <?php esc_html_e( 'Tickets Queue', 'nik-voicedesk' ); ?>
 						</a>
 					</div>
 				</div>
 
-				<!-- Navigation Tabs -->
+				<!-- Unified Navigation Tabs -->
 				<div class="nik-vd-settings-tabs-bar">
 					<a href="?post_type=voicedesk_ticket&page=nik-voicedesk-settings&tab=general" class="nik-vd-tab-link <?php echo $active_tab === 'general' ? 'is-active' : ''; ?>">
 						<span class="dashicons dashicons-admin-settings"></span> <?php esc_html_e( 'General & Visibility', 'nik-voicedesk' ); ?>
@@ -142,7 +174,7 @@ class Nik_VoiceDesk_Settings {
 						<span class="dashicons dashicons-rest-api"></span> <?php esc_html_e( 'AI & API Providers', 'nik-voicedesk' ); ?>
 					</a>
 					<a href="?post_type=voicedesk_ticket&page=nik-voicedesk-settings&tab=license" class="nik-vd-tab-link <?php echo $active_tab === 'license' ? 'is-active' : ''; ?>">
-						<span class="dashicons dashicons-awards"></span> <?php esc_html_e( 'Enterprise License', 'nik-voicedesk' ); ?>
+						<span class="dashicons dashicons-awards"></span> <?php esc_html_e( 'Plans & License', 'nik-voicedesk' ); ?>
 					</a>
 				</div>
 
@@ -200,15 +232,15 @@ class Nik_VoiceDesk_Settings {
 						) );
 						?>
 						<p class="description">
-							<?php esc_html_e( 'The page where you placed the shortcode [nik_voicedesk_tickets]. Customers will be directed here from confirmation emails and success modals.', 'nik-voicedesk' ); ?>
+							<?php esc_html_e( 'Select the page where you added the shortcode [nik_voicedesk_tickets]. Customers are directed here from confirmation emails and success notifications.', 'nik-voicedesk' ); ?>
 						</p>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row"><label><?php esc_html_e( 'Portal Shortcode', 'nik-voicedesk' ); ?></label></th>
 					<td>
-						<code style="background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-weight: 700; color: #0f172a;">[nik_voicedesk_tickets]</code>
-						<p class="description"><?php esc_html_e( 'Insert this shortcode into any WordPress page to display the user support ticket console.', 'nik-voicedesk' ); ?></p>
+						<code class="nik-vd-code-badge">[nik_voicedesk_tickets]</code>
+						<p class="description"><?php esc_html_e( 'Place this shortcode inside any WordPress page to display the user support ticket dashboard.', 'nik-voicedesk' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -232,7 +264,7 @@ class Nik_VoiceDesk_Settings {
 					<th scope="row"><label for="nik_voicedesk_visibility_user_status"><?php esc_html_e( 'Target Audience', 'nik-voicedesk' ); ?></label></th>
 					<td>
 						<select id="nik_voicedesk_visibility_user_status" name="nik_voicedesk_visibility_user_status" class="nik-vd-input-select">
-							<option value="all" <?php selected( $user_status, 'all' ); ?>><?php esc_html_e( 'All Users (Guests & Members)', 'nik-voicedesk' ); ?></option>
+							<option value="all" <?php selected( $user_status, 'all' ); ?>><?php esc_html_e( 'All Users (Guests & Logged In)', 'nik-voicedesk' ); ?></option>
 							<option value="logged_in" <?php selected( $user_status, 'logged_in' ); ?>><?php esc_html_e( 'Logged In Members Only', 'nik-voicedesk' ); ?></option>
 							<option value="not_logged_in" <?php selected( $user_status, 'not_logged_in' ); ?>><?php esc_html_e( 'Guests (Not Logged In) Only', 'nik-voicedesk' ); ?></option>
 							<option value="specific" <?php selected( $user_status, 'specific' ); ?>><?php esc_html_e( 'Specific Users by ID', 'nik-voicedesk' ); ?></option>
@@ -242,15 +274,15 @@ class Nik_VoiceDesk_Settings {
 				<tr>
 					<th scope="row"><label for="nik_voicedesk_visibility_specific_users"><?php esc_html_e( 'Specific User IDs', 'nik-voicedesk' ); ?></label></th>
 					<td>
-						<input type="text" id="nik_voicedesk_visibility_specific_users" name="nik_voicedesk_visibility_specific_users" value="<?php echo esc_attr( $specific_users ); ?>" class="regular-text nik-vd-input-text" />
-						<p class="description"><?php esc_html_e( 'Comma-separated user IDs (e.g. 1, 5, 12). Only applicable when "Specific Users by ID" is chosen.', 'nik-voicedesk' ); ?></p>
+						<input type="text" id="nik_voicedesk_visibility_specific_users" name="nik_voicedesk_visibility_specific_users" value="<?php echo esc_attr( $specific_users ); ?>" class="regular-text nik-vd-input-text" placeholder="1, 5, 12" />
+						<p class="description"><?php esc_html_e( 'Comma-separated user IDs (e.g. 1, 5, 12). Only works when "Specific Users by ID" is chosen.', 'nik-voicedesk' ); ?></p>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="nik_voicedesk_departments"><?php esc_html_e( 'Department Categories', 'nik-voicedesk' ); ?></label></th>
 					<td>
 						<input type="text" id="nik_voicedesk_departments" name="nik_voicedesk_departments" value="<?php echo esc_attr( $departments ); ?>" class="regular-text nik-vd-input-text" />
-						<p class="description"><?php esc_html_e( 'Comma-separated list of departments for AI routing and user classification.', 'nik-voicedesk' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Comma-separated list of departments for automated AI routing and triage.', 'nik-voicedesk' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -270,15 +302,19 @@ class Nik_VoiceDesk_Settings {
 				<tr>
 					<th scope="row"><label for="nik_voicedesk_btn_color"><?php esc_html_e( 'Button Background Color', 'nik-voicedesk' ); ?></label></th>
 					<td>
-						<input type="color" id="nik_voicedesk_btn_color" name="nik_voicedesk_btn_color" value="<?php echo esc_attr( $btn_color ); ?>" />
-						<span style="margin-left: 8px; font-family: monospace;"><?php echo esc_html( $btn_color ); ?></span>
+						<div style="display: flex; align-items: center; gap: 10px;">
+							<input type="color" id="nik_voicedesk_btn_color" name="nik_voicedesk_btn_color" value="<?php echo esc_attr( $btn_color ); ?>" />
+							<span class="nik-vd-color-code"><?php echo esc_html( $btn_color ); ?></span>
+						</div>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="nik_voicedesk_icon_color"><?php esc_html_e( 'Button Icon Color', 'nik-voicedesk' ); ?></label></th>
 					<td>
-						<input type="color" id="nik_voicedesk_icon_color" name="nik_voicedesk_icon_color" value="<?php echo esc_attr( $icon_color ); ?>" />
-						<span style="margin-left: 8px; font-family: monospace;"><?php echo esc_html( $icon_color ); ?></span>
+						<div style="display: flex; align-items: center; gap: 10px;">
+							<input type="color" id="nik_voicedesk_icon_color" name="nik_voicedesk_icon_color" value="<?php echo esc_attr( $icon_color ); ?>" />
+							<span class="nik-vd-color-code"><?php echo esc_html( $icon_color ); ?></span>
+						</div>
 					</td>
 				</tr>
 				<tr>
@@ -290,8 +326,8 @@ class Nik_VoiceDesk_Settings {
 				<tr>
 					<th scope="row"><label for="nik_voicedesk_custom_icon"><?php esc_html_e( 'Custom SVG Icon', 'nik-voicedesk' ); ?></label></th>
 					<td>
-						<textarea id="nik_voicedesk_custom_icon" name="nik_voicedesk_custom_icon" rows="4" class="large-text code" style="border-radius: 6px;"><?php echo esc_textarea( $custom_icon ); ?></textarea>
-						<p class="description"><?php esc_html_e( 'Paste raw SVG code here to override the default microphone icon.', 'nik-voicedesk' ); ?></p>
+						<textarea id="nik_voicedesk_custom_icon" name="nik_voicedesk_custom_icon" rows="4" class="large-text code nik-vd-textarea"><?php echo esc_textarea( $custom_icon ); ?></textarea>
+						<p class="description"><?php esc_html_e( 'Paste raw SVG markup here to override the default microphone icon.', 'nik-voicedesk' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -321,7 +357,7 @@ class Nik_VoiceDesk_Settings {
 					<th scope="row"><label for="nik_voicedesk_llm_model"><?php esc_html_e( 'LLM Analysis & Triage Engine', 'nik-voicedesk' ); ?></label></th>
 					<td>
 						<select id="nik_voicedesk_llm_model" name="nik_voicedesk_llm_model" class="nik-vd-input-select">
-							<option value="openai_gpt" <?php selected( $llm_model, 'openai_gpt' ); ?>><?php esc_html_e( 'OpenAI GPT-4o-mini (Summarization & Categorization)', 'nik-voicedesk' ); ?></option>
+							<option value="openai_gpt" <?php selected( $llm_model, 'openai_gpt' ); ?>><?php esc_html_e( 'OpenAI GPT-4o-mini (Summary & Categorization)', 'nik-voicedesk' ); ?></option>
 							<option value="modulate_ai" <?php selected( $llm_model, 'modulate_ai' ); ?>><?php esc_html_e( 'Modulate.ai (Velma-2 Batch Analytics)', 'nik-voicedesk' ); ?></option>
 						</select>
 					</td>
@@ -330,7 +366,7 @@ class Nik_VoiceDesk_Settings {
 					<th scope="row"><label for="nik_voicedesk_openai_key"><?php esc_html_e( 'OpenAI API Key', 'nik-voicedesk' ); ?></label></th>
 					<td>
 						<input type="password" id="nik_voicedesk_openai_key" name="nik_voicedesk_openai_key" value="<?php echo esc_attr( $openai_key ); ?>" class="regular-text nik-vd-input-text" autocomplete="off" />
-						<p class="description"><?php esc_html_e( 'Used for Whisper transcription and GPT-4o-mini summarization.', 'nik-voicedesk' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Used for Whisper audio transcription and GPT-4o-mini summarization.', 'nik-voicedesk' ); ?></p>
 					</td>
 				</tr>
 				<tr>
@@ -351,40 +387,112 @@ class Nik_VoiceDesk_Settings {
 		$last_checked = (int) get_option( 'nik_voicedesk_license_last_success', 0 );
 		?>
 		<div class="nik-vd-settings-section">
-			<h3><span class="dashicons dashicons-awards"></span> <?php esc_html_e( 'Enterprise License & Verification', 'nik-voicedesk' ); ?></h3>
+			<h3><span class="dashicons dashicons-awards"></span> <?php esc_html_e( 'Plans & Licensing', 'nik-voicedesk' ); ?></h3>
 			
-			<div style="background: <?php echo $is_valid ? '#f0fdf4' : '#fef2f2'; ?>; border: 1px solid <?php echo $is_valid ? '#bbf7d0' : '#fecaca'; ?>; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-				<div>
-					<div style="font-size: 15px; font-weight: 700; color: <?php echo $is_valid ? '#15803d' : '#b91c1c'; ?>; display: flex; align-items: center; gap: 6px;">
-						<?php echo $is_valid ? '✓ ' . esc_html__( 'ENTERPRISE LICENSE ACTIVE', 'nik-voicedesk' ) : '⚠️ ' . esc_html__( 'FREE TIER (NO ACTIVE LICENSE)', 'nik-voicedesk' ); ?>
+			<!-- Responsive 2-Card Pricing Grid -->
+			<div class="nik-vd-pricing-grid">
+				<!-- Free Tier Card -->
+				<div class="nik-vd-price-card <?php echo ! $is_valid ? 'is-active-plan' : ''; ?>">
+					<div class="nik-vd-price-header">
+						<span class="nik-vd-plan-pill"><?php esc_html_e( 'COMMUNITY', 'nik-voicedesk' ); ?></span>
+						<h4 class="nik-vd-price-title"><?php esc_html_e( 'Free Tier', 'nik-voicedesk' ); ?></h4>
+						<div class="nik-vd-price-amount">
+							<span class="nik-vd-currency">$</span>0
+							<span class="nik-vd-period">/ forever</span>
+						</div>
+						<p class="nik-vd-price-desc">
+							<?php esc_html_e( 'Essential voice ticketing for personal blogs and emerging websites.', 'nik-voicedesk' ); ?>
+						</p>
 					</div>
-					<div style="font-size: 13px; color: #475569; margin-top: 4px;">
-						<?php if ( $is_valid ) : ?>
-							<?php esc_html_e( 'Verified remotely. All promotional banners and branding are globally suppressed across all interfaces.', 'nik-voicedesk' ); ?>
-							<?php if ( $last_checked > 0 ) : ?>
-								<br><small style="color: #64748b;"><?php printf( esc_html__( 'Last validated: %s', 'nik-voicedesk' ), date_i18n( 'M j, Y g:i A', $last_checked ) ); ?></small>
-							<?php endif; ?>
+
+					<ul class="nik-vd-price-features">
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Vanilla JS Floating Mic Button', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Whisper & Modulate Speech-to-Text', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Unique Ticket ID & Email Delivery', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'Customer Portal Shortcode', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #16a34a;"></span> <?php esc_html_e( 'WooCommerce My Account Integration', 'nik-voicedesk' ); ?></li>
+						<li class="is-dimmed"><span class="dashicons dashicons-minus" style="color: #94a3b8;"></span> <?php esc_html_e( 'Includes "Powered by Nik Neural AI" branding', 'nik-voicedesk' ); ?></li>
+						<li class="is-dimmed"><span class="dashicons dashicons-minus" style="color: #94a3b8;"></span> <?php esc_html_e( 'No advanced Modulate voice toxicity/emotion triage', 'nik-voicedesk' ); ?></li>
+					</ul>
+
+					<div class="nik-vd-price-footer">
+						<?php if ( ! $is_valid ) : ?>
+							<span class="nik-vd-plan-badge-current">
+								✓ <?php esc_html_e( 'Current Active Plan', 'nik-voicedesk' ); ?>
+							</span>
 						<?php else : ?>
-							<?php esc_html_e( 'Running on Free Tier. Attribution bar and promotional banners are displayed. Enter your commercial license key to unlock full white-labeling.', 'nik-voicedesk' ); ?>
+							<span class="nik-vd-plan-badge-inactive">
+								<?php esc_html_e( 'Free Community', 'nik-voicedesk' ); ?>
+							</span>
 						<?php endif; ?>
 					</div>
 				</div>
-				<?php if ( ! $is_valid ) : ?>
-					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="button button-primary" style="background: #2563eb; border-color: #1d4ed8; font-weight: 600;">
-						<?php esc_html_e( 'Get an Enterprise License →', 'nik-voicedesk' ); ?>
-					</a>
-				<?php endif; ?>
+
+				<!-- Enterprise Pro Card -->
+				<div class="nik-vd-price-card nik-vd-price-card-pro <?php echo $is_valid ? 'is-active-plan' : ''; ?>">
+					<div class="nik-vd-badge-popular">
+						⭐ <?php esc_html_e( 'RECOMMENDED', 'nik-voicedesk' ); ?>
+					</div>
+
+					<div class="nik-vd-price-header">
+						<span class="nik-vd-plan-pill nik-vd-plan-pill-pro"><?php esc_html_e( 'PRO ENTERPRISE', 'nik-voicedesk' ); ?></span>
+						<h4 class="nik-vd-price-title"><?php esc_html_e( 'Enterprise Pro', 'nik-voicedesk' ); ?></h4>
+						<div class="nik-vd-price-amount">
+							<span class="nik-vd-currency">$</span>29.99
+							<span class="nik-vd-period">USD / year</span>
+						</div>
+						<p class="nik-vd-price-desc">
+							<?php esc_html_e( 'White-label voice intelligence, automated triage, and unlimited queue for businesses.', 'nik-voicedesk' ); ?>
+						</p>
+					</div>
+
+					<ul class="nik-vd-price-features">
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <strong><?php esc_html_e( '100% White-Label (All branding & banners removed globally)', 'nik-voicedesk' ); ?></strong></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <strong><?php esc_html_e( 'Modulate.ai Voice Intelligence (Toxicity, Emotion & Sentiment)', 'nik-voicedesk' ); ?></strong></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'Automated AI Department & Priority Triage', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'Unlimited Voice Ticket Processing', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'Interactive Click Tracking & Element Highlighting', 'nik-voicedesk' ); ?></li>
+						<li><span class="dashicons dashicons-yes" style="color: #38bdf8;"></span> <?php esc_html_e( 'Priority Technical Support & All Future Pro Updates', 'nik-voicedesk' ); ?></li>
+					</ul>
+
+					<div class="nik-vd-price-footer">
+						<?php if ( $is_valid ) : ?>
+							<span class="nik-vd-plan-badge-current nik-vd-pro-active">
+								✓ <?php esc_html_e( 'Enterprise Pro Active', 'nik-voicedesk' ); ?>
+							</span>
+						<?php else : ?>
+							<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="nik-vd-buy-pro-btn">
+								<?php esc_html_e( 'Upgrade to Pro ($29.99/yr) →', 'nik-voicedesk' ); ?>
+							</a>
+						<?php endif; ?>
+					</div>
+				</div>
 			</div>
 
-			<table class="form-table nik-vd-table">
-				<tr>
-					<th scope="row"><label for="nik_voicedesk_license_key"><?php esc_html_e( 'License Key', 'nik-voicedesk' ); ?></label></th>
-					<td>
-						<input type="text" id="nik_voicedesk_license_key" name="nik_voicedesk_license_key" value="<?php echo esc_attr( $license ); ?>" class="regular-text nik-vd-input-text" placeholder="NIK-VD-XXXX-XXXX-XXXX" />
-						<p class="description"><?php esc_html_e( 'Your license key is verified automatically with https://nikneural.ca/api/license-verify.php and cached for 72 hours.', 'nik-voicedesk' ); ?></p>
-					</td>
-				</tr>
-			</table>
+			<!-- License Activation Form Card -->
+			<div class="nik-vd-activation-box">
+				<h4><span class="dashicons dashicons-admin-network"></span> <?php esc_html_e( 'License Key Activation', 'nik-voicedesk' ); ?></h4>
+				<p class="description">
+					<?php esc_html_e( 'Enter your Enterprise License Key below to remotely verify and activate Pro features. Positive verification is cached for 72 hours.', 'nik-voicedesk' ); ?>
+				</p>
+
+				<div class="nik-vd-activation-row">
+					<input type="text" id="nik_voicedesk_license_key" name="nik_voicedesk_license_key" value="<?php echo esc_attr( $license ); ?>" class="regular-text nik-vd-input-text nik-vd-license-input" placeholder="NIK-VD-XXXX-XXXX-XXXX" />
+					<span class="nik-vd-status-indicator <?php echo $is_valid ? 'is-valid' : 'is-invalid'; ?>">
+						<?php if ( $is_valid ) : ?>
+							<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Valid & Verified', 'nik-voicedesk' ); ?>
+						<?php else : ?>
+							<span class="dashicons dashicons-warning"></span> <?php esc_html_e( 'Unregistered / Free', 'nik-voicedesk' ); ?>
+						<?php endif; ?>
+					</span>
+				</div>
+
+				<?php if ( $last_checked > 0 ) : ?>
+					<p style="font-size: 12px; color: #64748b; margin-top: 8px;">
+						<?php printf( esc_html__( 'Last validated with remote server: %s', 'nik-voicedesk' ), date_i18n( 'M j, Y g:i A', $last_checked ) ); ?>
+					</p>
+				<?php endif; ?>
+			</div>
 		</div>
 		<?php
 	}

@@ -694,3 +694,800 @@
     background-color: #f8fafc;
 }
 
+/* ==========================================================================
+   Beauty Banner for NIK NEURAL AI PRO (Free Tier)
+   ========================================================================== */
+.nik-vd-beauty-banner {
+    background: linear-gradient(135deg, #090d16 0%, #111827 45%, #1e1b4b 100%);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: 12px;
+    padding: 22px 28px;
+    margin: 16px 0 24px 0;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 0 20px rgba(99, 102, 241, 0.18);
+    position: relative;
+    overflow: hidden;
+}
+
+.nik-vd-beauty-banner::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -15%;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
+    pointer-events: none;
+}
+
+.nik-vd-banner-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+}
+
+.nik-vd-banner-left {
+    flex: 1;
+}
+
+.nik-vd-banner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(234, 179, 8, 0.15);
+    border: 1px solid rgba(234, 179, 8, 0.45);
+    color: #fde047;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    margin-bottom: 10px;
+}
+
+.nik-vd-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #eab308;
+    box-shadow: 0 0 8px #eab308;
+}
+
+.nik-vd-banner-title {
+    color: #ffffff !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    margin: 0 0 8px 0 !important;
+    letter-spacing: -0.2px;
+}
+
+.nik-vd-banner-desc {
+    color: #cbd5e1 !important;
+    font-size: 13.5px !important;
+    line-height: 1.5 !important;
+    margin: 0 0 14px 0 !important;
+    max-width: 800px;
+}
+
+.nik-vd-banner-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.nik-vd-tag-item {
+    font-size: 12px;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.nik-vd-tag-price {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.35);
+    font-weight: 700;
+}
+
+.nik-vd-banner-right {
+    flex-shrink: 0;
+}
+
+.nik-vd-banner-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+}
+
+.nik-vd-banner-cta-btn:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.55);
+    color: #ffffff !important;
+}
+
+/* ==========================================================================
+   Theme Switcher Button
+   ========================================================================== */
+.nik-vd-theme-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    color: #f1f5f9 !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    line-height: 1.4 !important;
+}
+
+.nik-vd-theme-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff !important;
+}
+
+.nik-vd-theme-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* ==========================================================================
+   Pricing Grid (2-Card Responsive Layout)
+   ========================================================================== */
+.nik-vd-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin: 20px 0 28px 0;
+}
+
+.nik-vd-price-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
+}
+
+.nik-vd-price-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.nik-vd-price-card-pro {
+    border: 2px solid #6366f1;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+}
+
+.nik-vd-badge-popular {
+    position: absolute;
+    top: -12px;
+    right: 24px;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    letter-spacing: 0.6px;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+}
+
+.nik-vd-price-header {
+    margin-bottom: 20px;
+}
+
+.nik-vd-plan-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #475569;
+    margin-bottom: 8px;
+}
+
+.nik-vd-plan-pill-pro {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.nik-vd-price-title {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    margin: 0 0 10px 0 !important;
+}
+
+.nik-vd-price-amount {
+    font-size: 36px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+    margin-bottom: 12px;
+}
+
+.nik-vd-currency {
+    font-size: 22px;
+    font-weight: 600;
+    vertical-align: top;
+    margin-right: 2px;
+}
+
+.nik-vd-period {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.nik-vd-price-desc {
+    font-size: 13.5px;
+    color: #64748b;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.nik-vd-price-features {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 0 24px 0 !important;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nik-vd-price-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.nik-vd-price-features li.is-dimmed {
+    color: #94a3b8;
+}
+
+.nik-vd-price-features .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.nik-vd-price-footer {
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.nik-vd-plan-badge-current {
+    display: block;
+    text-align: center;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.nik-vd-plan-badge-inactive {
+    display: block;
+    text-align: center;
+    background: #f8fafc;
+    color: #94a3b8;
+    font-size: 13px;
+    padding: 10px 16px;
+    border-radius: 6px;
+}
+
+.nik-vd-pro-active {
+    background: #ecfdf5 !important;
+    color: #059669 !important;
+    border-color: #a7f3d0 !important;
+}
+
+.nik-vd-buy-pro-btn {
+    display: block;
+    text-align: center;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 11px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    transition: all 0.2s ease;
+}
+
+.nik-vd-buy-pro-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+    color: #ffffff !important;
+}
+
+/* Activation Box below Pricing Grid */
+.nik-vd-activation-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-top: 20px;
+}
+
+.nik-vd-activation-box h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nik-vd-activation-box .description {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 14px 0;
+}
+
+.nik-vd-activation-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.nik-vd-license-input {
+    font-family: monospace !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px;
+    min-width: 320px;
+}
+
+.nik-vd-status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.nik-vd-status-indicator.is-valid {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.nik-vd-status-indicator.is-invalid {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+/* ==========================================================================
+   Dark Mode Styles
+   ========================================================================== */
+body.nik-vd-dark-mode {
+    background-color: #090d16 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-admin-console,
+body.nik-vd-dark-mode .nik-vd-settings-console {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #1e293b;
+}
+
+body.nik-vd-dark-mode .nik-vd-card,
+body.nik-vd-dark-mode .nik-vd-activation-box {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-card-header {
+    background: #1e293b !important;
+    border-bottom-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-card-header h3,
+body.nik-vd-dark-mode .nik-vd-activation-box h4,
+body.nik-vd-dark-mode .nik-vd-settings-section h3 {
+    color: #f8fafc !important;
+    border-bottom-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-settings-tabs-bar {
+    background: #090d16 !important;
+    border-bottom-color: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-tab-link {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-tab-link:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-tab-link.is-active {
+    color: #38bdf8 !important;
+    border-bottom-color: #38bdf8 !important;
+    background: #1e293b !important;
+}
+
+/* Dark Mode Table & Inputs */
+body.nik-vd-dark-mode .nik-vd-table th {
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-table td {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-input-text,
+body.nik-vd-dark-mode .nik-vd-input-select,
+body.nik-vd-dark-mode .nik-vd-multi-select,
+body.nik-vd-dark-mode .nik-vd-select,
+body.nik-vd-dark-mode .nik-vd-composer textarea {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-input-text:focus,
+body.nik-vd-dark-mode .nik-vd-input-select:focus,
+body.nik-vd-dark-mode .nik-vd-multi-select:focus,
+body.nik-vd-dark-mode .nik-vd-select:focus,
+body.nik-vd-dark-mode .nik-vd-composer textarea:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 1px #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode .description,
+body.nik-vd-dark-mode .nik-vd-help {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-form-footer {
+    border-top-color: #334155 !important;
+}
+
+/* Dark Mode Pricing Cards */
+body.nik-vd-dark-mode .nik-vd-price-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-price-card:hover {
+    border-color: #475569 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-price-card-pro {
+    background: linear-gradient(180deg, #1e293b 0%, #1e1b4b 100%) !important;
+    border-color: #6366f1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-plan-pill {
+    background: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-plan-pill-pro {
+    background: #312e81 !important;
+    color: #c7d2fe !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-price-title,
+body.nik-vd-dark-mode .nik-vd-price-amount {
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-period,
+body.nik-vd-dark-mode .nik-vd-price-desc {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-price-features {
+    border-top-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-price-features li {
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-price-features li.is-dimmed {
+    color: #64748b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-price-footer {
+    border-top-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-plan-badge-current {
+    background: #0f172a !important;
+    color: #cbd5e1 !important;
+    border-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-plan-badge-inactive {
+    background: #0f172a !important;
+    color: #64748b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-pro-active {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-status-indicator.is-valid {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-status-indicator.is-invalid {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Dark Mode Console Components */
+body.nik-vd-dark-mode .nik-vd-player-wrapper {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-transcript-box,
+body.nik-vd-dark-mode .nik-vd-summary-box,
+body.nik-vd-dark-mode .nik-vd-context-table,
+body.nik-vd-dark-mode .nik-vd-composer {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-transcript-box blockquote {
+    color: #e2e8f0 !important;
+    border-left-color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-summary-box p {
+    color: #e2e8f0 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-context-table th {
+    color: #94a3b8 !important;
+    border-bottom-color: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-context-table td {
+    color: #cbd5e1 !important;
+    border-bottom-color: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-element-item {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-element-target strong {
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-element-target code {
+    background: #0f172a !important;
+    color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-msg-box {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-msg-box.is-staff {
+    border-left-color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-msg-head {
+    border-bottom-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-msg-body {
+    color: #e2e8f0 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-console-footer-credit {
+    background: #0f172a !important;
+    border-top-color: #1e293b !important;
+    color: #64748b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-console-footer-credit a {
+    color: #38bdf8 !important;
+}
+
+/* Post list table in dark mode */
+body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table tr:hover {
+    background-color: #0f172a !important;
+}
+
+body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table td,
+body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table th {
+    border-bottom-color: #334155 !important;
+}
+
+body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table tbody tr {
+    background-color: #1e293b !important;
+}
+
+/* ==========================================================================
+   Mobile Responsive Rules
+   ========================================================================== */
+@media (max-width: 900px) {
+    .nik-vd-grid-layout {
+        flex-direction: column !important;
+    }
+
+    .nik-vd-col-main,
+    .nik-vd-col-side {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+}
+
+@media (max-width: 782px) {
+    .nik-vd-banner-inner {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .nik-vd-banner-cta-btn {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .nik-vd-pricing-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    .nik-vd-header-bar {
+        padding: 12px 16px !important;
+    }
+
+    .nik-vd-header-left,
+    .nik-vd-header-right {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+
+    .nik-vd-control-group {
+        flex: 1 1 100% !important;
+        justify-content: space-between !important;
+    }
+
+    .nik-vd-control-group select {
+        flex: 1 !important;
+        max-width: none !important;
+    }
+
+    .nik-vd-save-btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    .nik-vd-settings-tabs-bar {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none;
+    }
+
+    .nik-vd-settings-tabs-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nik-vd-tab-link {
+        white-space: nowrap !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+    }
+
+    .nik-vd-table th {
+        width: 100% !important;
+        display: block !important;
+        padding-bottom: 4px !important;
+    }
+
+    .nik-vd-table td {
+        width: 100% !important;
+        display: block !important;
+        padding-top: 4px !important;
+        padding-bottom: 16px !important;
+    }
+
+    .nik-vd-input-text,
+    .nik-vd-input-select,
+    .nik-vd-multi-select,
+    .nik-vd-license-input {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .nik-vd-activation-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .nik-vd-beauty-banner {
+        padding: 16px !important;
+    }
+
+    .nik-vd-banner-title {
+        font-size: 16px !important;
+    }
+
+    .nik-vd-ticket-id {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    .nik-vd-theme-btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+

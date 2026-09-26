@@ -71,13 +71,12 @@ class Nik_VoiceDesk_CPT {
 	}
 
 	public function enqueue_admin_assets( $hook ) {
-		global $post_type, $post;
-		if ( 'voicedesk_ticket' !== $post_type ) {
+		if ( ! Nik_VoiceDesk_Settings::is_plugin_admin_page() ) {
 			return;
 		}
 
-		wp_enqueue_style( 'nik-voicedesk-admin', NIK_VOICEDESK_URL . 'assets/css/admin.css', array(), NIK_VOICEDESK_VERSION );
-		wp_enqueue_script( 'nik-voicedesk-admin', NIK_VOICEDESK_URL . 'assets/js/admin.js', array(), NIK_VOICEDESK_VERSION, true );
+		wp_enqueue_style( 'nik-voicedesk-admin', NIK_VOICEDESK_URL . 'assets/css/admin.css', array(), time() );
+		wp_enqueue_script( 'nik-voicedesk-admin', NIK_VOICEDESK_URL . 'assets/js/admin.js', array(), time(), true );
 	}
 
 	/**
@@ -204,6 +203,12 @@ class Nik_VoiceDesk_CPT {
 				</div>
 
 				<div class="nik-vd-header-right">
+					<!-- Theme Switcher Button -->
+					<button type="button" class="nik-vd-theme-btn" id="nik-vd-theme-toggle" aria-label="<?php esc_attr_e( 'Toggle Dark or Light Mode', 'nik-voicedesk' ); ?>">
+						<span class="nik-vd-theme-icon">🌙</span>
+						<span class="nik-vd-theme-text"><?php esc_html_e( 'Dark Mode', 'nik-voicedesk' ); ?></span>
+					</button>
+
 					<div class="nik-vd-control-group">
 						<label for="nik_status"><?php esc_html_e( 'Status:', 'nik-voicedesk' ); ?></label>
 						<select name="nik_status" id="nik_status" class="nik-vd-select">
