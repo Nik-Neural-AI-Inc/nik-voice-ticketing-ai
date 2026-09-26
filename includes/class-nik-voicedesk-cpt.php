@@ -14,6 +14,7 @@ class Nik_VoiceDesk_CPT {
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 		add_filter( 'manage_voicedesk_ticket_posts_columns', array( $this, 'set_custom_columns' ) );
 		add_action( 'manage_voicedesk_ticket_posts_custom_column' , array( $this, 'custom_column_data' ), 10, 2 );
+		add_action( 'save_post', array( $this, 'save_ticket_replies' ), 10, 2 );
 	}
 
 	public function register_post_type() {
@@ -41,7 +42,7 @@ class Nik_VoiceDesk_CPT {
 			'label'                 => __( 'VoiceDesk Ticket', 'nik-voicedesk' ),
 			'description'           => __( 'VoiceDesk AI Support Tickets', 'nik-voicedesk' ),
 			'labels'                => $labels,
-			'supports'              => array( 'title', 'comments' ),
+			'supports'              => array( 'title' ),
 			'hierarchical'          => false,
 			'public'                => false,
 			'show_ui'               => true,
@@ -101,6 +102,14 @@ class Nik_VoiceDesk_CPT {
 			'nik_voicedesk_ticket_details',
 			__( 'Ticket Details & AI Analysis', 'nik-voicedesk' ),
 			array( $this, 'render_ticket_details_meta_box' ),
+			'voicedesk_ticket',
+			'normal',
+			'high'
+		);
+		add_meta_box(
+			'nik_voicedesk_ticket_replies',
+			__( 'Ticket Replies', 'nik-voicedesk' ),
+			array( $this, 'render_ticket_replies_meta_box' ),
 			'voicedesk_ticket',
 			'normal',
 			'high'
@@ -183,5 +192,53 @@ class Nik_VoiceDesk_CPT {
 			</div>
 		</div>
 		<?php
+	}
+
+	public function render_ticket_replies_meta_box( $post ) {
+		wp_nonce_field( 'nik_voicedesk_save_reply', 'nik_voicedesk_reply_nonce' );
+		$replies = get_post_meta( $post->ID, '_nik_replies', true );
+		if ( ! is_array( $replies ) ) $replies = array();
+
+		echo '<div style="margin-bottom: 20px;">';
+		if ( empty( $replies ) ) {
+			echo '<p>' . esc_html__( 'No replies yet.', 'nik-voicedesk' ) . '</p>';
+		} else {
+			foreach ( $replies as $reply ) {
+				$bg = $reply['author'] === 'Admin' ? '#f0f8ff' : '#f9f9f9';
+				echo '<div style="background: ' . esc_attr( $bg ) . '; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px;">';
+				echo '<strong>' . esc_html( $reply['author'] ) . '</strong> <em>(' . esc_html( $reply['date'] ) . ')</em>';
+				echo '<p style="margin-top: 5px;">' . nl2br( esc_html( $reply['message'] ) ) . '</p>';
+				echo '</div>';
+			}
+		}
+		echo '</div>';
+
+		echo '<h4>' . esc_html__( 'Add Reply', 'nik-voicedesk' ) . '</h4>';
+		echo '<textarea name="nik_voicedesk_new_reply" rows="4" style="width: 100%;"></textarea>';
+	}
+
+	public function save_ticket_replies( $post_id, $post ) {
+		if ( ! isset( $_POST['nik_voicedesk_reply_nonce'] ) || ! wp_verify_nonce( $_POST['nik_voicedesk_reply_nonce'], 'nik_voicedesk_save_reply' ) ) {
+			return;
+		}
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		if ( ! empty( $_POST['nik_voicedesk_new_reply'] ) ) {
+			$new_reply = sanitize_textarea_field( wp_unslash( $_POST['nik_voicedesk_new_reply'] ) );
+			$replies = get_post_meta( $post_id, '_nik_replies', true );
+			if ( ! is_array( $replies ) ) $replies = array();
+
+			$replies[] = array(
+				'author'  => 'Admin',
+				'message' => $new_reply,
+				'date'    => current_time( 'mysql' ),
+			);
+			update_post_meta( $post_id, '_nik_replies', $replies );
+		}
 	}
 }

@@ -187,15 +187,15 @@ class Nik_VoiceDesk_Frontend {
 						<strong><?php esc_html_e( 'AI Summary:', 'nik-voicedesk' ); ?></strong>
 						<?php echo wp_kses_post( wpautop( $summary ) ); ?>
 					</div>
-					<?php 
-					$comments = get_comments( array( 'post_id' => get_the_ID() ) );
-					if ( $comments ) {
+					<?php
+					$replies = get_post_meta( get_the_ID(), '_nik_replies', true );
+					if ( ! empty( $replies ) && is_array( $replies ) ) {
 						echo '<div class="nik-vd-ticket-replies" style="margin-top: 15px; background: #f5f5f5; padding: 10px; border-radius: 4px;">';
 						echo '<h4>' . esc_html__( 'Support Replies', 'nik-voicedesk' ) . '</h4>';
-						foreach ( $comments as $comment ) {
+						foreach ( $replies as $reply ) {
 							echo '<div class="nik-vd-reply" style="margin-bottom: 10px;">';
-							echo '<strong>' . esc_html( $comment->comment_author ) . ':</strong> ';
-							echo wp_kses_post( wpautop( $comment->comment_content ) );
+							echo '<strong>' . esc_html( $reply['author'] ) . '</strong> <em>(' . esc_html( $reply['date'] ) . ')</em>';
+							echo wp_kses_post( wpautop( $reply['message'] ) );
 							echo '</div>';
 						}
 						echo '</div>';

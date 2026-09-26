@@ -96,7 +96,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.webm');
         formData.append('page_url', window.location.href);
-        formData.append('environment', navigator.userAgent);
+        const ua = navigator.userAgent;
+        let browserName = "Unknown Browser";
+        if (ua.indexOf("Firefox") > -1) browserName = "Firefox";
+        else if (ua.indexOf("Edg") > -1) browserName = "Edge";
+        else if (ua.indexOf("Chrome") > -1) browserName = "Chrome";
+        else if (ua.indexOf("Safari") > -1) browserName = "Safari";
+
+        let osName = "Unknown OS";
+        if (ua.indexOf("Win") > -1) osName = "Windows";
+        else if (ua.indexOf("Mac") > -1) osName = "MacOS";
+        else if (ua.indexOf("Linux") > -1) osName = "Linux";
+        else if (ua.indexOf("Android") > -1) osName = "Android";
+        else if (ua.indexOf("like Mac") > -1) osName = "iOS";
+
+        formData.append('environment', osName + ' | ' + browserName);
         formData.append('clicked_elements', JSON.stringify(clickedElements));
 
         try {

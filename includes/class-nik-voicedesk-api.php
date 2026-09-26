@@ -40,6 +40,7 @@ class Nik_VoiceDesk_API {
 		// 1. Save Audio File Immediately
 		$upload_dir = wp_upload_dir();
 		$plugin_upload_dir = $upload_dir['basedir'] . '/nik-voicedesk';
+		wp_mkdir_p( $plugin_upload_dir );
 		$filename = 'ticket_' . time() . '_' . wp_generate_password( 6, false ) . '.webm';
 		$filepath = $plugin_upload_dir . '/' . $filename;
 		$file_url = $upload_dir['baseurl'] . '/nik-voicedesk/' . $filename;
@@ -126,6 +127,15 @@ class Nik_VoiceDesk_API {
 		update_post_meta( $post_id, '_nik_department', $department );
 		update_post_meta( $post_id, '_nik_status', 'Completed' );
 
+		// Send email to user
+		if ( $user_id ) {
+			$user_info = get_userdata( $user_id );
+			$user_email = $user_info->user_email;
+			$subject = sprintf( __( 'VoiceDesk Ticket Created: %s', 'nik-voicedesk' ), $ticket_number );
+			$message = sprintf( __( "Hello %s,\n\nYour voice ticket has been received and processed successfully.\n\nTicket Number: %s\nDepartment: %s\n\nWe will get back to you shortly.\n\nBest regards,\nThe Support Team", 'nik-voicedesk' ), $username, $ticket_number, $department );
+			wp_mail( $user_email, $subject, $message );
+		}
+
 		return rest_ensure_response( array(
 			'success' => true,
 			'message' => __( 'Ticket submitted successfully.', 'nik-voicedesk' ),
@@ -195,9 +205,43 @@ class Nik_VoiceDesk_API {
 		$api_key = get_option( 'nik_voicedesk_modulate_key', '' );
 		if ( empty( $api_key ) ) return new WP_Error( 'missing_key', 'Modulate API key missing.' );
 		
-		// Stub for Modulate ToxMod ingest API for transcription
-		// Without exact docs, we simulate a request or return a mock if it fails.
-		return "(Modulate.ai STT Placeholder - Replace with actual REST POST when docs are available)";
+		$boundary = wp_generate_password( 24, false );
+		$headers  = array(
+			'Authorization' => 'Bearer ' . $api_key,
+			'Content-Type'  => 'multipart/form-data; boundary=' . $boundary,
+		);
+
+		$payload = '--' . $boundary . "\r\n";
+		$payload .= 'Content-Disposition: form-data; name="file"; filename="' . basename( $filepath ) . '"' . "\r\n";
+		$payload .= 'Content-Type: audio/webm' . "\r\n\r\n";
+		$payload .= file_get_contents( $filepath ) . "\r\n";
+		$payload .= '--' . $boundary . "\r\n";
+		// Add language config if required
+		$config = json_encode(array('language' => 'en'));
+		$payload .= 'Content-Disposition: form-data; name="config"' . "\r\n\r\n$config\r\n";
+		$payload .= '--' . $boundary . "--\r\n";
+
+		// Use the fast multilingual batch endpoint as found in docs
+		$url = 'https://platform.modulate.ai/api/velma-2-stt-batch-multilingual-vfast?api_key=' . urlencode($api_key);
+		$response = wp_remote_post( $url, array(
+			'headers' => $headers,
+			'body'    => $payload,
+			'timeout' => 60,
+		) );
+
+		if ( is_wp_error( $response ) ) return $response;
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		
+		if ( isset( $body['utterances'] ) ) {
+			$transcript = '';
+			foreach ( $body['utterances'] as $u ) {
+				$transcript .= $u['text'] . ' ';
+			}
+			return trim( $transcript );
+		}
+		
+		// Fallback if they just return text or simple structure
+		return $body['text'] ?? wp_json_encode($body);
 	}
 
 	private function call_modulate_analysis( $transcript, $departments ) {

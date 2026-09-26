@@ -52,7 +52,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: auto;
+    pointer-events: none;
 }
 
 .nik-vd-hidden {
