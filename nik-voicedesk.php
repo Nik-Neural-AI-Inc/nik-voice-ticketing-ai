@@ -1,13 +1,17 @@
 <?php
 /**
- * Plugin Name: Nik VoiceDesk AI
- * Plugin URI:  https://example.com/nik-voicedesk
- * Description: A zero-friction, AI-powered voice ticketing system for end-users.
- * Version:     1.2.0
- * Author:      Nik Neural AI
- * Author URI:  https://example.com
- * Text Domain: nik-voicedesk
- * Domain Path: /languages
+ * Plugin Name:       Nik VoiceDesk AI
+ * Plugin URI:        https://nikneural.ca/voicedesk.php
+ * Description:       Zero-friction, AI-powered voice ticketing system for WordPress with Whisper and Modulate.ai speech-to-text.
+ * Version:           1.2.0
+ * Requires at least: 5.8
+ * Requires PHP:      7.4
+ * Author:            Nik Neural AI Inc.
+ * Author URI:        https://nikneural.ca/
+ * License:           GPLv2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       nik-voicedesk
+ * Domain Path:       /languages
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

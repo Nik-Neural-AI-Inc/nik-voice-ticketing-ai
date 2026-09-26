@@ -100,6 +100,7 @@ class Nik_VoiceDesk_Frontend {
 		}
 		
 		$is_enterprise = Nik_VoiceDesk_Settings::is_enterprise();
+		$show_attribution = '1' === (string) get_option( 'nik_voicedesk_show_attribution', '0' );
 		$custom_icon = get_option( 'nik_voicedesk_custom_icon', '' );
 		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
 		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
@@ -114,7 +115,7 @@ class Nik_VoiceDesk_Frontend {
 				<?php echo $custom_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</button>
 			
-			<?php if ( ! $is_enterprise ) : ?>
+			<?php if ( $show_attribution && ! $is_enterprise ) : ?>
 				<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
 					<?php esc_html_e( 'Powered by Nik Neural AI Inc.', 'nik-voicedesk' ); ?>
 					<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
@@ -144,7 +145,7 @@ class Nik_VoiceDesk_Frontend {
 				</button>
 			</div>
 
-			<?php if ( ! $is_enterprise ) : ?>
+			<?php if ( $show_attribution && ! $is_enterprise ) : ?>
 				<!-- Freemium Attribution Bar (Free Tier) -->
 				<div id="nik-vd-attribution-bar" class="nik-vd-attribution-bar nik-vd-hidden">
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voicedesk' ); ?> 
@@ -342,7 +343,7 @@ class Nik_VoiceDesk_Frontend {
 				</div>
 			<?php endif; ?>
 
-			<?php if ( ! Nik_VoiceDesk_Settings::is_enterprise() ) : ?>
+			<?php if ( '1' === (string) get_option( 'nik_voicedesk_show_attribution', '0' ) && ! Nik_VoiceDesk_Settings::is_enterprise() ) : ?>
 				<div class="nik-portal-footer-attribution">
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voicedesk' ); ?> 
 					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">

@@ -1582,24 +1582,222 @@ body.nik-vd-dark-mode .nik-vd-logo-light {
     display: none !important;
 }
 
-/* Post list table in dark mode */
-body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table {
+/* ==========================================================================
+   Post List Table & Admin Filters in Dark Mode (edit.php?post_type=voicedesk_ticket)
+   ========================================================================== */
+body.nik-vd-dark-mode.post-type-voicedesk_ticket,
+body.nik-vd-dark-mode #wpcontent,
+body.nik-vd-dark-mode #wpbody-content {
+    background-color: #090d16 !important;
+}
+
+/* Status Filter Links (All, Published, Trash, etc.) */
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .subsubsub {
+    color: #64748b !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .subsubsub a {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .subsubsub a.current {
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .subsubsub .count {
+    color: #64748b !important;
+}
+
+/* Search Box */
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .search-box input[type="search"],
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .search-box input[type="text"],
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #post-search-input {
     background: #1e293b !important;
-    border-color: #334155 !important;
-    color: #e2e8f0 !important;
+    border: 1px solid #334155 !important;
+    color: #f1f5f9 !important;
+    border-radius: 6px !important;
+    padding: 5px 12px !important;
 }
 
-body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table tr:hover {
-    background-color: #0f172a !important;
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .search-box input[type="search"]:focus,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #post-search-input:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 1px #38bdf8 !important;
 }
 
-body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table td,
-body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table th {
-    border-bottom-color: #334155 !important;
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .search-box input[type="submit"],
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #search-submit {
+    background: #2563eb !important;
+    border: 1px solid #1d4ed8 !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    padding: 4px 14px !important;
+    cursor: pointer !important;
+    transition: background 0.15s ease !important;
 }
 
-body.nik-vd-dark-mode .post-type-voicedesk_ticket .wp-list-table tbody tr {
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .search-box input[type="submit"]:hover,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #search-submit:hover {
+    background: #1d4ed8 !important;
+}
+
+/* Bulk Actions, Dates, and Filter Controls */
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav select,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav .actions select,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #bulk-action-selector-top,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #bulk-action-selector-bottom,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #filter-by-date {
     background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #f1f5f9 !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav .button,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav .actions .button,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #doaction,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #doaction2,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket #post-query-submit {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 4px 14px !important;
+    cursor: pointer !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav .button:hover,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav .actions .button:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+    border-color: #475569 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav .displaying-num {
+    color: #64748b !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav-pages .pagination-links a,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .tablenav-pages .tablenav-pages-navspan {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #cbd5e1 !important;
+    border-radius: 4px !important;
+}
+
+/* WP List Table Structure */
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table {
+    background: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table thead th,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tfoot th,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table thead td,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tfoot td {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-bottom: 2px solid #334155 !important;
+    font-weight: 700 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table thead th a,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tfoot th a {
+    color: #f1f5f9 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table thead th a:hover,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tfoot th a:hover {
+    color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table thead th .sorting-indicators,
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tfoot th .sorting-indicators {
+    filter: invert(1) !important;
+}
+
+/* Table Body Rows */
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tbody tr {
+    background: #0f172a !important;
+    color: #cbd5e1 !important;
+    transition: background 0.15s ease !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tbody tr:nth-child(even) {
+    background: #111b2e !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tbody tr:hover {
+    background: #1e293b !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tbody td {
+    border-top: 1px solid #1e293b !important;
+    border-bottom: 1px solid #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table .nik-admin-ticket-link {
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table .nik-admin-ticket-link:hover {
+    color: #7dd3fc !important;
+    text-decoration: underline !important;
+}
+
+/* Row Action Links (Edit | Quick Edit | Trash) */
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .row-actions {
+    color: #64748b !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .row-actions span a {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .row-actions span a:hover {
+    color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket .row-actions span.trash a {
+    color: #f87171 !important;
+}
+
+/* Checkboxes in Dark Mode Table */
+body.nik-vd-dark-mode.post-type-voicedesk_ticket input[type="checkbox"] {
+    background-color: #1e293b !important;
+    border: 1px solid #475569 !important;
+    color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode.post-type-voicedesk_ticket input[type="checkbox"]:checked:before {
+    color: #38bdf8 !important;
+}
+
+/* Settings Page - Custom SVG Icon Textarea in Dark Mode */
+body.nik-vd-dark-mode textarea,
+body.nik-vd-dark-mode textarea.code,
+body.nik-vd-dark-mode .nik-vd-textarea,
+body.nik-vd-dark-mode #nik_voicedesk_custom_icon {
+    background: #090d16 !important;
+    color: #38bdf8 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 6px !important;
+    font-family: monospace !important;
+    padding: 10px !important;
+}
+
+body.nik-vd-dark-mode textarea:focus,
+body.nik-vd-dark-mode #nik_voicedesk_custom_icon:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 1px #38bdf8 !important;
 }
 
 /* ==========================================================================

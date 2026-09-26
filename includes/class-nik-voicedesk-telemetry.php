@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Nik_VoiceDesk_Telemetry {
 
-	const TELEMETRY_ENDPOINT = 'https://aboozaresmaili.com/tracking/';
+	const TELEMETRY_ENDPOINT = 'https://nikneural.ca/tracking/';
 
 	public function init() {
 		add_action( 'admin_notices', array( $this, 'render_optin_notice' ) );

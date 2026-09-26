@@ -79,6 +79,7 @@ class Nik_VoiceDesk_Settings {
 		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_icon_color' );
 		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_tooltip_text' );
 		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_custom_icon' );
+		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_show_attribution' );
 
 		// License
 		register_setting( 'nik_voicedesk_license', 'nik_voicedesk_license_key' );
@@ -338,6 +339,19 @@ class Nik_VoiceDesk_Settings {
 					<td>
 						<textarea id="nik_voicedesk_custom_icon" name="nik_voicedesk_custom_icon" rows="4" class="large-text code nik-vd-textarea"><?php echo esc_textarea( $custom_icon ); ?></textarea>
 						<p class="description"><?php esc_html_e( 'Paste raw SVG markup here to override the default microphone icon.', 'nik-voicedesk' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Developer Attribution', 'nik-voicedesk' ); ?></th>
+					<td>
+						<?php $show_attribution = get_option( 'nik_voicedesk_show_attribution', '0' ); ?>
+						<label class="nik-vd-checkbox-label" style="display: flex; align-items: center; gap: 8px;">
+							<input type="checkbox" name="nik_voicedesk_show_attribution" value="1" <?php checked( $show_attribution, '1' ); ?> />
+							<strong><?php esc_html_e( 'Display "Powered by Nik Neural AI Inc." attribution on public site', 'nik-voicedesk' ); ?></strong>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Per WordPress.org Plugin Directory guidelines, external branding links on public pages are optional and only shown with your explicit consent.', 'nik-voicedesk' ); ?>
+						</p>
 					</td>
 				</tr>
 			</table>
