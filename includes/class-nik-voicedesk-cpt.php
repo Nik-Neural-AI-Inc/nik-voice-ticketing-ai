@@ -519,12 +519,12 @@ class Nik_VoiceDesk_CPT {
 
 		// Update Status
 		if ( isset( $_POST['nik_status'] ) ) {
-			update_post_meta( $post_id, '_nik_status', sanitize_text_field( $_POST['nik_status'] ) );
+			update_post_meta( $post_id, '_nik_status', sanitize_text_field( wp_unslash( $_POST['nik_status'] ) ) );
 		}
 
 		// Update Department
 		if ( isset( $_POST['nik_department'] ) ) {
-			$dept = sanitize_text_field( $_POST['nik_department'] );
+			$dept = sanitize_text_field( wp_unslash( $_POST['nik_department'] ) );
 			update_post_meta( $post_id, '_nik_department', $dept );
 			$ticket_num = get_post_meta( $post_id, '_nik_ticket_number', true );
 			
@@ -539,7 +539,7 @@ class Nik_VoiceDesk_CPT {
 
 		// Update Priority
 		if ( isset( $_POST['nik_priority'] ) ) {
-			update_post_meta( $post_id, '_nik_priority', sanitize_text_field( $_POST['nik_priority'] ) );
+			update_post_meta( $post_id, '_nik_priority', sanitize_text_field( wp_unslash( $_POST['nik_priority'] ) ) );
 		}
 
 		// Handle Staff Reply

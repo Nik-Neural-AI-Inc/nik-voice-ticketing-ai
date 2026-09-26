@@ -71,7 +71,7 @@ class Nik_VoiceDesk_Frontend {
 				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
 			} else {
 				global $wpdb;
-				$found_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE '%nik_voicedesk_tickets%' LIMIT 1" );
+				$found_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_content LIKE %s LIMIT 1", 'page', 'publish', '%nik_voicedesk_tickets%' ) );
 				if ( $found_id ) {
 					$portal_url = get_permalink( $found_id );
 				}
@@ -120,7 +120,7 @@ class Nik_VoiceDesk_Frontend {
 				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
 			} else {
 				global $wpdb;
-				$found_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE '%nik_voicedesk_tickets%' LIMIT 1" );
+				$found_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_content LIKE %s LIMIT 1", 'page', 'publish', '%nik_voicedesk_tickets%' ) );
 				if ( $found_id ) {
 					$portal_url = get_permalink( $found_id );
 				}
@@ -130,12 +130,47 @@ class Nik_VoiceDesk_Frontend {
 		if ( empty( $custom_icon ) ) {
 			$custom_icon = '<svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>';
 		}
+
+		$allowed_svg = array(
+			'svg'   => array(
+				'viewbox'        => true,
+				'viewBox'        => true,
+				'width'          => true,
+				'height'         => true,
+				'stroke'         => true,
+				'stroke-width'   => true,
+				'fill'           => true,
+				'stroke-linecap' => true,
+				'stroke-linejoin'=> true,
+				'class'          => true,
+				'xmlns'          => true,
+			),
+			'path'  => array(
+				'd'      => true,
+				'fill'   => true,
+				'stroke' => true,
+			),
+			'line'  => array(
+				'x1'     => true,
+				'y1'     => true,
+				'x2'     => true,
+				'y2'     => true,
+				'stroke' => true,
+			),
+			'circle'=> array(
+				'cx'     => true,
+				'cy'     => true,
+				'r'      => true,
+				'fill'   => true,
+				'stroke' => true,
+			),
+		);
 		?>
 		<div id="nik-vd-root">
 			<!-- Floating Mic Button & Compact Attribution Wrap (Always Upper / Above) -->
 			<div id="nik-vd-trigger-wrap">
 				<button id="nik-vd-mic-btn" aria-label="<?php esc_attr_e( 'Record Voice Ticket', 'nik-voicedesk' ); ?>" title="<?php esc_attr_e( 'Click to record a voice support ticket', 'nik-voicedesk' ); ?>">
-					<?php echo $custom_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo wp_kses( $custom_icon, $allowed_svg ); ?>
 				</button>
 				
 				<?php if ( $show_attribution && ! $is_enterprise ) : ?>
@@ -235,7 +270,7 @@ class Nik_VoiceDesk_Frontend {
 		
 		// If viewing a specific ticket
 		if ( isset( $_GET['ticket'] ) ) {
-			$this->render_single_ticket_view( sanitize_text_field( $_GET['ticket'] ) );
+			$this->render_single_ticket_view( sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) );
 		} else {
 			$this->render_user_tickets_list();
 		}
@@ -254,7 +289,7 @@ class Nik_VoiceDesk_Frontend {
 
 	public function wc_endpoint_content() {
 		if ( isset( $_GET['ticket'] ) ) {
-			$this->render_single_ticket_view( sanitize_text_field( $_GET['ticket'] ) );
+			$this->render_single_ticket_view( sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) );
 		} else {
 			$this->render_user_tickets_list();
 		}

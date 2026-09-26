@@ -69,28 +69,137 @@ class Nik_VoiceDesk_Settings {
 
 	public function register_settings() {
 		// General Settings
-		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_portal_page_id' );
-		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_post_types' );
-		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_user_status' );
-		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_specific_users' );
-		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_departments' );
-		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_telemetry_optin' );
+		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_portal_page_id', array(
+			'type'              => 'integer',
+			'sanitize_callback' => 'absint',
+			'default'           => 0,
+		) );
+		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_post_types', array(
+			'type'              => 'array',
+			'sanitize_callback' => array( $this, 'sanitize_array_of_strings' ),
+			'default'           => array(),
+		) );
+		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_user_status', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => 'all',
+		) );
+		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_specific_users', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		) );
+		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_departments', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => 'Sales, Technical Support, Billing, General Support',
+		) );
+		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_telemetry_optin', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => 'no',
+		) );
 
 		// API Integrations
-		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_stt_model' );
-		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_llm_model' );
-		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_openai_key' );
-		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_modulate_key' );
+		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_stt_model', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => 'openai_whisper',
+		) );
+		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_llm_model', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => 'openai_gpt',
+		) );
+		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_openai_key', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		) );
+		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_modulate_key', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		) );
 
 		// Appearance Settings
-		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_btn_color' );
-		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_icon_color' );
-		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_tooltip_text' );
-		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_custom_icon' );
-		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_show_attribution' );
+		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_btn_color', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_hex_color',
+			'default'           => '#ffd700',
+		) );
+		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_icon_color', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_hex_color',
+			'default'           => '#333333',
+		) );
+		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_tooltip_text', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => 'Speak your issue and click on problematic areas.',
+		) );
+		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_custom_icon', array(
+			'type'              => 'string',
+			'sanitize_callback' => array( $this, 'sanitize_svg_code' ),
+			'default'           => '',
+		) );
+		register_setting( 'nik_voicedesk_appearance', 'nik_voicedesk_show_attribution', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '0',
+		) );
 
 		// License
-		register_setting( 'nik_voicedesk_license', 'nik_voicedesk_license_key' );
+		register_setting( 'nik_voicedesk_license', 'nik_voicedesk_license_key', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		) );
+	}
+
+	public function sanitize_array_of_strings( $input ) {
+		if ( ! is_array( $input ) ) {
+			return array();
+		}
+		return array_map( 'sanitize_key', $input );
+	}
+
+	public function sanitize_svg_code( $input ) {
+		$allowed = array(
+			'svg'   => array(
+				'viewbox'        => true,
+				'viewBox'        => true,
+				'width'          => true,
+				'height'         => true,
+				'stroke'         => true,
+				'stroke-width'   => true,
+				'fill'           => true,
+				'stroke-linecap' => true,
+				'stroke-linejoin'=> true,
+				'class'          => true,
+				'xmlns'          => true,
+			),
+			'path'  => array(
+				'd'      => true,
+				'fill'   => true,
+				'stroke' => true,
+			),
+			'line'  => array(
+				'x1'     => true,
+				'y1'     => true,
+				'x2'     => true,
+				'y2'     => true,
+				'stroke' => true,
+			),
+			'circle'=> array(
+				'cx'     => true,
+				'cy'     => true,
+				'r'      => true,
+				'fill'   => true,
+				'stroke' => true,
+			),
+		);
+		return wp_kses( $input, $allowed );
 	}
 
 	/**

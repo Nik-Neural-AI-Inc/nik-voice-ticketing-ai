@@ -40,8 +40,10 @@ function nik_voicedesk_ensure_uploads_dir() {
 
 	$htaccess_file = $plugin_upload_dir . '/.htaccess';
 	// Prevent directory browsing, but permit browser playback of audio files
-	$htaccess_content = "Options -Indexes\n<IfModule mod_headers.c>\n    Header set Access-Control-Allow-Origin \"*\"\n</IfModule>\n";
-	file_put_contents( $htaccess_file, $htaccess_content );
+	if ( ! file_exists( $htaccess_file ) ) {
+		$htaccess_content = "Options -Indexes\n<IfModule mod_headers.c>\n    Header set Access-Control-Allow-Origin \"*\"\n</IfModule>\n";
+		file_put_contents( $htaccess_file, $htaccess_content );
+	}
 
 	$index_file = $plugin_upload_dir . '/index.php';
 	if ( ! file_exists( $index_file ) ) {

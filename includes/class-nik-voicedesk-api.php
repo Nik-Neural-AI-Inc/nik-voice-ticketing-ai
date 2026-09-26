@@ -50,8 +50,18 @@ class Nik_VoiceDesk_API {
 		$guest_email = sanitize_email( $request->get_param( 'guest_email' ) );
 		$clicked_elements_raw = $request->get_param( 'clicked_elements' );
 		$clicked_elements = json_decode( $clicked_elements_raw, true );
-		if ( ! is_array( $clicked_elements ) ) {
-			$clicked_elements = array();
+		$sanitized_clicks = array();
+		if ( is_array( $clicked_elements ) ) {
+			foreach ( $clicked_elements as $click ) {
+				$sanitized_clicks[] = array(
+					'selector'  => sanitize_text_field( $click['selector'] ?? '' ),
+					'tag'       => sanitize_text_field( $click['tag'] ?? '' ),
+					'text'      => sanitize_text_field( $click['text'] ?? '' ),
+					'x'         => intval( $click['x'] ?? 0 ),
+					'y'         => intval( $click['y'] ?? 0 ),
+					'offset_ms' => intval( $click['offset_ms'] ?? 0 ),
+				);
+			}
 		}
 
 		// 1. Clean Environment (OS + Browser only)
@@ -98,30 +108,31 @@ class Nik_VoiceDesk_API {
 
 		$ticket_number = 'VD-' . strtoupper( wp_generate_password( 8, false ) );
 
-		// 4. Create Custom Post Type
+		// 4. Create Support Ticket Post
 		$post_data = array(
-			'post_title'   => sprintf( __( 'Ticket %s', 'nik-voicedesk' ), $ticket_number ),
+			'post_title'   => sprintf( __( 'Ticket %s - Processing', 'nik-voicedesk' ), $ticket_number ),
 			'post_content' => '',
 			'post_status'  => 'publish',
 			'post_type'    => 'voicedesk_ticket',
-			'post_author'  => $user_id ?: 1,
+			'post_author'  => $user_id ?: 0,
 		);
 
 		$post_id = wp_insert_post( $post_data );
+
 		if ( is_wp_error( $post_id ) ) {
-			return new WP_Error( 'post_creation_failed', __( 'Failed to create ticket record.', 'nik-voicedesk' ), array( 'status' => 500 ) );
+			return new WP_Error( 'post_creation_failed', __( 'Could not create support ticket.', 'nik-voicedesk' ), array( 'status' => 500 ) );
 		}
 
+		// Audio streaming proxy URL
 		$stream_url = rest_url( 'nik-voicedesk/v1/audio/' . $ticket_number );
 
-		// Save Initial Metadata
 		update_post_meta( $post_id, '_nik_ticket_number', $ticket_number );
 		update_post_meta( $post_id, '_nik_audio_url', $file_url );
 		update_post_meta( $post_id, '_nik_audio_stream_url', $stream_url );
 		update_post_meta( $post_id, '_nik_audio_path', $filepath );
 		update_post_meta( $post_id, '_nik_page_url', $page_url );
 		update_post_meta( $post_id, '_nik_environment', $clean_environment );
-		update_post_meta( $post_id, '_nik_clicked_elements', $clicked_elements );
+		update_post_meta( $post_id, '_nik_clicked_elements', $sanitized_clicks );
 		update_post_meta( $post_id, '_nik_username', $username );
 		update_post_meta( $post_id, '_nik_user_email', $user_email );
 		update_post_meta( $post_id, '_nik_status', 'Processing' );
@@ -195,7 +206,7 @@ class Nik_VoiceDesk_API {
 				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
 			} else {
 				global $wpdb;
-				$found_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE '%nik_voicedesk_tickets%' LIMIT 1" );
+				$found_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_content LIKE %s LIMIT 1", 'page', 'publish', '%nik_voicedesk_tickets%' ) );
 				if ( $found_id ) {
 					$portal_url = get_permalink( $found_id );
 				}
@@ -240,7 +251,11 @@ class Nik_VoiceDesk_API {
 		$post = $posts[0];
 		$filepath = get_post_meta( $post->ID, '_nik_audio_path', true );
 
-		if ( ! file_exists( $filepath ) ) {
+		$upload_dir = wp_upload_dir();
+		$plugin_upload_dir = wp_normalize_path( $upload_dir['basedir'] . '/nik-voicedesk' );
+		$normalized_file = wp_normalize_path( (string) $filepath );
+
+		if ( empty( $filepath ) || ! file_exists( $filepath ) || strpos( $normalized_file, $plugin_upload_dir ) !== 0 ) {
 			return new WP_Error( 'file_not_found', __( 'Audio file not found on server.', 'nik-voicedesk' ), array( 'status' => 404 ) );
 		}
 

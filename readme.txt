@@ -52,6 +52,13 @@ This plugin connects to external third-party APIs to process voice audio recordi
 * Service URL: https://nikneural.ca/tracking/
 * Privacy Policy: https://nikneural.ca/
 
+4. **Nik Neural Enterprise Licensing & Stripe** (Optional - For Pro Licensees)
+* Purpose: Remote validation of optional Enterprise Pro licenses (to remove administrative ad banners and white-label the plugin) and Stripe checkout processing.
+* Data Sent: License key, requesting website domain/URL.
+* Service URL: https://nikneural.ca/tracking/ and https://buy.stripe.com/
+* Terms of Service: https://nikneural.ca/
+* Stripe Privacy Policy: https://stripe.com/privacy
+
 == Installation ==
 
 1. Upload the `nik-voicedesk` folder to the `/wp-content/plugins/` directory.
