@@ -15,10 +15,13 @@ class Nik_VoiceDesk_Frontend {
 		add_action( 'wp_head', array( $this, 'inject_custom_css' ) );
 		add_shortcode( 'nik_voicedesk_tickets', array( $this, 'render_user_panel_shortcode' ) );
 
-		// WooCommerce "My Account" Endpoint
+		// WooCommerce "My Account" Endpoint & Dashboard Integration
 		add_action( 'init', array( $this, 'wc_add_endpoint' ) );
 		add_filter( 'woocommerce_account_menu_items', array( $this, 'wc_add_menu_item' ) );
 		add_action( 'woocommerce_account_voicedesk-tickets_endpoint', array( $this, 'wc_endpoint_content' ) );
+		add_action( 'woocommerce_account_dashboard', array( $this, 'wc_account_dashboard_ticket_btn' ) );
+		add_action( 'show_user_profile', array( $this, 'render_user_profile_ticket_section' ) );
+		add_action( 'edit_user_profile', array( $this, 'render_user_profile_ticket_section' ) );
 	}
 
 	private function is_visible() {
@@ -136,6 +139,14 @@ class Nik_VoiceDesk_Frontend {
 					✕ <?php esc_html_e( 'Cancel', 'nik-voicedesk' ); ?>
 				</button>
 			</div>
+
+			<?php if ( ! $is_enterprise ) : ?>
+				<!-- Freemium Attribution Bar (Free Tier) -->
+				<div id="nik-vd-attribution-bar" class="nik-vd-attribution-bar nik-vd-hidden">
+					<?php esc_html_e( 'Voice Support Powered by', 'nik-voicedesk' ); ?> 
+					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">Nik Neural AI</a>
+				</div>
+			<?php endif; ?>
 
 			<!-- Floating Processing Spinner -->
 			<div id="nik-vd-processing" class="nik-vd-hidden">
@@ -322,6 +333,13 @@ class Nik_VoiceDesk_Frontend {
 					<p style="margin: 0; font-size: 14px;"><?php esc_html_e( 'You haven\'t recorded any voice support tickets yet. Use the microphone button in the bottom right corner of the page to speak your issue!', 'nik-voicedesk' ); ?></p>
 				</div>
 			<?php endif; ?>
+
+			<?php if ( ! Nik_VoiceDesk_Settings::is_enterprise() ) : ?>
+				<div class="nik-portal-footer-attribution">
+					<?php esc_html_e( 'Voice Support Powered by', 'nik-voicedesk' ); ?> 
+					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">Nik Neural AI</a>
+				</div>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -496,6 +514,57 @@ class Nik_VoiceDesk_Frontend {
 				</form>
 			</div>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Render prominent Voice Support Card on WooCommerce My Account Dashboard.
+	 */
+	public function wc_account_dashboard_ticket_btn() {
+		$portal_url = function_exists( 'wc_get_account_endpoint_url' ) ? wc_get_account_endpoint_url( 'voicedesk-tickets' ) : '';
+		if ( empty( $portal_url ) ) {
+			$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
+			$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
+		}
+		?>
+		<div class="nik-vd-woo-dashboard-card" style="background: #0f172a; color: #ffffff; padding: 22px 26px; border-radius: 12px; margin: 24px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+			<div>
+				<div style="font-size: 18px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
+					🎙️ <?php esc_html_e( 'Voice Support & Tickets', 'nik-voicedesk' ); ?>
+				</div>
+				<div style="font-size: 13.5px; color: #94a3b8; margin-top: 4px;">
+					<?php esc_html_e( 'Have a question about your order or need assistance? Submit or track your voice tickets.', 'nik-voicedesk' ); ?>
+				</div>
+			</div>
+			<a href="<?php echo esc_url( $portal_url ); ?>" style="background: #2563eb; color: #ffffff !important; text-decoration: none !important; padding: 10px 22px; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-block;">
+				<?php esc_html_e( 'Manage Voice Tickets →', 'nik-voicedesk' ); ?>
+			</a>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Add Voice Support link to WordPress / WooCommerce User Profile screen.
+	 */
+	public function render_user_profile_ticket_section( $user ) {
+		if ( ! current_user_can( 'manage_options' ) && get_current_user_id() !== $user->ID ) {
+			return;
+		}
+		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
+		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : ( function_exists( 'wc_get_account_endpoint_url' ) ? wc_get_account_endpoint_url( 'voicedesk-tickets' ) : home_url() );
+		?>
+		<h2><?php esc_html_e( 'VoiceDesk Support Tickets', 'nik-voicedesk' ); ?></h2>
+		<table class="form-table">
+			<tr>
+				<th><label><?php esc_html_e( 'Customer Support Portal', 'nik-voicedesk' ); ?></label></th>
+				<td>
+					<a href="<?php echo esc_url( $portal_url ); ?>" class="button button-secondary" target="_blank">
+						🎙️ <?php esc_html_e( 'View Customer Voice Tickets', 'nik-voicedesk' ); ?>
+					</a>
+					<p class="description"><?php esc_html_e( 'Direct link to the customer voice ticketing portal.', 'nik-voicedesk' ); ?></p>
+				</td>
+			</tr>
+		</table>
 		<?php
 	}
 }

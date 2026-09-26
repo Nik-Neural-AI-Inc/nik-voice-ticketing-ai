@@ -480,3 +480,217 @@
     font-size: 12px;
     font-weight: 500;
 }
+
+/* Responsive Leaderboard Ad Banner (Free Tier) */
+.nik-vd-leaderboard-banner {
+    max-width: 100%;
+    margin: 16px 0 20px 0;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.nik-vd-banner-left {
+    flex: 1;
+    min-width: 280px;
+}
+
+.nik-vd-banner-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    color: #0f172a;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.nik-vd-banner-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 2px;
+}
+
+.nik-vd-banner-desc {
+    font-size: 12.5px;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.nik-vd-banner-right {
+    white-space: nowrap;
+}
+
+.nik-vd-banner-btn {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 9px 18px !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    display: inline-block;
+    transition: background 0.2s ease, transform 0.15s ease;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.nik-vd-banner-btn:hover {
+    background: #1d4ed8 !important;
+    transform: translateY(-1px);
+}
+
+/* Settings Unified Layout */
+.nik-vd-settings-wrap {
+    max-width: 1100px;
+}
+
+.nik-vd-settings-console {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.nik-vd-settings-tabs-bar {
+    display: flex;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 0 16px;
+    overflow-x: auto;
+}
+
+.nik-vd-tab-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 18px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+}
+
+.nik-vd-tab-link:hover {
+    color: #ffffff;
+}
+
+.nik-vd-tab-link.is-active {
+    color: #38bdf8;
+    border-bottom-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.05);
+}
+
+.nik-vd-settings-body {
+    padding: 24px 28px;
+}
+
+.nik-vd-settings-section {
+    margin-bottom: 24px;
+}
+
+.nik-vd-settings-section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 1px solid #edf2f7;
+    padding-bottom: 10px;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nik-vd-table th {
+    width: 240px;
+    font-size: 13.5px;
+    color: #334155;
+    font-weight: 600;
+    padding: 16px 12px 16px 0;
+}
+
+.nik-vd-table td {
+    padding: 16px 0;
+}
+
+.nik-vd-input-select, .nik-vd-input-text {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 13.5px !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.nik-vd-input-select:focus, .nik-vd-input-text:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 1px #2563eb !important;
+}
+
+.nik-vd-multi-select {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    width: 320px;
+    font-size: 13px !important;
+}
+
+.nik-vd-form-footer {
+    border-top: 1px solid #edf2f7;
+    padding-top: 18px;
+    margin-top: 10px;
+}
+
+/* Discreet Console Footer Credit */
+.nik-vd-console-footer-credit {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+    padding: 12px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.nik-vd-console-footer-credit a {
+    color: #0284c7;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.nik-vd-console-footer-credit a:hover {
+    text-decoration: underline;
+}
+
+/* Post list table adjustments */
+.post-type-voicedesk_ticket .wp-list-table {
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.post-type-voicedesk_ticket .wp-list-table thead th {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.post-type-voicedesk_ticket .wp-list-table thead th a {
+    color: #ffffff;
+}
+
+.post-type-voicedesk_ticket .wp-list-table tr:hover {
+    background-color: #f8fafc;
+}
+

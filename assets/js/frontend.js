@@ -94,6 +94,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Deactivate links and buttons during recording so clicking them does not navigate away
+        e.preventDefault();
+        e.stopPropagation();
+
         clickCount++;
         if (clickCounter) {
             clickCounter.innerText = clickCount + (clickCount === 1 ? ' Click Logged' : ' Clicks Logged');
@@ -105,6 +109,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const tag = target.tagName ? target.tagName.toLowerCase() : 'element';
         let elementText = target.innerText || target.value || target.getAttribute('aria-label') || target.getAttribute('title') || target.getAttribute('alt') || '';
         elementText = elementText.trim().replace(/\s+/g, ' ').substring(0, 50);
+
+        if (target && target.classList) {
+            target.classList.add('nik-vd-element-highlighted');
+        }
 
         const selector = getCssSelector(target);
         const timeOffset = Date.now() - recordingStartTime;
@@ -121,6 +129,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Spawn visual numbered click marker on the page
         spawnClickMarker(e.pageX, e.pageY, clickCount, tag);
     }, true); // Capture phase ensures we always intercept before stopPropagation
+
+    // Prevent form submissions while recording
+    document.addEventListener('submit', function(e) {
+        if (isRecording && !e.target.closest('#nik-vd-root')) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
 
     function startRecordingSession(stream) {
         audioChunks = [];
@@ -182,6 +198,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function showDock() {
         if (dock) dock.classList.remove('nik-vd-hidden');
         if (micBtn) micBtn.classList.add('nik-vd-hidden');
+        const attrBar = document.getElementById('nik-vd-attribution-bar');
+        if (attrBar) attrBar.classList.remove('nik-vd-hidden');
         if (clickCounter) {
             clickCounter.innerText = '0 Clicks Logged';
             clickCounter.classList.add('nik-vd-hidden');
@@ -192,6 +210,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (dock) dock.classList.add('nik-vd-hidden');
         if (micBtn) micBtn.classList.remove('nik-vd-hidden');
         if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
+        const attrBar = document.getElementById('nik-vd-attribution-bar');
+        if (attrBar) attrBar.classList.add('nik-vd-hidden');
         removeAllMarkers();
     }
 
@@ -215,11 +235,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function removeAllMarkers() {
         const markers = document.querySelectorAll('.nik-vd-click-pin');
         markers.forEach(m => m.remove());
+        const highlighted = document.querySelectorAll('.nik-vd-element-highlighted');
+        highlighted.forEach(el => el.classList.remove('nik-vd-element-highlighted'));
     }
 
     async function sendTicketData(audioBlob) {
         if (dock) dock.classList.add('nik-vd-hidden');
         if (processingIndicator) processingIndicator.classList.remove('nik-vd-hidden');
+        const attrBar = document.getElementById('nik-vd-attribution-bar');
+        if (attrBar) attrBar.classList.add('nik-vd-hidden');
 
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.webm');

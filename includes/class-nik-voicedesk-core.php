@@ -21,6 +21,8 @@ class Nik_VoiceDesk_Core {
 	 * Includes all necessary files.
 	 */
 	private function includes() {
+		require_once NIK_VOICEDESK_DIR . 'includes/class-nik-voicedesk-license.php';
+		require_once NIK_VOICEDESK_DIR . 'includes/class-nik-voicedesk-telemetry.php';
 		require_once NIK_VOICEDESK_DIR . 'includes/class-nik-voicedesk-settings.php';
 		require_once NIK_VOICEDESK_DIR . 'includes/class-nik-voicedesk-cpt.php';
 		require_once NIK_VOICEDESK_DIR . 'includes/class-nik-voicedesk-api.php';
@@ -31,6 +33,12 @@ class Nik_VoiceDesk_Core {
 	 * Instantiates the required classes.
 	 */
 	private function instantiate() {
+		$license = new Nik_VoiceDesk_License();
+		$license->init();
+
+		$telemetry = new Nik_VoiceDesk_Telemetry();
+		$telemetry->init();
+
 		$settings = new Nik_VoiceDesk_Settings();
 		$settings->init();
 

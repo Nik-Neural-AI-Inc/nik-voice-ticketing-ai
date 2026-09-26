@@ -12,10 +12,18 @@ class Nik_VoiceDesk_CPT {
 	public function init() {
 		add_action( 'init', array( $this, 'register_post_type' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		add_action( 'all_admin_notices', array( $this, 'render_listing_leaderboard' ) );
 		add_action( 'add_meta_boxes', array( $this, 'configure_meta_boxes' ), 99 );
 		add_filter( 'manage_voicedesk_ticket_posts_columns', array( $this, 'set_custom_columns' ) );
 		add_action( 'manage_voicedesk_ticket_posts_custom_column' , array( $this, 'custom_column_data' ), 10, 2 );
 		add_action( 'save_post_voicedesk_ticket', array( $this, 'save_ticket_data' ), 10, 2 );
+	}
+
+	public function render_listing_leaderboard() {
+		global $pagenow, $post_type;
+		if ( 'edit.php' === $pagenow && 'voicedesk_ticket' === $post_type ) {
+			Nik_VoiceDesk_Settings::render_leaderboard_banner();
+		}
 	}
 
 	public function register_post_type() {
@@ -422,6 +430,12 @@ class Nik_VoiceDesk_CPT {
 					</div>
 				</div>
 			</div>
+
+			<?php if ( ! Nik_VoiceDesk_Settings::is_enterprise() ) : ?>
+				<div class="nik-vd-console-footer-credit">
+					<?php esc_html_e( 'Powered by', 'nik-voicedesk' ); ?> <a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">Nik Neural AI</a>
+				</div>
+			<?php endif; ?>
 		</div>
 		<?php
 	}

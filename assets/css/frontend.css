@@ -433,3 +433,59 @@ body.nik-vd-recording-active {
 .nik-vd-btn-secondary:hover {
     background: #e2e8f0;
 }
+
+/* Element Highlight during click tracking */
+.nik-vd-element-highlighted {
+    outline: 2px dashed #ef4444 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
+    transition: outline 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Freemium Attribution Bar */
+.nik-vd-attribution-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    color: #94a3b8;
+    font-size: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    text-align: center;
+    padding: 6px 10px;
+    z-index: 99998;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+}
+
+.nik-vd-attribution-bar a {
+    color: #38bdf8 !important;
+    text-decoration: none !important;
+    font-weight: 600;
+}
+
+.nik-vd-attribution-bar a:hover {
+    text-decoration: underline !important;
+    color: #7dd3fc !important;
+}
+
+.nik-portal-footer-attribution {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 16px;
+    border-top: 1px solid #edf2f7;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.nik-portal-footer-attribution a {
+    color: #0284c7;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.nik-portal-footer-attribution a:hover {
+    text-decoration: underline;
+}
+
