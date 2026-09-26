@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Nik_VoiceDesk_License {
 
-	const VERIFY_ENDPOINT = 'https://nikneural.ca/api/license-verify.php';
+	const VERIFY_ENDPOINT = 'https://nikneural.ca/tracking/?action=verify_license';
 	const TRANSIENT_KEY   = 'nik_voicedesk_license_status';
 	const TRANSIENT_EXP   = 259200; // 72 hours (3 days)
 	const GRACE_PERIOD    = 1209600; // 14 days
@@ -56,6 +56,7 @@ class Nik_VoiceDesk_License {
 		if ( empty( $license_key ) ) {
 			delete_transient( self::TRANSIENT_KEY );
 			update_option( 'nik_voicedesk_license_valid', 0 );
+			delete_option( 'nik_voicedesk_license_error' );
 			return false;
 		}
 
@@ -65,9 +66,14 @@ class Nik_VoiceDesk_License {
 		);
 
 		$response = wp_remote_post( self::VERIFY_ENDPOINT, array(
-			'body'    => $payload,
-			'timeout' => 15,
-			'headers' => array( 'Accept' => 'application/json' ),
+			'body'        => wp_json_encode( $payload ),
+			'timeout'     => 15,
+			'blocking'    => true,
+			'headers'     => array(
+				'Content-Type' => 'application/json; charset=utf-8',
+				'Accept'       => 'application/json',
+			),
+			'data_format' => 'body',
 		) );
 
 		if ( is_wp_error( $response ) ) {
@@ -86,10 +92,13 @@ class Nik_VoiceDesk_License {
 			set_transient( self::TRANSIENT_KEY, 'valid', self::TRANSIENT_EXP );
 			update_option( 'nik_voicedesk_license_valid', 1 );
 			update_option( 'nik_voicedesk_license_last_success', time() );
+			delete_option( 'nik_voicedesk_license_error' );
 			return true;
 		}
 
-		// Invalid license
+		// Invalid license or domain mismatch
+		$error_msg = ! empty( $body['message'] ) ? sanitize_text_field( $body['message'] ) : __( 'Invalid license key or domain mismatch.', 'nik-voicedesk' );
+		update_option( 'nik_voicedesk_license_error', $error_msg );
 		set_transient( self::TRANSIENT_KEY, 'invalid', DAY_IN_SECONDS );
 		update_option( 'nik_voicedesk_license_valid', 0 );
 		return false;

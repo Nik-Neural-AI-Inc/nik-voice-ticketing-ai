@@ -188,12 +188,29 @@ class Nik_VoiceDesk_API {
 			self::send_admin_new_ticket_email( $admin_email, $ticket_number, $username, $department, $summary, $post_id );
 		}
 
+		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
+		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : '';
+		if ( empty( $portal_url ) ) {
+			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
+				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
+			} else {
+				global $wpdb;
+				$found_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE '%nik_voicedesk_tickets%' LIMIT 1" );
+				if ( $found_id ) {
+					$portal_url = get_permalink( $found_id );
+				}
+			}
+		}
+		$ticket_url = ! empty( $portal_url ) ? add_query_arg( 'ticket', $ticket_number, $portal_url ) : '';
+
 		return rest_ensure_response( array(
 			'success'       => true,
 			'ticket_number' => $ticket_number,
 			'department'    => $department,
 			'summary'       => $summary,
 			'user_email'    => $user_email,
+			'portal_url'    => $portal_url,
+			'ticket_url'    => $ticket_url,
 			'message'       => __( 'Ticket submitted successfully!', 'nik-voicedesk' ),
 		) );
 	}

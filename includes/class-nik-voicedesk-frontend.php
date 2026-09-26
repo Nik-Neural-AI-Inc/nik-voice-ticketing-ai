@@ -66,6 +66,17 @@ class Nik_VoiceDesk_Frontend {
 
 		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
 		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : '';
+		if ( empty( $portal_url ) ) {
+			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
+				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
+			} else {
+				global $wpdb;
+				$found_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE '%nik_voicedesk_tickets%' LIMIT 1" );
+				if ( $found_id ) {
+					$portal_url = get_permalink( $found_id );
+				}
+			}
+		}
 
 		wp_localize_script( 'nik-voicedesk-frontend', 'nikVoiceDeskData', array(
 			'restUrl'      => esc_url_raw( rest_url( 'nik-voicedesk/v1/submit' ) ),
@@ -103,25 +114,37 @@ class Nik_VoiceDesk_Frontend {
 		$show_attribution = '1' === (string) get_option( 'nik_voicedesk_show_attribution', '0' );
 		$custom_icon = get_option( 'nik_voicedesk_custom_icon', '' );
 		$portal_page_id = get_option( 'nik_voicedesk_portal_page_id', 0 );
-		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
+		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : '';
+		if ( empty( $portal_url ) ) {
+			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
+				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
+			} else {
+				global $wpdb;
+				$found_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE '%nik_voicedesk_tickets%' LIMIT 1" );
+				if ( $found_id ) {
+					$portal_url = get_permalink( $found_id );
+				}
+			}
+		}
 
 		if ( empty( $custom_icon ) ) {
 			$custom_icon = '<svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>';
 		}
 		?>
 		<div id="nik-vd-root">
-			<!-- Floating Mic Button -->
-			<button id="nik-vd-mic-btn" aria-label="<?php esc_attr_e( 'Record Voice Ticket', 'nik-voicedesk' ); ?>" title="<?php esc_attr_e( 'Click to record a voice support ticket', 'nik-voicedesk' ); ?>">
-				<?php echo $custom_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			</button>
-			
-			<?php if ( $show_attribution && ! $is_enterprise ) : ?>
-				<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
-					<?php esc_html_e( 'Powered by Nik Neural AI Inc.', 'nik-voicedesk' ); ?>
-					<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
-					<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
-				</a>
-			<?php endif; ?>
+			<!-- Floating Mic Button & Compact Attribution Wrap (Always Upper / Above) -->
+			<div id="nik-vd-trigger-wrap">
+				<button id="nik-vd-mic-btn" aria-label="<?php esc_attr_e( 'Record Voice Ticket', 'nik-voicedesk' ); ?>" title="<?php esc_attr_e( 'Click to record a voice support ticket', 'nik-voicedesk' ); ?>">
+					<?php echo $custom_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</button>
+				
+				<?php if ( $show_attribution && ! $is_enterprise ) : ?>
+					<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
+						<?php esc_html_e( 'Powered by', 'nik-voicedesk' ); ?>
+						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo" width="14" height="14" />
+					</a>
+				<?php endif; ?>
+			</div>
 
 			<!-- Floating Modern Recording Dock -->
 			<div id="nik-vd-dock" class="nik-vd-hidden">
@@ -152,7 +175,6 @@ class Nik_VoiceDesk_Frontend {
 					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
 						Nik Neural AI Inc.
 						<img src="https://nikneural.ca/fav/favicon-light-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
-						<img src="https://nikneural.ca/fav/favicon-dark-32.png" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
 					</a>
 				</div>
 			<?php endif; ?>
@@ -187,11 +209,9 @@ class Nik_VoiceDesk_Frontend {
 					</p>
 
 					<div class="nik-vd-modal-actions">
-						<?php if ( is_user_logged_in() ) : ?>
-							<a href="<?php echo esc_url( $portal_url ); ?>" class="nik-vd-btn-primary">
-								<?php esc_html_e( 'View My Tickets', 'nik-voicedesk' ); ?>
-							</a>
-						<?php endif; ?>
+						<a href="<?php echo esc_url( $portal_url ); ?>" id="nik-vd-view-tickets-btn" class="nik-vd-btn-primary">
+							<?php esc_html_e( 'View My Ticket', 'nik-voicedesk' ); ?>
+						</a>
 						<button type="button" id="nik-vd-modal-close" class="nik-vd-btn-secondary">
 							<?php esc_html_e( 'Close', 'nik-voicedesk' ); ?>
 						</button>

@@ -197,6 +197,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showDock() {
         if (dock) dock.classList.remove('nik-vd-hidden');
+        const triggerWrap = document.getElementById('nik-vd-trigger-wrap');
+        if (triggerWrap) triggerWrap.classList.add('nik-vd-hidden');
         if (micBtn) micBtn.classList.add('nik-vd-hidden');
         const brandingBtn = document.getElementById('nik-vd-branding-btn');
         if (brandingBtn) brandingBtn.classList.add('nik-vd-hidden');
@@ -210,6 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function resetUI() {
         if (dock) dock.classList.add('nik-vd-hidden');
+        const triggerWrap = document.getElementById('nik-vd-trigger-wrap');
+        if (triggerWrap) triggerWrap.classList.remove('nik-vd-hidden');
         if (micBtn) micBtn.classList.remove('nik-vd-hidden');
         const brandingBtn = document.getElementById('nik-vd-branding-btn');
         if (brandingBtn) brandingBtn.classList.remove('nik-vd-hidden');
@@ -267,6 +271,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
 
             if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
+            const triggerWrap = document.getElementById('nik-vd-trigger-wrap');
+            if (triggerWrap) triggerWrap.classList.remove('nik-vd-hidden');
             if (micBtn) micBtn.classList.remove('nik-vd-hidden');
 
             if (response.ok && result.success) {
@@ -274,6 +280,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (modalTicketId) modalTicketId.innerText = '#' + result.ticket_number;
                 if (modalDept) modalDept.innerText = result.department || 'General Support';
                 if (modalSummary && result.summary) modalSummary.innerText = result.summary;
+
+                // Update View My Ticket button link to the direct ticket URL
+                const viewTicketBtn = document.getElementById('nik-vd-view-tickets-btn');
+                if (viewTicketBtn) {
+                    if (result.ticket_url) {
+                        viewTicketBtn.href = result.ticket_url;
+                    } else if (result.ticket_number) {
+                        const basePortal = nikVoiceDeskData.portalUrl || window.location.href;
+                        viewTicketBtn.href = basePortal + (basePortal.indexOf('?') !== -1 ? '&' : '?') + 'ticket=' + encodeURIComponent(result.ticket_number);
+                    }
+                }
 
                 if (successModal) {
                     successModal.classList.remove('nik-vd-hidden');

@@ -111,8 +111,8 @@ class Nik_VoiceDesk_Telemetry {
 		wp_remote_post( self::TELEMETRY_ENDPOINT, array(
 			'body'        => wp_json_encode( $data ),
 			'headers'     => array( 'Content-Type' => 'application/json; charset=utf-8' ),
-			'timeout'     => 15,
-			'blocking'    => false,
+			'timeout'     => 10,
+			'blocking'    => true,
 			'data_format' => 'body',
 		) );
 	}

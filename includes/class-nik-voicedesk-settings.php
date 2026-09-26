@@ -14,6 +14,13 @@ class Nik_VoiceDesk_Settings {
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'update_option_nik_voicedesk_telemetry_optin', array( $this, 'on_telemetry_toggle' ), 10, 2 );
+	}
+
+	public function on_telemetry_toggle( $old_value, $new_value ) {
+		if ( 'yes' === $new_value ) {
+			Nik_VoiceDesk_Telemetry::send_telemetry();
+		}
 	}
 
 	/**
@@ -67,6 +74,7 @@ class Nik_VoiceDesk_Settings {
 		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_user_status' );
 		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_visibility_specific_users' );
 		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_departments' );
+		register_setting( 'nik_voicedesk_general', 'nik_voicedesk_telemetry_optin' );
 
 		// API Integrations
 		register_setting( 'nik_voicedesk_api', 'nik_voicedesk_stt_model' );
@@ -121,7 +129,7 @@ class Nik_VoiceDesk_Settings {
 					</div>
 				</div>
 				<div class="nik-vd-banner-right">
-					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="nik-vd-banner-cta-btn">
+					<a href="https://buy.stripe.com/14AaEX4Mb1Dw6PCcWSeEo02" target="_blank" rel="noopener noreferrer" class="nik-vd-banner-cta-btn">
 						<span><?php esc_html_e( 'Upgrade to Enterprise ($29.99/yr) →', 'nik-voicedesk' ); ?></span>
 					</a>
 				</div>
@@ -294,6 +302,25 @@ class Nik_VoiceDesk_Settings {
 					<td>
 						<input type="text" id="nik_voicedesk_departments" name="nik_voicedesk_departments" value="<?php echo esc_attr( $departments ); ?>" class="regular-text nik-vd-input-text" />
 						<p class="description"><?php esc_html_e( 'Comma-separated list of departments for automated AI routing and triage.', 'nik-voicedesk' ); ?></p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="nik-vd-settings-section">
+			<h3><span class="dashicons dashicons-chart-bar"></span> <?php esc_html_e( 'Diagnostics & Usage Telemetry', 'nik-voicedesk' ); ?></h3>
+			<table class="form-table nik-vd-table">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Anonymous Telemetry', 'nik-voicedesk' ); ?></th>
+					<td>
+						<?php $telemetry_optin = get_option( 'nik_voicedesk_telemetry_optin', 'no' ); ?>
+						<label class="nik-vd-checkbox-label" style="display: flex; align-items: center; gap: 8px;">
+							<input type="checkbox" name="nik_voicedesk_telemetry_optin" value="yes" <?php checked( $telemetry_optin, 'yes' ); ?> />
+							<strong><?php esc_html_e( 'Enable Anonymous Diagnostic & Telemetry Sync', 'nik-voicedesk' ); ?></strong>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Share non-sensitive diagnostic environment data (WordPress version, PHP version, server OS, and plugin version) to https://nikneural.ca/tracking/ to assist future development and bug fixes. No customer voice recordings or sensitive personal details are ever collected. You can turn this on or off at any time.', 'nik-voicedesk' ); ?>
+						</p>
 					</td>
 				</tr>
 			</table>
@@ -486,7 +513,7 @@ class Nik_VoiceDesk_Settings {
 								✓ <?php esc_html_e( 'Enterprise Pro Active (Ad-Free)', 'nik-voicedesk' ); ?>
 							</span>
 						<?php else : ?>
-							<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="nik-vd-buy-pro-btn">
+							<a href="https://buy.stripe.com/14AaEX4Mb1Dw6PCcWSeEo02" target="_blank" rel="noopener noreferrer" class="nik-vd-buy-pro-btn">
 								<?php esc_html_e( 'Upgrade to Pro ($29.99/yr) →', 'nik-voicedesk' ); ?>
 							</a>
 						<?php endif; ?>
@@ -498,11 +525,11 @@ class Nik_VoiceDesk_Settings {
 			<div class="nik-vd-activation-box">
 				<h4><span class="dashicons dashicons-admin-network"></span> <?php esc_html_e( 'License Key Activation', 'nik-voicedesk' ); ?></h4>
 				<p class="description">
-					<?php esc_html_e( 'Enter your Enterprise License Key below to remotely verify and activate Pro features. Positive verification is cached for 72 hours.', 'nik-voicedesk' ); ?>
+					<?php esc_html_e( 'Enter your Enterprise License Key below to remotely verify and activate Pro features. Note: Each license is strictly bound to 1 domain and cannot be shared across multiple websites.', 'nik-voicedesk' ); ?>
 				</p>
 
 				<div class="nik-vd-activation-row">
-					<input type="text" id="nik_voicedesk_license_key" name="nik_voicedesk_license_key" value="<?php echo esc_attr( $license ); ?>" class="regular-text nik-vd-input-text nik-vd-license-input" placeholder="NIK-VD-XXXX-XXXX-XXXX" />
+					<input type="text" id="nik_voicedesk_license_key" name="nik_voicedesk_license_key" value="<?php echo esc_attr( $license ); ?>" class="regular-text nik-vd-input-text nik-vd-license-input" placeholder="NIK-PRO-XXXX-XXXX" />
 					<span class="nik-vd-status-indicator <?php echo $is_valid ? 'is-valid' : 'is-invalid'; ?>">
 						<?php if ( $is_valid ) : ?>
 							<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Valid & Verified', 'nik-voicedesk' ); ?>
@@ -512,11 +539,21 @@ class Nik_VoiceDesk_Settings {
 					</span>
 				</div>
 
+				<?php if ( ! $is_valid && ( $lic_err = get_option( 'nik_voicedesk_license_error' ) ) ) : ?>
+					<div style="margin-top: 12px; padding: 10px 14px; background: #fee2e2; border-left: 4px solid #ef4444; border-radius: 6px; color: #991b1b; font-size: 13px;">
+						⚠️ <strong><?php esc_html_e( 'Activation Note:', 'nik-voicedesk' ); ?></strong> <?php echo esc_html( $lic_err ); ?>
+					</div>
+				<?php endif; ?>
+
 				<?php if ( $last_checked > 0 ) : ?>
 					<p style="font-size: 12px; color: #64748b; margin-top: 8px;">
 						<?php printf( esc_html__( 'Last validated with remote server: %s', 'nik-voicedesk' ), date_i18n( 'M j, Y g:i A', $last_checked ) ); ?>
 					</p>
 				<?php endif; ?>
+
+				<p style="font-size: 12.5px; color: #475569; margin-top: 10px;">
+					<?php esc_html_e( 'Purchased via Stripe Checkout? Your Enterprise License is automatically registered and assigned to your domain.', 'nik-voicedesk' ); ?>
+				</p>
 			</div>
 		</div>
 		<?php
