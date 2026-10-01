@@ -1,6 +1,6 @@
 # Nik Voice Ticketing AI
 
-[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](https://nikneural.ca/pl/voicedesk.php)
+[![Version](https://img.shields.io/badge/version-1.2.3-blue.svg)](https://nikneural.ca/pl/voicedesk.php)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 [![PIPEDA Compliant](https://img.shields.io/badge/Compliance-PIPEDA-green.svg)](https://nikneural.ca/)
 [![Nik Neural AI Inc.](https://img.shields.io/badge/Developed%20by-Nik%20Neural%20AI%20Inc.-orange.svg)](https://nikneural.ca/)

@@ -535,6 +535,7 @@ class Nikvotia_API {
 		$payload .= 'Content-Disposition: form-data; name="model"' . "\r\n\r\nwhisper-1\r\n";
 		$payload .= '--' . $boundary . "--\r\n";
 
+		// phpcs:ignore PluginCheck.CodeAnalysis.AIProvider.DirectIntegration -- Direct integration required for Bring-Your-Own-Key (BYOK) OpenAI Whisper on WordPress < 7.0.
 		$response = wp_remote_post( 'https://api.openai.com/v1/audio/transcriptions', array(
 			'headers' => $headers,
 			'body'    => $payload,
@@ -626,6 +627,27 @@ class Nikvotia_API {
 2. 'department': Pick the single best department from this list: {$departments}. If none match, choose 'General Support'.
 Return strictly valid JSON with keys 'summary' and 'department'.";
 
+		// Forward-compatibility with WordPress 7.0+ core AI Client when available
+		if ( function_exists( 'wp_ai_client_prompt' ) ) {
+			try {
+				$prompt_builder = wp_ai_client_prompt( $transcript );
+				if ( is_object( $prompt_builder ) && method_exists( $prompt_builder, 'with_system_instruction' ) ) {
+					$prompt_builder->with_system_instruction( $system_prompt );
+				}
+				if ( is_object( $prompt_builder ) && method_exists( $prompt_builder, 'generate_text' ) ) {
+					$ai_text = $prompt_builder->generate_text();
+					if ( ! empty( $ai_text ) ) {
+						$parsed = json_decode( $ai_text, true );
+						if ( is_array( $parsed ) && ! empty( $parsed['summary'] ) ) {
+							return $parsed;
+						}
+					}
+				}
+			} catch ( Throwable $e ) {
+				// Fallback to direct integration
+			}
+		}
+
 		$body = array(
 			'model'           => 'gpt-4o-mini',
 			'messages'        => array(
@@ -635,6 +657,7 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 			'response_format' => array( 'type' => 'json_object' ),
 		);
 
+		// phpcs:ignore PluginCheck.CodeAnalysis.AIProvider.DirectIntegration -- Direct integration required for Bring-Your-Own-Key (BYOK) OpenAI GPT on WordPress < 7.0.
 		$response = wp_remote_post( 'https://api.openai.com/v1/chat/completions', array(
 			'headers' => array(
 				'Authorization' => 'Bearer ' . $api_key,

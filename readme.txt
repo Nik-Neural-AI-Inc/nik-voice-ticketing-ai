@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,6 +88,11 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 
 == Changelog ==
 
+= 1.2.3 =
+* Added forward-compatibility support for WordPress 7.0+ core AI Client (wp_ai_client_prompt()).
+* Added phpcs:ignore annotations for direct AI provider integrations on WordPress < 7.0.
+* Re-verified zero errors and warnings across all WordPress Plugin Check sniffs.
+
 = 1.2.2 =
 * Removed forbidden move_uploaded_file() function; adopted core wp_upload_bits() for WordPress.org compliance.
 * Resolved PHP 8.4 deprecation warning in formatting functions by ensuring parameter null-safety.
@@ -123,6 +128,9 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 * Initial release of Nik VoiceDesk AI.
 
 == Upgrade Notice ==
+
+= 1.2.3 =
+Recommended update: Forward-compatibility with WordPress 7.0 AI Client, PCP annotations, and full compliance.
 
 = 1.2.2 =
 Recommended update: Full compliance with WordPress.org Automated Plugin Scanning, PHP 8.4 support, and user portal shortcode alias.
