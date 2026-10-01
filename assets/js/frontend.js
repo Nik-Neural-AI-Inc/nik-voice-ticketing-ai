@@ -23,19 +23,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showNotification(title, message, isError) {
         if (typeof isError === 'undefined') isError = true;
-        const nEl = document.getElementById('nik-vd-notice');
-        const titleEl = document.getElementById('nik-vd-notice-title');
-        const msgEl = document.getElementById('nik-vd-notice-msg');
-        const iconEl = document.getElementById('nik-vd-notice-icon');
+        let nEl = document.getElementById('nik-vd-notice');
+        let titleEl = document.getElementById('nik-vd-notice-title');
+        let msgEl = document.getElementById('nik-vd-notice-msg');
+        let iconEl = document.getElementById('nik-vd-notice-icon');
 
-        if (!nEl) return;
+        if (!nEl) {
+            nEl = document.createElement('div');
+            nEl.id = 'nik-vd-notice';
+            nEl.className = 'nik-vd-notice';
+            nEl.setAttribute('role', 'alert');
+            nEl.innerHTML = '<div class="nik-vd-notice-card">' +
+                '<div class="nik-vd-notice-icon" id="nik-vd-notice-icon">' + (isError ? '⚠️' : 'ℹ️') + '</div>' +
+                '<div class="nik-vd-notice-body">' +
+                    '<strong id="nik-vd-notice-title" class="nik-vd-notice-title">' + (title || 'Notice') + '</strong>' +
+                    '<p id="nik-vd-notice-msg" class="nik-vd-notice-msg">' + (message || '') + '</p>' +
+                '</div>' +
+                '<button type="button" id="nik-vd-notice-close" class="nik-vd-notice-close" aria-label="Close">&times;</button>' +
+            '</div>';
+            document.body.appendChild(nEl);
+            const dynClose = nEl.querySelector('#nik-vd-notice-close');
+            if (dynClose) dynClose.addEventListener('click', hideNotification);
+        } else {
+            if (titleEl) titleEl.innerText = title || (isError ? 'Notice' : 'Information');
+            if (msgEl) msgEl.innerText = message || '';
+            if (iconEl) iconEl.innerText = isError ? '⚠️' : 'ℹ️';
 
-        if (titleEl) titleEl.innerText = title || (isError ? 'Notice' : 'Information');
-        if (msgEl) msgEl.innerText = message || '';
-        if (iconEl) iconEl.innerText = isError ? '⚠️' : 'ℹ️';
-
-        nEl.classList.remove('nik-vd-hidden');
-        nEl.classList.remove('nik-vd-notice-fadeout');
+            nEl.classList.remove('nik-vd-hidden');
+            nEl.classList.remove('nik-vd-notice-fadeout');
+        }
 
         if (noticeTimeout) clearTimeout(noticeTimeout);
         noticeTimeout = setTimeout(() => {
@@ -350,13 +366,14 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('clicked_elements', JSON.stringify(clickedElements));
 
         const apiData = window.nikvotiaData || {};
+        const restUrl = apiData.restUrl || (window.location.origin + '/wp-json/nikvotia/v1/submit');
         const headers = {};
         if (apiData.nonce) {
             headers['X-WP-Nonce'] = apiData.nonce;
         }
 
         try {
-            let response = await fetch(apiData.restUrl, {
+            let response = await fetch(restUrl, {
                 method: 'POST',
                 headers: headers,
                 body: formData
@@ -364,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // If 403 invalid nonce occurs (stale page cache or expired nonce), retry without header
             if (response.status === 403 && headers['X-WP-Nonce']) {
-                response = await fetch(apiData.restUrl, {
+                response = await fetch(restUrl, {
                     method: 'POST',
                     body: formData
                 });

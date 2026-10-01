@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,6 +88,14 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 
 == Changelog ==
 
+= 1.2.1 =
+* Fixed audio upload handling to explicitly allow audio/webm, audio/ogg, and audio/wav MIME types.
+* Replaced native browser alert popups with a modern, accessible in-page notification toast component.
+* Added fallback audio storage to uploads/nikvotia/ to ensure reliability on strict hosts.
+* Hardened external AI and email delivery in try/catch blocks with reduced timeouts.
+* Added automatic nonce retry to prevent 403 authorization rejections on cached pages.
+* Updated standard Semantic Versioning roll across all plugin headers and assets.
+
 = 1.2.0 =
 * Added Modulate.ai Velma-2 Speech-to-Text API support.
 * Added reply deduplication and Post-Redirect-Get pattern to prevent duplicate emails on refresh.
@@ -106,6 +114,9 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 * Initial release of Nik VoiceDesk AI.
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+Recommended update: fixes audio upload MIME types, replaces browser alert popups with in-page notices, and prevents cache-related submission errors.
 
 = 1.2.0 =
 Update to version 1.2.0 for Modulate.ai integration, Dark Mode support, and reply deduplication.
