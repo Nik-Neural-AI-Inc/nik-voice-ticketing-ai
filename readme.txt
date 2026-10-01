@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,6 +88,15 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 
 == Changelog ==
 
+= 1.2.2 =
+* Removed forbidden move_uploaded_file() function; adopted core wp_upload_bits() for WordPress.org compliance.
+* Resolved PHP 8.4 deprecation warning in formatting functions by ensuring parameter null-safety.
+* Fixed misplaced translators comment in REST API to comply with WordPress.org i18n standards.
+* Escaped WooCommerce endpoint output with wp_kses_post() in user portal.
+* Added backward-compatible shortcode alias [nik_voicedesk_tickets].
+* Replaced unverified $_GET parameters in telemetry with WordPress option update hooks.
+* Removed discouraged load_plugin_textdomain() call per WordPress 4.6+ guidelines.
+
 = 1.2.1 =
 * Fixed audio upload handling to explicitly allow audio/webm, audio/ogg, and audio/wav MIME types.
 * Replaced native browser alert popups with a modern, accessible in-page notification toast component.
@@ -115,8 +124,8 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 
 == Upgrade Notice ==
 
+= 1.2.2 =
+Recommended update: Full compliance with WordPress.org Automated Plugin Scanning, PHP 8.4 support, and user portal shortcode alias.
+
 = 1.2.1 =
 Recommended update: fixes audio upload MIME types, replaces browser alert popups with in-page notices, and prevents cache-related submission errors.
-
-= 1.2.0 =
-Update to version 1.2.0 for Modulate.ai integration, Dark Mode support, and reply deduplication.

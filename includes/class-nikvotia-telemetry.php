@@ -18,7 +18,7 @@ class Nikvotia_Telemetry {
 		// Automatically trigger telemetry sync when enabled via settings
 		add_action( 'update_option_nikvotia_telemetry_optin', array( $this, 'on_telemetry_option_updated' ), 10, 2 );
 		add_action( 'add_option_nikvotia_telemetry_optin', array( $this, 'on_telemetry_option_added' ), 10, 2 );
-		add_action( 'admin_init', array( $this, 'check_settings_saved_sync' ) );
+		add_action( 'update_option_nikvotia_departments', array( $this, 'on_settings_saved' ), 10, 2 );
 
 		// Weekly heartbeat if telemetry is opted in
 		if ( 'yes' === get_option( 'nikvotia_telemetry_optin', '' ) ) {
@@ -30,17 +30,11 @@ class Nikvotia_Telemetry {
 	}
 
 	/**
-	 * Check if plugin settings were just saved and sync telemetry if opted in.
+	 * Trigger telemetry sync when settings are saved and telemetry is opted in.
 	 */
-	public function check_settings_saved_sync() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		if ( isset( $_GET['page'], $_GET['settings-updated'] ) && 'nikvotia-settings' === $_GET['page'] && 'true' === $_GET['settings-updated'] ) {
-			if ( 'yes' === get_option( 'nikvotia_telemetry_optin', 'no' ) ) {
-				self::send_telemetry();
-			}
+	public function on_settings_saved( $old_value, $new_value ) {
+		if ( 'yes' === get_option( 'nikvotia_telemetry_optin', 'no' ) ) {
+			self::send_telemetry();
 		}
 	}
 

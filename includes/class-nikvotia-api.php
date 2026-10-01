@@ -43,17 +43,25 @@ class Nikvotia_API {
 	 * Main ticket submission handler.
 	 */
 	public function handle_submission( WP_REST_Request $request ) {
+		// Clean any previous output buffer to prevent PHP notices from polluting JSON response
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
+		ob_start();
+
 		$files = $request->get_file_params();
 		if ( empty( $files['audio'] ) ) {
 			return new WP_Error( 'no_audio', __( 'No audio recording provided.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
 		}
 
 		$audio_file = $files['audio'];
-		$page_url = sanitize_url( $request->get_param( 'page_url' ) );
-		$raw_env = $request->get_param( 'environment' );
-		$guest_email = sanitize_email( $request->get_param( 'guest_email' ) );
-		$clicked_elements_raw = $request->get_param( 'clicked_elements' );
-		$clicked_elements = json_decode( $clicked_elements_raw, true );
+		$page_url_raw = $request->get_param( 'page_url' );
+		$page_url = ! empty( $page_url_raw ) ? sanitize_url( (string) $page_url_raw ) : '';
+		$raw_env = (string) ( $request->get_param( 'environment' ) ?: '' );
+		$guest_email_raw = $request->get_param( 'guest_email' );
+		$guest_email = ! empty( $guest_email_raw ) ? sanitize_email( (string) $guest_email_raw ) : '';
+		$clicked_elements_raw = (string) ( $request->get_param( 'clicked_elements' ) ?: '' );
+		$clicked_elements = ! empty( $clicked_elements_raw ) ? json_decode( $clicked_elements_raw, true ) : array();
 		$sanitized_clicks = array();
 		if ( is_array( $clicked_elements ) ) {
 			foreach ( $clicked_elements as $click ) {
@@ -72,7 +80,7 @@ class Nikvotia_API {
 		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		$clean_environment = self::parse_user_agent( ! empty( $raw_env ) ? $raw_env : $user_agent );
 
-		// 2. Save Audio File using standard WordPress upload handler with audio MIME support
+		// 2. Save Audio File using standard WordPress upload handler
 		if ( ! function_exists( 'wp_handle_upload' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
@@ -87,6 +95,27 @@ class Nikvotia_API {
 			return $mimes;
 		};
 		add_filter( 'upload_mimes', $upload_mimes_filter, 999 );
+
+		$check_filetype_filter = function( $data, $file, $filename, $mimes ) {
+			$ext = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+			$allowed = array(
+				'webm' => 'audio/webm',
+				'ogg'  => 'audio/ogg',
+				'oga'  => 'audio/ogg',
+				'wav'  => 'audio/wav',
+				'mp3'  => 'audio/mpeg',
+				'm4a'  => 'audio/mp4',
+			);
+			if ( isset( $allowed[ $ext ] ) ) {
+				return array(
+					'ext'             => $ext,
+					'type'            => $allowed[ $ext ],
+					'proper_filename' => false,
+				);
+			}
+			return $data;
+		};
+		add_filter( 'wp_check_filetype_and_ext', $check_filetype_filter, 999, 4 );
 
 		$upload_overrides = array(
 			'test_form' => false,
@@ -103,6 +132,7 @@ class Nikvotia_API {
 
 		$movefile = wp_handle_upload( $audio_file, $upload_overrides );
 		remove_filter( 'upload_mimes', $upload_mimes_filter, 999 );
+		remove_filter( 'wp_check_filetype_and_ext', $check_filetype_filter, 999 );
 
 		$saved    = false;
 		$filepath = '';
@@ -114,27 +144,22 @@ class Nikvotia_API {
 			$saved    = true;
 		}
 
-		// Fallback: If standard wp_handle_upload failed (e.g. strict core mime type restriction or server limitation)
-		if ( ! $saved && ! empty( $audio_file['tmp_name'] ) && is_uploaded_file( $audio_file['tmp_name'] ) ) {
-			$wp_upload = wp_upload_dir();
-			$nik_dir   = $wp_upload['basedir'] . '/nikvotia';
-			if ( ! file_exists( $nik_dir ) ) {
-				wp_mkdir_p( $nik_dir );
-				file_put_contents( $nik_dir . '/index.php', '<?php // Silence is golden' );
-			}
-
-			// Validate extension: strictly allow only safe audio extensions
+		// Fallback: If standard wp_handle_upload failed, save using standard WordPress core API wp_upload_bits (zero forbidden functions)
+		if ( ! $saved && ! empty( $audio_file['tmp_name'] ) && file_exists( $audio_file['tmp_name'] ) ) {
 			$orig_ext = strtolower( pathinfo( $audio_file['name'] ?? '', PATHINFO_EXTENSION ) );
 			$allowed_exts = array( 'webm', 'ogg', 'wav', 'mp3', 'm4a' );
 			$ext = in_array( $orig_ext, $allowed_exts, true ) ? $orig_ext : 'webm';
-
 			$target_name = 'rec_' . wp_generate_password( 16, false ) . '.' . $ext;
-			$target_path = $nik_dir . '/' . $target_name;
 
-			if ( move_uploaded_file( $audio_file['tmp_name'], $target_path ) ) {
-				$filepath = $target_path;
-				$file_url = $wp_upload['baseurl'] . '/nikvotia/' . $target_name;
-				$saved    = true;
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			$audio_bits = file_get_contents( $audio_file['tmp_name'] );
+			if ( false !== $audio_bits && strlen( $audio_bits ) > 0 ) {
+				$upload_bits = wp_upload_bits( $target_name, null, $audio_bits );
+				if ( empty( $upload_bits['error'] ) && ! empty( $upload_bits['file'] ) && file_exists( $upload_bits['file'] ) ) {
+					$filepath = $upload_bits['file'];
+					$file_url = $upload_bits['url'];
+					$saved    = true;
+				}
 			}
 		}
 
@@ -289,6 +314,11 @@ class Nikvotia_API {
 			}
 		}
 		$ticket_url = ! empty( $portal_url ) ? add_query_arg( 'ticket', $ticket_number, $portal_url ) : '';
+
+		// Clean output buffer to ensure pure JSON response without PHP notices
+		if ( ob_get_length() ) {
+			ob_clean();
+		}
 
 		return rest_ensure_response( array(
 			'success'       => true,
@@ -464,13 +494,9 @@ class Nikvotia_API {
 			$ticket_number = get_post_meta( $ticket_id, '_nikvotia_ticket_number', true );
 			/* translators: 1: Ticket identifier, 2: Author display name */
 			$subject = sprintf( __( '[Ticket #%1$s] New Customer Reply from %2$s', 'nik-voice-ticketing-ai' ), $ticket_number, $author_name );
-			/* translators: 1: Author display name, 2: Ticket identifier, 3: Customer reply text, 4: Admin ticket URL */
 			$body = sprintf(
-				__( 'Customer %1$s posted a new reply on Ticket #%2$s:
-
-"%3$s"
-
-Manage ticket: %4$s', 'nik-voice-ticketing-ai' ),
+				/* translators: 1: Author display name, 2: Ticket identifier, 3: Customer reply text, 4: Admin ticket URL */
+				__( "Customer %1\$s posted a new reply on Ticket #%2\$s:\n\n\"%3\$s\"\n\nManage ticket: %4\$s", 'nik-voice-ticketing-ai' ),
 				$author_name,
 				$ticket_number,
 				$message,

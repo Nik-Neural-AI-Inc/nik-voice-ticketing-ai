@@ -14,6 +14,7 @@ class Nikvotia_Frontend {
 		add_action( 'wp_footer', array( $this, 'inject_ui' ) );
 		add_action( 'wp_head', array( $this, 'inject_custom_css' ) );
 		add_shortcode( 'nikvotia_tickets', array( $this, 'render_user_panel_shortcode' ) );
+		add_shortcode( 'nik_voicedesk_tickets', array( $this, 'render_user_panel_shortcode' ) );
 
 		// WooCommerce "My Account" Endpoint & Dashboard Integration
 		add_action( 'init', array( $this, 'wc_add_endpoint' ) );
@@ -311,7 +312,7 @@ class Nikvotia_Frontend {
 
 	public function wc_endpoint_content() {
 		if ( ! is_user_logged_in() ) {
-			echo $this->render_guest_login_prompt();
+			echo wp_kses_post( $this->render_guest_login_prompt() );
 			return;
 		}
 

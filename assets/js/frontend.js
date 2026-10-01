@@ -31,12 +31,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!nEl) {
             nEl = document.createElement('div');
             nEl.id = 'nik-vd-notice';
-            nEl.className = 'nik-vd-notice';
+            nEl.className = 'nik-vd-notice' + (isError ? '' : ' nik-vd-notice-success');
             nEl.setAttribute('role', 'alert');
             nEl.innerHTML = '<div class="nik-vd-notice-card">' +
-                '<div class="nik-vd-notice-icon" id="nik-vd-notice-icon">' + (isError ? '⚠️' : 'ℹ️') + '</div>' +
+                '<div class="nik-vd-notice-icon" id="nik-vd-notice-icon">' + (isError ? '⚠️' : '✅') + '</div>' +
                 '<div class="nik-vd-notice-body">' +
-                    '<strong id="nik-vd-notice-title" class="nik-vd-notice-title">' + (title || 'Notice') + '</strong>' +
+                    '<strong id="nik-vd-notice-title" class="nik-vd-notice-title">' + (title || (isError ? 'Notice' : 'Success')) + '</strong>' +
                     '<p id="nik-vd-notice-msg" class="nik-vd-notice-msg">' + (message || '') + '</p>' +
                 '</div>' +
                 '<button type="button" id="nik-vd-notice-close" class="nik-vd-notice-close" aria-label="Close">&times;</button>' +
@@ -45,9 +45,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const dynClose = nEl.querySelector('#nik-vd-notice-close');
             if (dynClose) dynClose.addEventListener('click', hideNotification);
         } else {
-            if (titleEl) titleEl.innerText = title || (isError ? 'Notice' : 'Information');
+            if (isError) {
+                nEl.classList.remove('nik-vd-notice-success');
+            } else {
+                nEl.classList.add('nik-vd-notice-success');
+            }
+            if (titleEl) titleEl.innerText = title || (isError ? 'Notice' : 'Success');
             if (msgEl) msgEl.innerText = message || '';
-            if (iconEl) iconEl.innerText = isError ? '⚠️' : 'ℹ️';
+            if (iconEl) iconEl.innerText = isError ? '⚠️' : '✅';
 
             nEl.classList.remove('nik-vd-hidden');
             nEl.classList.remove('nik-vd-notice-fadeout');
@@ -392,7 +397,19 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 result = JSON.parse(rawResponseText);
             } catch (jsonErr) {
-                console.warn('VoiceDesk: Response was not valid JSON:', rawResponseText);
+                // Try extracting JSON object substring if stray notice or comments were output
+                const firstBrace = rawResponseText.indexOf('{');
+                const lastBrace = rawResponseText.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace > firstBrace) {
+                    try {
+                        result = JSON.parse(rawResponseText.substring(firstBrace, lastBrace + 1));
+                    } catch (subErr) {
+                        console.warn('VoiceDesk: Fallback JSON parse failed:', subErr);
+                    }
+                }
+                if (!result) {
+                    console.warn('VoiceDesk: Response was not valid JSON:', rawResponseText);
+                }
             }
 
             if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
@@ -419,6 +436,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (successModal) {
                     successModal.classList.remove('nik-vd-hidden');
+                } else {
+                    // Always show success notification if modal is not in DOM
+                    showNotification(
+                        'Ticket Submitted Successfully!',
+                        'Your voice ticket #' + (result.ticket_number || '') + ' was submitted successfully. Department: ' + (result.department || 'General Support'),
+                        false
+                    );
                 }
             } else {
                 let errorTitle = 'Ticket Submission Failed';

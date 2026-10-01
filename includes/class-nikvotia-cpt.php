@@ -537,55 +537,55 @@ class Nikvotia_CPT {
 		}
 
 		// Handle Staff Reply
-		$admin_reply_val = $_POST['nikvotia_admin_reply'] ;
-		if ( ! empty( $admin_reply_val ) ) {
-			$reply_text = sanitize_textarea_field( wp_unslash( $admin_reply_val ) );
-			$current_user = wp_get_current_user();
-			$staff_name = $current_user->display_name ?: $current_user->user_login;
+		if ( isset( $_POST['nikvotia_admin_reply'] ) ) {
+			$reply_text = sanitize_textarea_field( wp_unslash( $_POST['nikvotia_admin_reply'] ) );
+			if ( '' !== trim( $reply_text ) ) {
+				$current_user = wp_get_current_user();
+				$staff_name = $current_user->display_name ?: $current_user->user_login;
 
-			$replies = get_post_meta( $post_id, '_nikvotia_replies', true );
-			if ( ! is_array( $replies ) ) {
-				$replies = array();
-			}
-
-			// Deduplication: prevent duplicate reply and duplicate email on browser refresh or resubmission
-			$is_duplicate = false;
-			if ( ! empty( $replies ) ) {
-				$last_reply = end( $replies );
-				if (
-					isset( $last_reply['role'], $last_reply['message'] ) &&
-					'staff' === $last_reply['role'] &&
-					trim( $last_reply['message'] ) === trim( $reply_text )
-				) {
-					$is_duplicate = true;
+				$replies = get_post_meta( $post_id, '_nikvotia_replies', true );
+				if ( ! is_array( $replies ) ) {
+					$replies = array();
 				}
-			}
 
-			if ( ! $is_duplicate && ! empty( $reply_text ) ) {
-				$replies[] = array(
-					'author'  => $staff_name,
-					'role'    => 'staff',
-					'message' => $reply_text,
-					'date'    => current_time( 'mysql' ),
-				);
-				update_post_meta( $post_id, '_nikvotia_replies', $replies );
+				// Deduplication: prevent duplicate reply and duplicate email on browser refresh or resubmission
+				$is_duplicate = false;
+				if ( ! empty( $replies ) ) {
+					$last_reply = end( $replies );
+					if (
+						isset( $last_reply['role'], $last_reply['message'] ) &&
+						'staff' === $last_reply['role'] &&
+						trim( $last_reply['message'] ) === trim( $reply_text )
+					) {
+						$is_duplicate = true;
+					}
+				}
 
-				// Send Email if checked
-				if ( ! empty( $_POST['nikvotia_email_reply'] )  ) {
-					$customer_email = get_post_meta( $post_id, '_nikvotia_user_email', true );
-					$customer_name = get_post_meta( $post_id, '_nikvotia_username', true ) ?: 'Customer';
-					$ticket_num = get_post_meta( $post_id, '_nikvotia_ticket_number', true );
+				if ( ! $is_duplicate ) {
+					$replies[] = array(
+						'author'  => $staff_name,
+						'role'    => 'staff',
+						'message' => $reply_text,
+						'date'    => current_time( 'mysql' ),
+					);
+					update_post_meta( $post_id, '_nikvotia_replies', $replies );
 
-					if ( ! empty( $customer_email ) ) {
-						$site_name = get_bloginfo( 'name' );
-						/* translators: 1: Site name, 2: Ticket number */
-						$subject = sprintf( __( '[%1$s] New Reply on Ticket #%2$s', 'nik-voice-ticketing-ai' ), $site_name, $ticket_num );
-						$portal_page_id = get_option( 'nikvotia_portal_page_id', 0 );
-						$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
+					// Send Email if checked
+					if ( ! empty( $_POST['nikvotia_email_reply'] ) ) {
+						$customer_email = get_post_meta( $post_id, '_nikvotia_user_email', true );
+						$customer_name = get_post_meta( $post_id, '_nikvotia_username', true ) ?: 'Customer';
+						$ticket_num = get_post_meta( $post_id, '_nikvotia_ticket_number', true );
 
-						$body = sprintf(
-							/* translators: 1: Customer name, 2: Ticket number, 3: Staff reply message, 4: Customer portal URL, 5: Site name */
-							__( 'Hello %1$s,
+						if ( ! empty( $customer_email ) ) {
+							$site_name = get_bloginfo( 'name' );
+							/* translators: 1: Site name, 2: Ticket number */
+							$subject = sprintf( __( '[%1$s] New Reply on Ticket #%2$s', 'nik-voice-ticketing-ai' ), $site_name, $ticket_num );
+							$portal_page_id = get_option( 'nikvotia_portal_page_id', 0 );
+							$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
+
+							$body = sprintf(
+								/* translators: 1: Customer name, 2: Ticket number, 3: Staff reply message, 4: Customer portal URL, 5: Site name */
+								__( 'Hello %1$s,
 
 A member of our support team has replied to your ticket #%2$s:
 
@@ -596,23 +596,24 @@ You can view and reply to this ticket directly in your customer portal:
 
 Best regards,
 %5$s Support Team', 'nik-voice-ticketing-ai' ),
-							$customer_name,
-							$ticket_num,
-							$reply_text,
-							$portal_url,
-							$site_name
-						);
+								$customer_name,
+								$ticket_num,
+								$reply_text,
+								$portal_url,
+								$site_name
+							);
 
-						wp_mail( $customer_email, $subject, $body );
+							wp_mail( $customer_email, $subject, $body );
+						}
 					}
 				}
+
+				// Clear POST variable to prevent re-submission in current lifecycle
+				unset( $_POST['nikvotia_admin_reply'] );
+
+				// Hook PRG (Post-Redirect-Get) to clean the redirect URL
+				add_filter( 'redirect_post_location', array( $this, 'clean_redirect_url' ), 10, 2 );
 			}
-
-			// Clear POST variable to prevent re-submission in current lifecycle
-			unset( $_POST['nikvotia_admin_reply'] );
-
-			// Hook PRG (Post-Redirect-Get) to clean the redirect URL
-			add_filter( 'redirect_post_location', array( $this, 'clean_redirect_url' ), 10, 2 );
 		}
 	}
 
