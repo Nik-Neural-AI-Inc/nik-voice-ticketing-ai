@@ -17,6 +17,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalDept = document.getElementById('nik-vd-modal-dept');
     const modalSummary = document.getElementById('nik-vd-modal-summary');
     const processingIndicator = document.getElementById('nik-vd-processing');
+    const noticeEl = document.getElementById('nik-vd-notice');
+    const noticeCloseBtn = document.getElementById('nik-vd-notice-close');
+    let noticeTimeout = null;
+
+    function showNotification(title, message, isError) {
+        if (typeof isError === 'undefined') isError = true;
+        const nEl = document.getElementById('nik-vd-notice');
+        const titleEl = document.getElementById('nik-vd-notice-title');
+        const msgEl = document.getElementById('nik-vd-notice-msg');
+        const iconEl = document.getElementById('nik-vd-notice-icon');
+
+        if (!nEl) return;
+
+        if (titleEl) titleEl.innerText = title || (isError ? 'Notice' : 'Information');
+        if (msgEl) msgEl.innerText = message || '';
+        if (iconEl) iconEl.innerText = isError ? '⚠️' : 'ℹ️';
+
+        nEl.classList.remove('nik-vd-hidden');
+        nEl.classList.remove('nik-vd-notice-fadeout');
+
+        if (noticeTimeout) clearTimeout(noticeTimeout);
+        noticeTimeout = setTimeout(() => {
+            hideNotification();
+        }, 9000);
+    }
+
+    function hideNotification() {
+        const nEl = document.getElementById('nik-vd-notice');
+        if (!nEl) return;
+        nEl.classList.add('nik-vd-notice-fadeout');
+        setTimeout(() => {
+            nEl.classList.add('nik-vd-hidden');
+            nEl.classList.remove('nik-vd-notice-fadeout');
+        }, 350);
+        if (noticeTimeout) clearTimeout(noticeTimeout);
+    }
+
+    if (noticeCloseBtn) {
+        noticeCloseBtn.addEventListener('click', hideNotification);
+    }
 
     // Initialize Customer Portal Dark/Light mode if present on page
     (function initPortalTheme() {
@@ -81,7 +121,11 @@ document.addEventListener('DOMContentLoaded', function() {
             startRecordingSession(stream);
         } catch (err) {
             console.error('Error accessing microphone:', err);
-            alert('Microphone access is required to record a voice ticket. Please grant permission in your browser.');
+            showNotification(
+                'Microphone Permission Required',
+                'Microphone access is required to record your voice ticket. Please allow microphone access in your browser settings and try again.',
+                true
+            );
         }
     });
 
@@ -305,25 +349,41 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('environment', navigator.userAgent);
         formData.append('clicked_elements', JSON.stringify(clickedElements));
 
-        const apiData = window.nikvotiaData  || {};
+        const apiData = window.nikvotiaData || {};
+        const headers = {};
+        if (apiData.nonce) {
+            headers['X-WP-Nonce'] = apiData.nonce;
+        }
 
         try {
-            const response = await fetch(apiData.restUrl, {
+            let response = await fetch(apiData.restUrl, {
                 method: 'POST',
-                headers: {
-                    'X-WP-Nonce': apiData.nonce
-                },
+                headers: headers,
                 body: formData
             });
 
-            const result = await response.json();
+            // If 403 invalid nonce occurs (stale page cache or expired nonce), retry without header
+            if (response.status === 403 && headers['X-WP-Nonce']) {
+                response = await fetch(apiData.restUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+            }
+
+            const rawResponseText = await response.text();
+            let result = null;
+            try {
+                result = JSON.parse(rawResponseText);
+            } catch (jsonErr) {
+                console.warn('VoiceDesk: Response was not valid JSON:', rawResponseText);
+            }
 
             if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
             const triggerWrap = document.getElementById('nik-vd-trigger-wrap');
             if (triggerWrap) triggerWrap.classList.remove('nik-vd-hidden');
             if (micBtn) micBtn.classList.remove('nik-vd-hidden');
 
-            if (response.ok && result.success) {
+            if (response.ok && result && result.success) {
                 // Show professional Success Modal
                 if (modalTicketId) modalTicketId.innerText = '#' + result.ticket_number;
                 if (modalDept) modalDept.innerText = result.department || 'General Support';
@@ -344,13 +404,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     successModal.classList.remove('nik-vd-hidden');
                 }
             } else {
-                alert(result.message || 'There was a problem submitting your voice ticket. Please try again.');
+                let errorTitle = 'Ticket Submission Failed';
+                let errorMsg = 'There was a problem submitting your voice ticket. Please try again.';
+
+                if (result && result.message) {
+                    errorMsg = result.message;
+                } else if (result && result.code) {
+                    errorMsg = result.code + ': ' + (result.message || 'Server error occurred.');
+                } else if (!response.ok) {
+                    errorMsg = 'Server returned HTTP error ' + response.status + ' (' + (response.statusText || 'Error') + '). Please try again.';
+                }
+
+                showNotification(errorTitle, errorMsg, true);
             }
         } catch (error) {
             console.error('Error sending voice ticket:', error);
             if (processingIndicator) processingIndicator.classList.add('nik-vd-hidden');
+            const triggerWrap = document.getElementById('nik-vd-trigger-wrap');
+            if (triggerWrap) triggerWrap.classList.remove('nik-vd-hidden');
             if (micBtn) micBtn.classList.remove('nik-vd-hidden');
-            alert('A network error occurred while submitting your ticket. Please try again.');
+
+            const netMsg = error && error.message ? error.message : 'Connection failed';
+            showNotification(
+                'Connection Error',
+                'A network error occurred while submitting your ticket (' + netMsg + '). Please check your internet connection and try again.',
+                true
+            );
         }
 
         removeAllMarkers();

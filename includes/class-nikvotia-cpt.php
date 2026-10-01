@@ -204,7 +204,7 @@ class Nikvotia_CPT {
 
 		$ticket_number = get_post_meta( $post->ID, '_nikvotia_ticket_number', true );
 		$audio_url = get_post_meta( $post->ID, '_nikvotia_audio_url', true );
-		$stream_url = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nik-voicedesk/v1/audio/' . $ticket_number );
+		$stream_url = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nikvotia/v1/audio/' . $ticket_number );
 		$transcript = get_post_meta( $post->ID, '_nikvotia_transcript', true );
 		$summary = get_post_meta( $post->ID, '_nikvotia_summary', true );
 		$department = get_post_meta( $post->ID, '_nikvotia_department', true ) ?: 'General Support';

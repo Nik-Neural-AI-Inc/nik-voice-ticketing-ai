@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Nik Voice Ticketing AI
- * Plugin URI:        https://nikneural.ca/voicedesk.php
+ * Plugin URI:        https://nikneural.ca/pl/voicedesk.php
  * Description:       Zero-friction, AI-powered voice ticketing system for WordPress with Whisper and Modulate.ai speech-to-text.
  * Version:           1.2.0
  * Requires at least: 5.8

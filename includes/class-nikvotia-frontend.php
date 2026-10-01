@@ -176,7 +176,7 @@ class Nikvotia_Frontend {
 				</button>
 				
 				<?php if ( $show_attribution ) : ?>
-					<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
+					<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer">
 						<?php esc_html_e( 'Powered by', 'nik-voice-ticketing-ai' ); ?>
 						<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo" width="14" height="14" />
 					</a>
@@ -209,7 +209,7 @@ class Nikvotia_Frontend {
 				<!-- Freemium Attribution Bar (Free Tier) -->
 				<div id="nik-vd-attribution-bar" class="nik-vd-attribution-bar nik-vd-hidden">
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voice-ticketing-ai' ); ?> 
-					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
+					<a href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer">
 						Nik Neural AI Inc.
 						<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
 					</a>
@@ -253,6 +253,18 @@ class Nikvotia_Frontend {
 							<?php esc_html_e( 'Close', 'nik-voice-ticketing-ai' ); ?>
 						</button>
 					</div>
+				</div>
+			</div>
+
+			<!-- In-Page Error / Notification Toast (Replaces raw browser alert popups) -->
+			<div id="nik-vd-notice" class="nik-vd-notice nik-vd-hidden" role="alert" aria-live="assertive">
+				<div class="nik-vd-notice-card">
+					<div class="nik-vd-notice-icon" id="nik-vd-notice-icon">⚠️</div>
+					<div class="nik-vd-notice-body">
+						<strong id="nik-vd-notice-title" class="nik-vd-notice-title"><?php esc_html_e( 'Notice', 'nik-voice-ticketing-ai' ); ?></strong>
+						<p id="nik-vd-notice-msg" class="nik-vd-notice-msg"></p>
+					</div>
+					<button type="button" id="nik-vd-notice-close" class="nik-vd-notice-close" aria-label="<?php esc_attr_e( 'Close notification', 'nik-voice-ticketing-ai' ); ?>">&times;</button>
 				</div>
 			</div>
 		</div>
@@ -416,7 +428,7 @@ class Nikvotia_Frontend {
 			<?php if ( '1' === (string) get_option( 'nikvotia_show_attribution', '0'   ) ) : ?>
 				<div class="nik-portal-footer-attribution">
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voice-ticketing-ai' ); ?> 
-					<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer">
+					<a href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer">
 						Nik Neural AI Inc.
 						<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
 						<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-dark-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
@@ -473,7 +485,7 @@ class Nikvotia_Frontend {
 		}
 
 		$audio_url = get_post_meta( $post->ID, '_nikvotia_audio_url', true );
-		$stream_url = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nik-voicedesk/v1/audio/' . $ticket_number );
+		$stream_url = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nikvotia/v1/audio/' . $ticket_number );
 		$transcript = get_post_meta( $post->ID, '_nikvotia_transcript', true );
 		$summary = get_post_meta( $post->ID, '_nikvotia_summary', true );
 		$dept = get_post_meta( $post->ID, '_nikvotia_department', true ) ?: 'General Support';

@@ -72,29 +72,75 @@ class Nikvotia_API {
 		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		$clean_environment = self::parse_user_agent( ! empty( $raw_env ) ? $raw_env : $user_agent );
 
-		// 2. Save Audio File using standard WordPress upload handler
+		// 2. Save Audio File using standard WordPress upload handler with audio MIME support
 		if ( ! function_exists( 'wp_handle_upload' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 
+		$upload_mimes_filter = function( $mimes ) {
+			$mimes['webm'] = 'audio/webm';
+			$mimes['ogg']  = 'audio/ogg';
+			$mimes['oga']  = 'audio/ogg';
+			$mimes['wav']  = 'audio/wav';
+			$mimes['mp3']  = 'audio/mpeg';
+			$mimes['m4a']  = 'audio/mp4';
+			return $mimes;
+		};
+		add_filter( 'upload_mimes', $upload_mimes_filter, 999 );
+
 		$upload_overrides = array(
 			'test_form' => false,
 			'test_type' => false,
+			'mimes'     => array(
+				'webm' => 'audio/webm',
+				'ogg'  => 'audio/ogg',
+				'oga'  => 'audio/ogg',
+				'wav'  => 'audio/wav',
+				'mp3'  => 'audio/mpeg',
+				'm4a'  => 'audio/mp4',
+			),
 		);
 
 		$movefile = wp_handle_upload( $audio_file, $upload_overrides );
+		remove_filter( 'upload_mimes', $upload_mimes_filter, 999 );
+
 		$saved    = false;
 		$filepath = '';
 		$file_url = '';
 
-		if ( $movefile && empty( $movefile['error'] ) ) {
+		if ( $movefile && empty( $movefile['error'] ) && ! empty( $movefile['file'] ) && file_exists( $movefile['file'] ) ) {
 			$filepath = $movefile['file'];
 			$file_url = $movefile['url'];
 			$saved    = true;
 		}
 
+		// Fallback: If standard wp_handle_upload failed (e.g. strict core mime type restriction or server limitation)
+		if ( ! $saved && ! empty( $audio_file['tmp_name'] ) && is_uploaded_file( $audio_file['tmp_name'] ) ) {
+			$wp_upload = wp_upload_dir();
+			$nik_dir   = $wp_upload['basedir'] . '/nikvotia';
+			if ( ! file_exists( $nik_dir ) ) {
+				wp_mkdir_p( $nik_dir );
+				file_put_contents( $nik_dir . '/index.php', '<?php // Silence is golden' );
+			}
+
+			// Validate extension: strictly allow only safe audio extensions
+			$orig_ext = strtolower( pathinfo( $audio_file['name'] ?? '', PATHINFO_EXTENSION ) );
+			$allowed_exts = array( 'webm', 'ogg', 'wav', 'mp3', 'm4a' );
+			$ext = in_array( $orig_ext, $allowed_exts, true ) ? $orig_ext : 'webm';
+
+			$target_name = 'rec_' . wp_generate_password( 16, false ) . '.' . $ext;
+			$target_path = $nik_dir . '/' . $target_name;
+
+			if ( move_uploaded_file( $audio_file['tmp_name'], $target_path ) ) {
+				$filepath = $target_path;
+				$file_url = $wp_upload['baseurl'] . '/nikvotia/' . $target_name;
+				$saved    = true;
+			}
+		}
+
 		if ( ! $saved || empty( $filepath ) || ! file_exists( $filepath ) || filesize( $filepath ) === 0 ) {
-			return new WP_Error( 'upload_failed', __( 'Could not save audio recording file.', 'nik-voice-ticketing-ai' ), array( 'status' => 500 ) );
+			$err_msg = ! empty( $movefile['error'] ) ? $movefile['error'] : __( 'Could not save audio recording file.', 'nik-voice-ticketing-ai' );
+			return new WP_Error( 'upload_failed', $err_msg, array( 'status' => 500 ) );
 		}
 
 		// 3. Generate Unique Ticket Number
@@ -133,11 +179,16 @@ class Nikvotia_API {
 		$access_token = wp_generate_password( 32, false );
 		$stream_url   = add_query_arg( 'token', $access_token, rest_url( 'nikvotia/v1/audio/' . $ticket_number ) );
 
-		update_post_meta( $post_id, '_nikvotia_ticket_number', $ticket_number  );
-		update_post_meta( $post_id, '_nikvotia_access_token', $access_token  );
-		update_post_meta( $post_id, '_nikvotia_audio_url', $file_url  );
-		update_post_meta( $post_id, '_nikvotia_audio_stream_url', $stream_url  );
-		update_post_meta( $post_id, '_nikvotia_audio_path', $filepath  );
+		update_post_meta( $post_id, '_nikvotia_ticket_number', $ticket_number );
+		update_post_meta( $post_id, '_nik_ticket_number', $ticket_number );
+		update_post_meta( $post_id, '_nikvotia_access_token', $access_token );
+		update_post_meta( $post_id, '_nik_access_token', $access_token );
+		update_post_meta( $post_id, '_nikvotia_audio_url', $file_url );
+		update_post_meta( $post_id, '_nik_audio_url', $file_url );
+		update_post_meta( $post_id, '_nikvotia_audio_stream_url', $stream_url );
+		update_post_meta( $post_id, '_nik_audio_stream_url', $stream_url );
+		update_post_meta( $post_id, '_nikvotia_audio_path', $filepath );
+		update_post_meta( $post_id, '_nik_audio_path', $filepath );
 		update_post_meta( $post_id, '_nikvotia_page_url', $page_url  );
 		update_post_meta( $post_id, '_nikvotia_environment', $clean_environment  );
 		update_post_meta( $post_id, '_nikvotia_clicked_elements', $sanitized_clicks  );
@@ -146,67 +197,77 @@ class Nikvotia_API {
 		update_post_meta( $post_id, '_nikvotia_status', 'Processing'  );
 		update_post_meta( $post_id, '_nikvotia_priority', 'Normal'  );
 
-		// 5. Process AI Pipeline
-		$stt_model = get_option( 'nikvotia_stt_model', 'openai_whisper'   );
-		$llm_model = get_option( 'nikvotia_llm_model', 'openai_gpt'   );
-
-		$transcript = '';
-		$summary = __( 'Summary could not be generated.', 'nik-voice-ticketing-ai' );
+		// 5. Process AI Pipeline (Safely wrapped so API delays or errors never crash ticket creation)
+		$summary = __( 'Voice ticket received.', 'nik-voice-ticketing-ai' );
 		$department = __( 'General Support', 'nik-voice-ticketing-ai' );
 
-		// Execute STT
-		if ( 'openai_whisper' === $stt_model ) {
-			$transcript = $this->call_openai_whisper( $filepath );
-		} elseif ( 'modulate_ai' === $stt_model ) {
-			$transcript = $this->call_modulate_stt( $filepath );
-		}
+		try {
+			$stt_model = get_option( 'nikvotia_stt_model', 'openai_whisper' );
+			$llm_model = get_option( 'nikvotia_llm_model', 'openai_gpt' );
 
-		if ( is_wp_error( $transcript ) ) {
-			$transcript_error = $transcript->get_error_message();
-			/* translators: %s: Speech transcription error message */
-			update_post_meta( $post_id, '_nikvotia_transcript', sprintf( __( 'STT Error: %s', 'nik-voice-ticketing-ai' ), $transcript_error )  );
-			update_post_meta( $post_id, '_nikvotia_status', 'Open'  );
-		} else {
-			update_post_meta( $post_id, '_nikvotia_transcript', $transcript  );
+			$transcript = '';
 
-			// Execute LLM Analysis
-			$departments = get_option( 'nikvotia_departments', 'Sales, Technical Support, Billing, General Support'   );
-
-			if ( 'openai_gpt' === $llm_model ) {
-				$analysis = $this->call_openai_gpt( $transcript, $departments );
-				if ( ! is_wp_error( $analysis ) && is_array( $analysis ) ) {
-					$summary = $analysis['summary'] ?? $summary;
-					$department = $analysis['department'] ?? $department;
-				}
-			} elseif ( 'modulate_ai' === $llm_model ) {
-				$analysis = $this->call_modulate_analysis( $filepath, $transcript, $departments );
-				if ( ! is_wp_error( $analysis ) && is_array( $analysis ) ) {
-					$summary = $analysis['summary'] ?? $summary;
-					$department = $analysis['department'] ?? $department;
-				}
+			// Execute STT
+			if ( 'openai_whisper' === $stt_model ) {
+				$transcript = $this->call_openai_whisper( $filepath );
+			} elseif ( 'modulate_ai' === $stt_model ) {
+				$transcript = $this->call_modulate_stt( $filepath );
 			}
 
-			update_post_meta( $post_id, '_nikvotia_summary', $summary  );
-			update_post_meta( $post_id, '_nikvotia_department', $department  );
-			update_post_meta( $post_id, '_nikvotia_status', 'Open'  );
+			if ( is_wp_error( $transcript ) ) {
+				$transcript_error = $transcript->get_error_message();
+				/* translators: %s: Speech transcription error message */
+				update_post_meta( $post_id, '_nikvotia_transcript', sprintf( __( 'STT Note: %s', 'nik-voice-ticketing-ai' ), $transcript_error ) );
+				update_post_meta( $post_id, '_nikvotia_status', 'Open' );
+			} else {
+				update_post_meta( $post_id, '_nikvotia_transcript', $transcript );
 
-			// Update post title with department
-			wp_update_post( array(
-				'ID'         => $post_id,
-				/* translators: 1: Ticket unique identifier, 2: Department name */
-				'post_title' => sprintf( __( 'Ticket %1$s - %2$s', 'nik-voice-ticketing-ai' ), $ticket_number, $department ),
-			) );
+				// Execute LLM Analysis
+				$departments = get_option( 'nikvotia_departments', 'Sales, Technical Support, Billing, General Support' );
+
+				if ( 'openai_gpt' === $llm_model ) {
+					$analysis = $this->call_openai_gpt( $transcript, $departments );
+					if ( ! is_wp_error( $analysis ) && is_array( $analysis ) ) {
+						$summary = $analysis['summary'] ?? $summary;
+						$department = $analysis['department'] ?? $department;
+					}
+				} elseif ( 'modulate_ai' === $llm_model ) {
+					$analysis = $this->call_modulate_analysis( $filepath, $transcript, $departments );
+					if ( ! is_wp_error( $analysis ) && is_array( $analysis ) ) {
+						$summary = $analysis['summary'] ?? $summary;
+						$department = $analysis['department'] ?? $department;
+					}
+				}
+
+				update_post_meta( $post_id, '_nikvotia_summary', $summary );
+				update_post_meta( $post_id, '_nikvotia_department', $department );
+				update_post_meta( $post_id, '_nikvotia_status', 'Open' );
+
+				// Update post title with department
+				wp_update_post( array(
+					'ID'         => $post_id,
+					/* translators: 1: Ticket unique identifier, 2: Department name */
+					'post_title' => sprintf( __( 'Ticket %1$s - %2$s', 'nik-voice-ticketing-ai' ), $ticket_number, $department ),
+				) );
+			}
+		} catch ( Throwable $e ) {
+			// Catch any API or parsing exception gracefully
+			update_post_meta( $post_id, '_nikvotia_status', 'Open' );
 		}
 
-		// 6. Send Email Confirmation
-		if ( ! empty( $user_email ) ) {
-			self::send_ticket_confirmation_email( $user_email, $username, $ticket_number, $department, $summary, $page_url );
-		}
+		// 6. Send Email Confirmation (Safely wrapped)
+		try {
+			if ( ! empty( $user_email ) ) {
+				self::send_ticket_confirmation_email( $user_email, $username, $ticket_number, $department, $summary, $page_url );
+			}
 
-		// Also notify site admin
-		$admin_email = get_option( 'admin_email' );
-		if ( ! empty( $admin_email ) && $admin_email !== $user_email ) {
-			self::send_admin_new_ticket_email( $admin_email, $ticket_number, $username, $department, $summary, $post_id );
+			// Also notify site admin
+			$admin_email = get_option( 'admin_email' );
+			if ( ! empty( $admin_email ) && $admin_email !== $user_email ) {
+				self::send_admin_new_ticket_email( $admin_email, $ticket_number, $username, $department, $summary, $post_id );
+			}
+		} catch ( Throwable $e ) {
+			// Email delivery failure should not block user success response
 		}
 
 		$portal_page_id = get_option( 'nikvotia_portal_page_id', 0   );
@@ -247,7 +308,7 @@ class Nikvotia_API {
 	 * Allows access if:
 	 * 1. Current user can edit the ticket or has manage_options capability.
 	 * 2. Current user is the logged-in author of the ticket.
-	 * 3. Request contains the valid cryptographic access token matching _nik_access_token.
+	 * 3. Request contains the valid cryptographic access token matching _nikvotia_access_token.
 	 *
 	 * @param WP_REST_Request $request The REST request object.
 	 * @return true|WP_Error
@@ -264,6 +325,11 @@ class Nikvotia_API {
 			'posts_per_page' => 1,
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Indexed ticket lookup by unique ticket ID.
 			'meta_query'     => array(
+				'relation' => 'OR',
+				array(
+					'key'   => '_nikvotia_ticket_number',
+					'value' => $ticket_number,
+				),
 				array(
 					'key'   => '_nik_ticket_number',
 					'value' => $ticket_number,
@@ -290,7 +356,7 @@ class Nikvotia_API {
 
 		// 3. Cryptographic token-based authorization (for guest customers or verified direct links)
 		$token = sanitize_text_field( $request->get_param( 'token' ) );
-		$stored_token = get_post_meta( $post->ID, '_nikvotia_access_token', true );
+		$stored_token = get_post_meta( $post->ID, '_nikvotia_access_token', true ) ?: get_post_meta( $post->ID, '_nik_access_token', true );
 		if ( ! empty( $stored_token ) && ! empty( $token ) && hash_equals( (string) $stored_token, (string) $token ) ) {
 			return true;
 		}
@@ -306,10 +372,15 @@ class Nikvotia_API {
 
 		$args = array(
 			'post_type'      => 'voicedesk_ticket',
-			'post_status'    => 'publish',
+			'post_status'    => 'any',
 			'posts_per_page' => 1,
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Indexed ticket lookup by unique ticket ID.
 			'meta_query'     => array(
+				'relation' => 'OR',
+				array(
+					'key'   => '_nikvotia_ticket_number',
+					'value' => $ticket_number,
+				),
 				array(
 					'key'   => '_nik_ticket_number',
 					'value' => $ticket_number,
@@ -322,13 +393,13 @@ class Nikvotia_API {
 		}
 
 		$post = $posts[0];
-		$filepath = get_post_meta( $post->ID, '_nikvotia_audio_path', true );
+		$filepath = get_post_meta( $post->ID, '_nikvotia_audio_path', true ) ?: get_post_meta( $post->ID, '_nik_audio_path', true );
 
 		$upload_dir = wp_upload_dir();
-		$plugin_upload_dir = wp_normalize_path( $upload_dir['basedir'] . '/nik-voicedesk' );
+		$base_upload_dir = wp_normalize_path( $upload_dir['basedir'] );
 		$normalized_file = wp_normalize_path( (string) $filepath );
 
-		if ( empty( $filepath ) || ! file_exists( $filepath ) || strpos( $normalized_file, $plugin_upload_dir ) !== 0 ) {
+		if ( empty( $filepath ) || ! file_exists( $filepath ) || strpos( $normalized_file, $base_upload_dir ) !== 0 ) {
 			return new WP_Error( 'file_not_found', __( 'Audio file not found on server.', 'nik-voice-ticketing-ai' ), array( 'status' => 404 ) );
 		}
 
@@ -382,7 +453,9 @@ class Nikvotia_API {
 			'date'    => current_time( 'mysql' ),
 		);
 
+		update_post_meta( $ticket_id, '_nikvotia_replies', $replies );
 		update_post_meta( $ticket_id, '_nik_replies', $replies );
+		update_post_meta( $ticket_id, '_nikvotia_status', current_user_can( 'manage_options' ) ? 'Replied' : 'Customer Replied' );
 		update_post_meta( $ticket_id, '_nik_status', current_user_can( 'manage_options' ) ? 'Replied' : 'Customer Replied' );
 
 		// Notify site admin if customer replied
@@ -439,7 +512,7 @@ Manage ticket: %4$s', 'nik-voice-ticketing-ai' ),
 		$response = wp_remote_post( 'https://api.openai.com/v1/audio/transcriptions', array(
 			'headers' => $headers,
 			'body'    => $payload,
-			'timeout' => 60,
+			'timeout' => 25,
 		) );
 
 		if ( is_wp_error( $response ) ) {
@@ -487,7 +560,7 @@ Manage ticket: %4$s', 'nik-voice-ticketing-ai' ),
 		$response = wp_remote_post( $url, array(
 			'headers' => $headers,
 			'body'    => $payload,
-			'timeout' => 60,
+			'timeout' => 25,
 		) );
 
 		if ( is_wp_error( $response ) ) {
@@ -542,7 +615,7 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 				'Content-Type'  => 'application/json',
 			),
 			'body'    => wp_json_encode( $body ),
-			'timeout' => 60,
+			'timeout' => 20,
 		) );
 
 		if ( is_wp_error( $response ) ) {
@@ -582,7 +655,7 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 		$response = wp_remote_post( $url, array(
 			'headers' => $headers,
 			'body'    => $payload,
-			'timeout' => 90,
+			'timeout' => 25,
 		) );
 
 		if ( is_wp_error( $response ) ) {

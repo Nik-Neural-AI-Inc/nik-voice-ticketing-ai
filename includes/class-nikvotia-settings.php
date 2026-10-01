@@ -542,7 +542,7 @@ class Nikvotia_Settings {
 							<li><strong><?php esc_html_e( '24/7 Enterprise SLA Support:', 'nik-voice-ticketing-ai' ); ?></strong> <?php esc_html_e( 'Direct access to senior AI solutions engineers.', 'nik-voice-ticketing-ai' ); ?></li>
 						</ul>
 						<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-							<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" class="button button-primary button-large" style="background: #0284c7; border-color: #0369a1;">
+							<a href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer" class="button button-primary button-large" style="background: #0284c7; border-color: #0369a1;">
 								<?php esc_html_e( 'Explore Enterprise Overview →', 'nik-voice-ticketing-ai' ); ?>
 							</a>
 							<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" class="button button-secondary button-large">
@@ -609,7 +609,7 @@ class Nikvotia_Settings {
 						</p>
 					</div>
 					<div style="display: flex; flex-direction: column; gap: 10px;">
-						<a href="https://nikneural.ca/voicedesk.php" target="_blank" rel="noopener noreferrer" style="background: #FF6D00; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(255, 109, 0, 0.3);">
+						<a href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer" style="background: #FF6D00; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(255, 109, 0, 0.3);">
 							<?php esc_html_e( 'VoiceDesk Overview →', 'nik-voice-ticketing-ai' ); ?>
 						</a>
 						<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" style="background: rgba(255,255,255,0.12); color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; text-align: center; border: 1px solid rgba(255,255,255,0.25);">
