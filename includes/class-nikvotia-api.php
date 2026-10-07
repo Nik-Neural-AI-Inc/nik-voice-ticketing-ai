@@ -43,12 +43,6 @@ class Nikvotia_API {
 	 * Main ticket submission handler.
 	 */
 	public function handle_submission( WP_REST_Request $request ) {
-		// Clean any previous output buffer to prevent PHP notices from polluting JSON response
-		while ( ob_get_level() > 0 ) {
-			ob_end_clean();
-		}
-		ob_start();
-
 		$files = $request->get_file_params();
 		if ( empty( $files['audio'] ) ) {
 			return new WP_Error( 'no_audio', __( 'No audio recording provided.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
@@ -314,11 +308,6 @@ class Nikvotia_API {
 			}
 		}
 		$ticket_url = ! empty( $portal_url ) ? add_query_arg( 'ticket', $ticket_number, $portal_url ) : '';
-
-		// Clean output buffer to ensure pure JSON response without PHP notices
-		if ( ob_get_length() ) {
-			ob_clean();
-		}
 
 		return rest_ensure_response( array(
 			'success'       => true,
