@@ -1,6 +1,6 @@
 # Nik Voice Ticketing AI
 
-[![Version](https://img.shields.io/badge/version-1.2.4-blue.svg)](https://nikneural.ca/pl/voicedesk.php)
+[![Version](https://img.shields.io/badge/version-1.2.5-blue.svg)](https://nikneural.ca/pl/voicedesk.php)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 [![PIPEDA Compliant](https://img.shields.io/badge/Compliance-PIPEDA-green.svg)](https://nikneural.ca/)
 [![Nik Neural AI Inc.](https://img.shields.io/badge/Developed%20by-Nik%20Neural%20AI%20Inc.-orange.svg)](https://nikneural.ca/)
@@ -101,6 +101,10 @@ Vancouver, BC V6Z 2R4, Canada
 Phone: (604) 283-7353  
 Official Website: [https://nikneural.ca/](https://nikneural.ca/)  
 VoiceDesk: [https://nikneural.ca/pl/voicedesk.php](https://nikneural.ca/pl/voicedesk.php)
+
+## Security Disclosures & Acknowledgments
+- **v1.2.5 Fix**: Unauthenticated Arbitrary File Upload / Remote Code Execution mitigation.
+- **Responsible Reporter**: Special thanks to **pnn219** for identifying this vulnerability and adhering to coordinated vulnerability disclosure protocols.
 
 ---
 

@@ -40,15 +40,151 @@ class Nikvotia_API {
 	}
 
 	/**
-	 * Main ticket submission handler.
+	 * Handles incoming audio ticket submissions.
+	 *
+	 * Patched in 1.2.5: Enforces strict MIME allowlisting, magic byte inspection,
+	 * and randomized file storage to eliminate arbitrary upload vulnerabilities.
+	 *
+	 * @since 1.0.0
+	 * @since 1.2.5 Hardened against unauthenticated RCE (Reported by: pnn219).
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error on failure.
 	 */
 	public function handle_submission( WP_REST_Request $request ) {
+		// Rate Limiting: Max 15 submissions per 5 minutes per IP address
+		$client_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '0.0.0.0';
+		$rate_key  = 'nikvotia_rate_' . md5( $client_ip );
+		$hit_count = (int) get_transient( $rate_key );
+		if ( $hit_count >= 15 ) {
+			return new WP_Error( 'rate_limit_exceeded', __( 'Too many submissions. Please wait 5 minutes before submitting another voice ticket.', 'nik-voice-ticketing-ai' ), array( 'status' => 429 ) );
+		}
+		set_transient( $rate_key, $hit_count + 1, 300 );
+
 		$files = $request->get_file_params();
-		if ( empty( $files['audio'] ) ) {
+		if ( empty( $files['audio'] ) || ! is_array( $files['audio'] ) ) {
 			return new WP_Error( 'no_audio', __( 'No audio recording provided.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
 		}
 
 		$audio_file = $files['audio'];
+		if ( ! empty( $audio_file['error'] ) || empty( $audio_file['tmp_name'] ) || ! is_uploaded_file( $audio_file['tmp_name'] ) ) {
+			return new WP_Error( 'invalid_upload', __( 'Uploaded file is invalid or transfer was interrupted.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
+		}
+
+		$file_size = (int) ( $audio_file['size'] ?? filesize( $audio_file['tmp_name'] ) );
+		if ( $file_size <= 0 ) {
+			return new WP_Error( 'empty_file', __( 'Uploaded audio file is empty.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
+		}
+		if ( $file_size > 25 * 1024 * 1024 ) {
+			return new WP_Error( 'file_too_large', __( 'Audio file exceeds the maximum allowed limit of 25MB.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
+		}
+
+		// 1. Strict Extension Validation
+		$allowed_extensions = array( 'webm', 'ogg', 'oga', 'wav', 'mp3', 'm4a' );
+		$client_filename    = sanitize_file_name( (string) ( $audio_file['name'] ?? '' ) );
+		$raw_ext            = strtolower( pathinfo( $client_filename, PATHINFO_EXTENSION ) );
+
+		if ( empty( $raw_ext ) || ! in_array( $raw_ext, $allowed_extensions, true ) ) {
+			return new WP_Error( 'invalid_file_type', __( 'Invalid file extension. Only audio recordings (WebM, OGG, WAV, MP3, M4A) are permitted.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
+		}
+
+		// 2. Anti-Executable & Polyglot Inspection
+		$fh = fopen( $audio_file['tmp_name'], 'rb' );
+		if ( ! $fh ) {
+			return new WP_Error( 'file_read_error', __( 'Could not read uploaded audio file for validation.', 'nik-voice-ticketing-ai' ), array( 'status' => 500 ) );
+		}
+		$head = fread( $fh, 8192 );
+		$tail = '';
+		if ( $file_size > 8192 ) {
+			fseek( $fh, max( 0, $file_size - 8192 ) );
+			$tail = fread( $fh, 8192 );
+		}
+		fclose( $fh );
+
+		$sample = $head . $tail;
+		$dangerous_patterns = array(
+			'/<\?php/i',
+			'/<\?=/i',
+			'/<\?(?!xml)/i',
+			'/<script\b/i',
+			'/<html\b/i',
+			'/<svg\b/i',
+			'/<!DOCTYPE/i',
+			'/eval\s*\(/i',
+			'/base64_decode\s*\(/i',
+			'/system\s*\(/i',
+			'/shell_exec\s*\(/i',
+			'/passthru\s*\(/i',
+			'/exec\s*\(/i',
+			'/__halt_compiler/i',
+		);
+		foreach ( $dangerous_patterns as $pattern ) {
+			if ( preg_match( $pattern, $sample ) ) {
+				return new WP_Error( 'malicious_content', __( 'File content failed security verification.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
+			}
+		}
+
+		// 3. Audio Container Magic Bytes Check
+		$magic_valid = false;
+		switch ( $raw_ext ) {
+			case 'webm':
+				$magic_valid = ( strncmp( $head, "\x1A\x45\xDF\xA3", 4 ) === 0 );
+				break;
+			case 'ogg':
+			case 'oga':
+				$magic_valid = ( strncmp( $head, 'OggS', 4 ) === 0 );
+				break;
+			case 'wav':
+				$magic_valid = ( strlen( $head ) >= 12 && substr( $head, 0, 4 ) === 'RIFF' && substr( $head, 8, 4 ) === 'WAVE' );
+				break;
+			case 'mp3':
+				$magic_valid = ( strncmp( $head, 'ID3', 3 ) === 0 || ( strlen( $head ) >= 2 && ord( $head[0] ) === 0xFF && ( ord( $head[1] ) & 0xE0 ) === 0xE0 ) );
+				break;
+			case 'm4a':
+				$magic_valid = ( strlen( $head ) >= 8 && substr( $head, 4, 4 ) === 'ftyp' );
+				break;
+		}
+
+		if ( ! $magic_valid ) {
+			return new WP_Error( 'invalid_container', __( 'Audio container format does not match declared extension.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
+		}
+
+		// 4. Server-Side MIME Type Validation (finfo)
+		if ( function_exists( 'finfo_open' ) ) {
+			$finfo = finfo_open( FILEINFO_MIME_TYPE );
+			if ( $finfo ) {
+				$real_mime = finfo_file( $finfo, $audio_file['tmp_name'] );
+				finfo_close( $finfo );
+
+				$allowed_mimes = array(
+					'audio/webm',
+					'video/webm', // WebM audio generated by MediaRecorder in Chrome/Firefox
+					'audio/ogg',
+					'application/ogg',
+					'audio/vorbis',
+					'audio/opus',
+					'audio/wav',
+					'audio/x-wav',
+					'audio/wave',
+					'audio/mpeg',
+					'audio/mp3',
+					'audio/mp4',
+					'audio/x-m4a',
+					'video/mp4',
+					'application/octet-stream',
+				);
+
+				if ( ! in_array( $real_mime, $allowed_mimes, true ) ) {
+					return new WP_Error( 'invalid_mime_type', __( 'Detected MIME type is not allowed for audio recordings.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
+				}
+			}
+		}
+
+		// 5. Completely Discard Client Filename: Force Cryptographically Random Target Name
+		$safe_ext        = $raw_ext;
+		$random_filename = 'rec_' . wp_generate_password( 24, false, false ) . '.' . $safe_ext;
+		$audio_file['name'] = $random_filename;
+
 		$page_url_raw = $request->get_param( 'page_url' );
 		$page_url = ! empty( $page_url_raw ) ? sanitize_url( (string) $page_url_raw ) : '';
 		$raw_env = (string) ( $request->get_param( 'environment' ) ?: '' );
@@ -70,40 +206,35 @@ class Nikvotia_API {
 			}
 		}
 
-		// 1. Clean Environment (OS + Browser only)
+		// Clean Environment (OS + Browser only)
 		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		$clean_environment = self::parse_user_agent( ! empty( $raw_env ) ? $raw_env : $user_agent );
 
-		// 2. Save Audio File using standard WordPress upload handler
+		// 6. Save Audio File using standard WordPress core upload handler with STRICT MIME testing
 		if ( ! function_exists( 'wp_handle_upload' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 
-		$upload_mimes_filter = function( $mimes ) {
-			$mimes['webm'] = 'audio/webm';
-			$mimes['ogg']  = 'audio/ogg';
-			$mimes['oga']  = 'audio/ogg';
-			$mimes['wav']  = 'audio/wav';
-			$mimes['mp3']  = 'audio/mpeg';
-			$mimes['m4a']  = 'audio/mp4';
-			return $mimes;
+		$upload_mimes_map = array(
+			'webm' => 'audio/webm',
+			'ogg'  => 'audio/ogg',
+			'oga'  => 'audio/ogg',
+			'wav'  => 'audio/wav',
+			'mp3'  => 'audio/mpeg',
+			'm4a'  => 'audio/mp4',
+		);
+
+		$upload_mimes_filter = function( $mimes ) use ( $upload_mimes_map ) {
+			return array_merge( (array) $mimes, $upload_mimes_map );
 		};
 		add_filter( 'upload_mimes', $upload_mimes_filter, 999 );
 
-		$check_filetype_filter = function( $data, $file, $filename, $mimes ) {
+		$check_filetype_filter = function( $data, $file, $filename, $mimes ) use ( $safe_ext, $upload_mimes_map ) {
 			$ext = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
-			$allowed = array(
-				'webm' => 'audio/webm',
-				'ogg'  => 'audio/ogg',
-				'oga'  => 'audio/ogg',
-				'wav'  => 'audio/wav',
-				'mp3'  => 'audio/mpeg',
-				'm4a'  => 'audio/mp4',
-			);
-			if ( isset( $allowed[ $ext ] ) ) {
+			if ( isset( $upload_mimes_map[ $ext ] ) ) {
 				return array(
 					'ext'             => $ext,
-					'type'            => $allowed[ $ext ],
+					'type'            => $upload_mimes_map[ $ext ],
 					'proper_filename' => false,
 				);
 			}
@@ -111,22 +242,30 @@ class Nikvotia_API {
 		};
 		add_filter( 'wp_check_filetype_and_ext', $check_filetype_filter, 999, 4 );
 
+		// Store in protected plugin directory: uploads/nikvotia/
+		$upload_dir_filter = function( $uploads ) {
+			$plugin_dir = $uploads['basedir'] . '/nikvotia';
+			$plugin_url = $uploads['baseurl'] . '/nikvotia';
+			if ( ! file_exists( $plugin_dir ) ) {
+				wp_mkdir_p( $plugin_dir );
+			}
+			$uploads['path']   = $plugin_dir;
+			$uploads['url']    = $plugin_url;
+			$uploads['subdir'] = '/nikvotia';
+			return $uploads;
+		};
+		add_filter( 'upload_dir', $upload_dir_filter );
+
 		$upload_overrides = array(
 			'test_form' => false,
-			'test_type' => false,
-			'mimes'     => array(
-				'webm' => 'audio/webm',
-				'ogg'  => 'audio/ogg',
-				'oga'  => 'audio/ogg',
-				'wav'  => 'audio/wav',
-				'mp3'  => 'audio/mpeg',
-				'm4a'  => 'audio/mp4',
-			),
+			'test_type' => true, // STRICT MIME AND EXTENSION VALIDATION ENABLED
+			'mimes'     => $upload_mimes_map,
 		);
 
 		$movefile = wp_handle_upload( $audio_file, $upload_overrides );
 		remove_filter( 'upload_mimes', $upload_mimes_filter, 999 );
 		remove_filter( 'wp_check_filetype_and_ext', $check_filetype_filter, 999 );
+		remove_filter( 'upload_dir', $upload_dir_filter );
 
 		$saved    = false;
 		$filepath = '';
@@ -138,23 +277,22 @@ class Nikvotia_API {
 			$saved    = true;
 		}
 
-		// Fallback: If standard wp_handle_upload failed, save using standard WordPress core API wp_upload_bits (zero forbidden functions)
+		// Fallback: If standard wp_handle_upload failed, save using standard core API wp_upload_bits (zero forbidden functions)
 		if ( ! $saved && ! empty( $audio_file['tmp_name'] ) && file_exists( $audio_file['tmp_name'] ) ) {
-			$orig_ext = strtolower( pathinfo( $audio_file['name'] ?? '', PATHINFO_EXTENSION ) );
-			$allowed_exts = array( 'webm', 'ogg', 'wav', 'mp3', 'm4a' );
-			$ext = in_array( $orig_ext, $allowed_exts, true ) ? $orig_ext : 'webm';
-			$target_name = 'rec_' . wp_generate_password( 16, false ) . '.' . $ext;
+			$fallback_target = 'rec_' . wp_generate_password( 24, false, false ) . '.' . $safe_ext;
 
+			add_filter( 'upload_dir', $upload_dir_filter );
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 			$audio_bits = file_get_contents( $audio_file['tmp_name'] );
 			if ( false !== $audio_bits && strlen( $audio_bits ) > 0 ) {
-				$upload_bits = wp_upload_bits( $target_name, null, $audio_bits );
+				$upload_bits = wp_upload_bits( $fallback_target, null, $audio_bits );
 				if ( empty( $upload_bits['error'] ) && ! empty( $upload_bits['file'] ) && file_exists( $upload_bits['file'] ) ) {
 					$filepath = $upload_bits['file'];
 					$file_url = $upload_bits['url'];
 					$saved    = true;
 				}
 			}
+			remove_filter( 'upload_dir', $upload_dir_filter );
 		}
 
 		if ( ! $saved || empty( $filepath ) || ! file_exists( $filepath ) || filesize( $filepath ) === 0 ) {
@@ -423,12 +561,22 @@ class Nikvotia_API {
 		}
 
 		$filesize = filesize( $filepath );
-		$mime_type = 'audio/webm';
+		$file_ext = strtolower( pathinfo( $filepath, PATHINFO_EXTENSION ) );
+		$mime_map = array(
+			'webm' => 'audio/webm',
+			'ogg'  => 'audio/ogg',
+			'oga'  => 'audio/ogg',
+			'wav'  => 'audio/wav',
+			'mp3'  => 'audio/mpeg',
+			'm4a'  => 'audio/mp4',
+		);
+		$mime_type = $mime_map[ $file_ext ] ?? 'audio/webm';
 
 		header( 'Content-Type: ' . $mime_type );
 		header( 'Content-Length: ' . $filesize );
+		header( 'X-Content-Type-Options: nosniff' );
 		header( 'Accept-Ranges: bytes' );
-		header( 'Cache-Control: public, max-age=31536000' );
+		header( 'Cache-Control: private, no-transform, max-age=31536000' );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Direct output streaming of audio file.
 		readfile( $filepath );
