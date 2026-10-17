@@ -150,13 +150,14 @@ class Nikvotia_CPT {
 
 	public function set_custom_columns( $columns ) {
 		$new_columns = array(
-			'cb'            => $columns['cb'] ?? '<input type="checkbox" />',
-			'ticket_id'     => __( 'Ticket ID', 'nik-voice-ticketing-ai' ),
-			'status'        => __( 'Status', 'nik-voice-ticketing-ai' ),
-			'department'    => __( 'Department', 'nik-voice-ticketing-ai' ),
-			'summary'       => __( 'AI Summary', 'nik-voice-ticketing-ai' ),
-			'reporter'      => __( 'Customer', 'nik-voice-ticketing-ai' ),
-			'date'          => __( 'Date Created', 'nik-voice-ticketing-ai' ),
+			'cb'          => $columns['cb'] ?? '<input type="checkbox" />',
+			'ticket_id'   => __( 'Ticket ID', 'nik-voice-ticketing-ai' ),
+			'status'      => __( 'Status', 'nik-voice-ticketing-ai' ),
+			'department'  => __( 'Department', 'nik-voice-ticketing-ai' ),
+			'ai_provider' => __( 'AI Engine', 'nik-voice-ticketing-ai' ),
+			'summary'     => __( 'AI Summary', 'nik-voice-ticketing-ai' ),
+			'reporter'    => __( 'Customer', 'nik-voice-ticketing-ai' ),
+			'date'        => __( 'Date Created', 'nik-voice-ticketing-ai' ),
 		);
 		return $new_columns;
 	}
@@ -176,6 +177,23 @@ class Nikvotia_CPT {
 			case 'department':
 				$dept = get_post_meta( $post_id, '_nikvotia_department', true ) ?: __( 'General Support', 'nik-voice-ticketing-ai' );
 				printf( '<span class="nik-dept-badge">%s</span>', esc_html( $dept ) );
+				break;
+			case 'ai_provider':
+				$prov_id = get_post_meta( $post_id, '_nikvotia_ai_provider', true );
+				$trans   = get_post_meta( $post_id, '_nikvotia_transcript', true );
+				if ( 'nik_voice_cloud' === $prov_id || empty( $prov_id ) ) {
+					if ( false !== strpos( (string) $trans, '[Nik Voice Cloud Demo]' ) ) {
+						echo '<span class="nik-ai-pill nik-ai-cloud" style="border: 1px dashed #ca8a04;" title="' . esc_attr__( 'Gateway in Demo Mode: configure GROQ_API_KEY on server', 'nik-voice-ticketing-ai' ) . '">⚡ Nik Cloud <small style="font-weight:400; opacity:0.85;">(Demo)</small></span>';
+					} else {
+						echo '<span class="nik-ai-pill nik-ai-cloud">⚡ Nik Cloud</span>';
+					}
+				} elseif ( 'openai' === $prov_id ) {
+					echo '<span class="nik-ai-pill nik-ai-openai">🤖 OpenAI</span>';
+				} elseif ( 'modulate_ai' === $prov_id ) {
+					echo '<span class="nik-ai-pill nik-ai-modulate">🎙️ Modulate</span>';
+				} else {
+					echo '<span class="nik-ai-pill">' . esc_html( $prov_id ) . '</span>';
+				}
 				break;
 			case 'summary':
 				$summary = get_post_meta( $post_id, '_nikvotia_summary', true );
@@ -339,6 +357,92 @@ class Nikvotia_CPT {
 								<div class="nik-vd-transcript-content">
 									<?php echo nl2br( esc_html( $transcript ?: __( 'No transcript available.', 'nik-voice-ticketing-ai' ) ) ); ?>
 								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- AI Engine & Security Audit Log Card -->
+					<?php
+					$ai_provider_id   = get_post_meta( $post->ID, '_nikvotia_ai_provider', true );
+					$ai_provider_name = get_post_meta( $post->ID, '_nikvotia_ai_provider_name', true );
+					$ai_audit_log     = get_post_meta( $post->ID, '_nikvotia_ai_audit_log', true );
+					if ( empty( $ai_provider_name ) && ! empty( $ai_provider_id ) ) {
+						$ai_provider_name = Nikvotia_Settings::get_provider_label( $ai_provider_id );
+					}
+					$audit_timestamp = $ai_audit_log['timestamp'] ?? get_the_date( 'Y-m-d H:i:s', $post->ID );
+					$stt_engine      = $ai_audit_log['stt_engine'] ?? ( 'nik_voice_cloud' === $ai_provider_id ? 'Nik Voice Cloud (Groq Whisper-large-v3)' : ( 'modulate_ai' === $ai_provider_id ? 'Modulate.ai Velma-2' : 'OpenAI Whisper-1' ) );
+					$stt_status      = $ai_audit_log['stt_status'] ?? 'Success';
+					$llm_engine      = $ai_audit_log['llm_engine'] ?? ( 'nik_voice_cloud' === $ai_provider_id ? 'Nik Voice Cloud Sovereign Triage' : ( 'modulate_ai' === $ai_provider_id ? 'Modulate Voice Intelligence' : 'OpenAI GPT-4o-mini' ) );
+					$llm_status      = $ai_audit_log['llm_status'] ?? 'Success';
+					?>
+					<div class="nik-vd-card nik-vd-audit-card">
+						<div class="nik-vd-card-header">
+							<h3><span class="dashicons dashicons-shield-alt"></span> <?php esc_html_e( 'AI Engine & Pipeline Audit Log', 'nik-voice-ticketing-ai' ); ?></h3>
+							<?php if ( 'nik_voice_cloud' === $ai_provider_id || empty( $ai_provider_id ) ) : ?>
+								<span class="nik-ai-pill nik-ai-cloud">⚡ <?php esc_html_e( 'Nik Voice Cloud (Sovereign)', 'nik-voice-ticketing-ai' ); ?></span>
+							<?php elseif ( 'modulate_ai' === $ai_provider_id ) : ?>
+								<span class="nik-ai-pill nik-ai-modulate">🎙️ <?php esc_html_e( 'Modulate.ai Engine', 'nik-voice-ticketing-ai' ); ?></span>
+							<?php elseif ( 'openai' === $ai_provider_id ) : ?>
+								<span class="nik-ai-pill nik-ai-openai">🤖 <?php esc_html_e( 'OpenAI Cloud Engine', 'nik-voice-ticketing-ai' ); ?></span>
+							<?php else : ?>
+								<span class="nik-ai-pill"><?php echo esc_html( $ai_provider_name ); ?></span>
+							<?php endif; ?>
+						</div>
+						<div class="nik-vd-card-body">
+							<div class="nik-vd-audit-grid">
+								<div class="nik-vd-audit-item">
+									<div class="nik-vd-audit-label"><?php esc_html_e( 'Active AI Engine Used:', 'nik-voice-ticketing-ai' ); ?></div>
+									<div class="nik-vd-audit-val">
+										<strong><?php echo esc_html( $ai_provider_name ?: __( 'Nik Voice Cloud (Sovereign Gateway)', 'nik-voice-ticketing-ai' ) ); ?></strong>
+									</div>
+								</div>
+
+								<div class="nik-vd-audit-item">
+									<div class="nik-vd-audit-label"><?php esc_html_e( 'Speech-to-Text (STT):', 'nik-voice-ticketing-ai' ); ?></div>
+									<div class="nik-vd-audit-val">
+										<code><?php echo esc_html( $stt_engine ); ?></code>
+										<?php if ( false !== strpos( (string) $transcript, '[Nik Voice Cloud Demo]' ) ) : ?>
+											<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-weight:600; font-size:11px; margin-left:6px;">⚠️ <?php esc_html_e( 'Demo Fallback (Server missing GROQ_API_KEY)', 'nik-voice-ticketing-ai' ); ?></span>
+										<?php else : ?>
+											<span class="nik-vd-badge-success">✓ <?php echo esc_html( $stt_status ); ?></span>
+										<?php endif; ?>
+									</div>
+								</div>
+
+								<div class="nik-vd-audit-item">
+									<div class="nik-vd-audit-label"><?php esc_html_e( 'Triage & Categorization:', 'nik-voice-ticketing-ai' ); ?></div>
+									<div class="nik-vd-audit-val">
+										<code><?php echo esc_html( $llm_engine ); ?></code>
+										<span class="nik-vd-badge-success">✓ <?php echo esc_html( $llm_status ); ?></span>
+									</div>
+								</div>
+
+								<div class="nik-vd-audit-item">
+									<div class="nik-vd-audit-label"><?php esc_html_e( 'Single-API Isolation Mode:', 'nik-voice-ticketing-ai' ); ?></div>
+									<div class="nik-vd-audit-val">
+										<span style="color: #16a34a; font-weight: 600;">🔒 <?php esc_html_e( 'Enforced (Zero Cross-Leakage)', 'nik-voice-ticketing-ai' ); ?></span>
+										<small style="display: block; color: #64748b; font-size: 11.5px; margin-top: 2px;">
+											<?php
+											if ( 'nik_voice_cloud' === $ai_provider_id || empty( $ai_provider_id ) ) {
+												esc_html_e( 'Processed exclusively via Nik Voice Cloud gateway. Modulate.ai and OpenAI were not called.', 'nik-voice-ticketing-ai' );
+											} elseif ( 'openai' === $ai_provider_id ) {
+												esc_html_e( 'Processed exclusively via OpenAI API. Nik Voice Cloud and Modulate.ai were not called.', 'nik-voice-ticketing-ai' );
+											} else {
+												esc_html_e( 'Processed exclusively via Modulate.ai API. Nik Voice Cloud and OpenAI were not called.', 'nik-voice-ticketing-ai' );
+											}
+											?>
+										</small>
+									</div>
+								</div>
+
+								<?php if ( ! empty( $audit_timestamp ) ) : ?>
+									<div class="nik-vd-audit-item">
+										<div class="nik-vd-audit-label"><?php esc_html_e( 'Audit Log Timestamp:', 'nik-voice-ticketing-ai' ); ?></div>
+										<div class="nik-vd-audit-val">
+											<code><?php echo esc_html( $audit_timestamp ); ?></code>
+										</div>
+									</div>
+								<?php endif; ?>
 							</div>
 						</div>
 					</div>

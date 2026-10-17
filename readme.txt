@@ -1,11 +1,11 @@
 === Nik Voice Ticketing AI ===
-Contributors: nikneuralaiinc, aboozar, nikneural
+Contributors: nikneuralaiinc, aboozaresmaili
 Donate link: https://nikneural.ca/
 Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.5
+Stable tag: 1.3.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,6 +88,41 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 
 == Changelog ==
 
+= 1.3.5 =
+* Feature: Added seamless manual API Key ID pairing for multi-site deployments and client licensing.
+* Fix: Prevented random key regeneration overwrite when using pre-issued or manual API keys.
+* Fix: Removed mandatory HMAC signature requirement for standalone API keys, resolving 401 Unauthorized rejections.
+* Reliability: Enhanced connection auto-detection and BYOK settings interface.
+
+= 1.3.4 =
+* Feature: Added 1-Click "Test Gateway Health" diagnostic button in Settings under Nik Voice Cloud.
+* Diagnostics: Added real-time detection and logging for Nik Voice Cloud gateway demo mode vs live Groq Whisper-v3 mode.
+* UI Transparency: Added demo fallback indicator badge in Admin Ticket Console and All Tickets list table when gateway runs in demo fallback mode.
+* Security & Reliability: Gateway health check probes /v1/health with PIPEDA compliance verification and auto-logging.
+
+= 1.3.3 =
+* Fix: Refined audio container security scanning to eliminate false-positive "File content failed security verification" rejections caused by compressed Opus bitstream entropy.
+* Feature: Added dedicated System & AI Gateway Activity Logs console under VoiceDesk Settings (tab=logs) with event filtering, live status monitoring, and 1-click text log export.
+* Reliability: Added end-to-end event logging across ticket submission, audio validation, and gateway API communication with WordPress debug log integration.
+
+= 1.3.2 =
+* Strict Single-Provider Isolation: Incoming voice tickets strictly use the selected active AI provider (Nik Voice Cloud, OpenAI, or Modulate.ai). Automatic cross-provider fallback and unintended secondary API calls are completely disabled.
+* AI Engine & Pipeline Audit Log: Added comprehensive audit tracking displaying the exact active AI engine, STT provider, and triage model used for each ticket in the Admin Ticket Console and All Tickets list table.
+* Sovereign Cloud Triage: Integrated sovereign triage and smart categorization for Nik Voice Cloud tickets with zero third-party data leakage.
+* UI Status Transparency: Added clear Active/Dormant visual badges in VoiceDesk Settings indicating active single-engine mode and dormant API keys.
+
+= 1.3.1 =
+* Fixed 404 error when navigating to WooCommerce /my-account/voicedesk-tickets/ endpoint.
+* Added self-healing rewrite rules and fallback template router for custom customer portal endpoints.
+* Enhanced guest ticket security: guests are required to sign in to access voice recordings and AI summaries, protecting customer privacy.
+* Added automatic email reconciliation linking guest-submitted voice tickets to customer accounts upon login.
+* Added prominent ticket notice banner on WooCommerce customer login form.
+
+= 1.3.0 =
+* Added 1-Click Connect to Nik Voice Cloud (Groq Whisper-v3) with zero local disk retention.
+* Added automatic cryptographic handshake and domain-bound API key provisioning.
+* Added Canadian PIPEDA compliance and zero-disk streaming gateway support.
+
 = 1.2.5 =
 * Critical Security: Resolved unauthenticated arbitrary file upload vulnerability in the public REST voice submission endpoint (props pnn219).
 * Hardening: Added strict MIME verification, magic bytes validation, randomized filenames, and directory execution prevention.
@@ -136,6 +171,24 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 * Initial release of Nik VoiceDesk AI.
 
 == Upgrade Notice ==
+
+= 1.3.5 =
+Recommended update: Enables standalone customer API keys without HMAC secrets and prevents automatic key overwrites on client sites.
+
+= 1.3.4 =
+Recommended update: Adds 1-Click Gateway Health Test diagnostics and transparent demo-mode detection for Nik Voice Cloud.
+
+= 1.3.3 =
+Recommended update: Fixes false-positive security check on audio recordings and adds a dedicated System & AI Activity Logs viewer in settings.
+
+= 1.3.2 =
+Recommended update: Enforces strict single-provider AI engine isolation, sovereign ticket triage for Nik Voice Cloud, and adds an admin AI pipeline audit log.
+
+= 1.3.1 =
+Recommended update: Fixes customer ticket portal 404 on WooCommerce /my-account/ endpoint and secures guest ticket views behind login.
+
+= 1.3.0 =
+Recommended update: 1-Click Connect to Nik Voice Cloud (Groq Whisper-v3) with zero local disk retention.
 
 = 1.2.5 =
 Critical Security Update: Immediately update to resolve an unauthenticated file upload flaw. Discovered and responsibly disclosed by pnn219.

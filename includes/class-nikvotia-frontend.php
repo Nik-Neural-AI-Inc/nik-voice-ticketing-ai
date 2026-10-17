@@ -18,11 +18,56 @@ class Nikvotia_Frontend {
 
 		// WooCommerce "My Account" Endpoint & Dashboard Integration
 		add_action( 'init', array( $this, 'wc_add_endpoint' ) );
+		add_filter( 'query_vars', array( $this, 'wc_add_query_vars' ), 0 );
+		add_filter( 'woocommerce_get_query_vars', array( $this, 'wc_add_query_vars' ) );
 		add_filter( 'woocommerce_account_menu_items', array( $this, 'wc_add_menu_item' ) );
 		add_action( 'woocommerce_account_voicedesk-tickets_endpoint', array( $this, 'wc_endpoint_content' ) );
 		add_action( 'woocommerce_account_dashboard', array( $this, 'wc_account_dashboard_ticket_btn' ) );
+		add_action( 'woocommerce_before_customer_login_form', array( $this, 'wc_before_login_ticket_notice' ) );
 		add_action( 'show_user_profile', array( $this, 'render_user_profile_ticket_section' ) );
 		add_action( 'edit_user_profile', array( $this, 'render_user_profile_ticket_section' ) );
+
+		// Self-healing rewrite rules & 404 fallback interceptor
+		add_action( 'wp_loaded', array( $this, 'maybe_flush_rewrite_rules' ) );
+		add_action( 'template_redirect', array( $this, 'handle_404_endpoint_fallback' ) );
+	}
+
+	/**
+	 * Get the canonical customer portal URL (WooCommerce endpoint or custom portal page).
+	 *
+	 * @param string $ticket_num Optional ticket number to append.
+	 * @return string Canonical URL.
+	 */
+	public static function get_portal_url( $ticket_num = '' ) {
+		$portal_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
+		$portal_url     = $portal_page_id ? get_permalink( $portal_page_id ) : '';
+
+		if ( empty( $portal_url ) ) {
+			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
+				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
+			} else {
+				$pages = get_posts( array(
+					'post_type'      => 'page',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					's'              => 'nikvotia_tickets',
+					'fields'         => 'ids',
+				) );
+				if ( ! empty( $pages ) ) {
+					$portal_url = get_permalink( $pages[0] );
+				}
+			}
+		}
+
+		if ( empty( $portal_url ) ) {
+			$portal_url = home_url( '/' );
+		}
+
+		if ( ! empty( $ticket_num ) ) {
+			$portal_url = add_query_arg( 'ticket', rawurlencode( $ticket_num ), $portal_url );
+		}
+
+		return esc_url_raw( $portal_url );
 	}
 
 	private function is_visible() {
@@ -65,24 +110,7 @@ class Nikvotia_Frontend {
 		wp_enqueue_style( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/css/frontend.css', array(), NIKVOTIA_VERSION );
 		wp_enqueue_script( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/js/frontend.js', array(), NIKVOTIA_VERSION, true );
 
-		$portal_page_id = get_option( 'nikvotia_portal_page_id', 0   );
-		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : '';
-		if ( empty( $portal_url ) ) {
-			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
-				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
-			} else {
-				$pages = get_posts( array(
-					'post_type'      => 'page',
-					'post_status'    => 'publish',
-					'posts_per_page' => 1,
-					's'              => 'nikvotia_tickets',
-					'fields'         => 'ids',
-				) );
-				if ( ! empty( $pages ) ) {
-					$portal_url = get_permalink( $pages[0] );
-				}
-			}
-		}
+		$portal_url = self::get_portal_url();
 
 		wp_localize_script( 'nikvotia-frontend', 'nikvotiaData', array(
 			'restUrl'      => esc_url_raw( rest_url( 'nikvotia/v1/submit' ) ),
@@ -274,11 +302,14 @@ class Nikvotia_Frontend {
 
 	/**
 	 * Render the complete, modern Customer User Panel via shortcode.
-	 * [nikvotia_tickets]
+	 * [nikvotia_tickets] or [nik_voicedesk_tickets]
 	 */
 	public function render_user_panel_shortcode( $atts ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket identifier parameter in URL.
+		$ticket_num = isset( $_GET['ticket'] ) ? sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) : '';
+
 		if ( ! is_user_logged_in() ) {
-			return $this->render_guest_login_prompt();
+			return $this->render_guest_login_prompt( $ticket_num );
 		}
 
 		wp_enqueue_style( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/css/frontend.css', array(), NIKVOTIA_VERSION );
@@ -286,14 +317,8 @@ class Nikvotia_Frontend {
 
 		ob_start();
 		
-		if ( isset( $_GET['ticket'] ) ) {
-			$ticket_num = sanitize_text_field( wp_unslash( $_GET['ticket'] ) );
-			$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-			if ( ! wp_verify_nonce( $nonce, 'nikvotia_view_ticket_' . $ticket_num ) ) {
-				echo '<div style="background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;">' . esc_html__( 'Security check failed. Please refresh the page or return to your tickets list.', 'nik-voice-ticketing-ai' ) . '</div>';
-			} else {
-				$this->render_single_ticket_view( $ticket_num );
-			}
+		if ( ! empty( $ticket_num ) ) {
+			$this->render_single_ticket_view( $ticket_num );
 		} else {
 			$this->render_user_tickets_list();
 		}
@@ -305,40 +330,126 @@ class Nikvotia_Frontend {
 		add_rewrite_endpoint( 'voicedesk-tickets', EP_ROOT | EP_PAGES );
 	}
 
+	public function wc_add_query_vars( $vars ) {
+		$vars['voicedesk-tickets'] = 'voicedesk-tickets';
+		return $vars;
+	}
+
+	/**
+	 * Automatically flush rewrite rules if endpoint rule is not yet registered in WordPress.
+	 */
+	public function maybe_flush_rewrite_rules() {
+		$version_key = 'nikvotia_endpoint_flushed_' . NIKVOTIA_VERSION;
+		if ( ! get_option( $version_key ) ) {
+			$this->wc_add_endpoint();
+			flush_rewrite_rules( false );
+			update_option( $version_key, '1' );
+		}
+	}
+
+	/**
+	 * Self-healing 404 interceptor for the voicedesk-tickets WooCommerce endpoint.
+	 * If rewrite rules were not yet saved in Settings > Permalinks, routes into My Account smoothly.
+	 */
+	public function handle_404_endpoint_fallback() {
+		if ( ! is_404() ) {
+			return;
+		}
+
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+		if ( false === strpos( $request_uri, 'voicedesk-tickets' ) ) {
+			return;
+		}
+
+		// Re-flush rewrite rules in the background so future requests match native rewrite rules
+		flush_rewrite_rules( false );
+
+		if ( function_exists( 'wc_get_page_id' ) ) {
+			$myaccount_page_id = (int) wc_get_page_id( 'myaccount' );
+			if ( $myaccount_page_id > 0 ) {
+				global $wp_query, $post;
+				$wp_query->is_404            = false;
+				$wp_query->is_page           = true;
+				$wp_query->queried_object_id = $myaccount_page_id;
+				$wp_query->queried_object    = get_post( $myaccount_page_id );
+				$post                        = $wp_query->queried_object;
+				status_header( 200 );
+				set_query_var( 'voicedesk-tickets', '1' );
+
+				$template = get_page_template();
+				if ( $template && file_exists( $template ) ) {
+					include $template;
+					exit;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Render notice above WooCommerce Customer Login form when arriving with ?ticket=...
+	 */
+	public function wc_before_login_ticket_notice() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket query parameter for login notice banner.
+		if ( isset( $_GET['ticket'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket query parameter for login notice banner.
+			$ticket_num = sanitize_text_field( wp_unslash( $_GET['ticket'] ) );
+			?>
+			<div class="nik-vd-login-ticket-notice" style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb; padding: 14px 18px; border-radius: 8px; margin-bottom: 24px; color: #1e3a8a; font-size: 14px; line-height: 1.5;">
+				<strong style="display: block; font-size: 15px; margin-bottom: 4px;">
+					🔒 <?php
+					/* translators: %s: Ticket Number */
+					printf( esc_html__( 'Sign in to view Ticket #%s', 'nik-voice-ticketing-ai' ), esc_html( $ticket_num ) );
+					?>
+				</strong>
+				<?php esc_html_e( 'Your voice ticket was received and is protected for your privacy. Please sign in or register with your account to access your voice recording, AI analysis, and support updates.', 'nik-voice-ticketing-ai' ); ?>
+			</div>
+			<?php
+		}
+	}
+
 	public function wc_add_menu_item( $items ) {
 		$items['voicedesk-tickets'] = __( 'Voice Support Tickets', 'nik-voice-ticketing-ai' );
 		return $items;
 	}
 
 	public function wc_endpoint_content() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket identifier parameter in URL.
+		$ticket_num = isset( $_GET['ticket'] ) ? sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) : '';
+
 		if ( ! is_user_logged_in() ) {
-			echo wp_kses_post( $this->render_guest_login_prompt() );
+			echo wp_kses_post( $this->render_guest_login_prompt( $ticket_num ) );
 			return;
 		}
 
 		wp_enqueue_style( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/css/frontend.css', array(), NIKVOTIA_VERSION );
 		wp_enqueue_script( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/js/frontend.js', array(), NIKVOTIA_VERSION, true );
 
-		if ( isset( $_GET['ticket'] ) ) {
-			$ticket_num = sanitize_text_field( wp_unslash( $_GET['ticket'] ) );
-			$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-			if ( ! wp_verify_nonce( $nonce, 'nikvotia_view_ticket_' . $ticket_num ) ) {
-				echo '<div style="background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;">' . esc_html__( 'Security check failed. Please refresh the page or return to your tickets list.', 'nik-voice-ticketing-ai' ) . '</div>';
-				return;
-			}
+		if ( ! empty( $ticket_num ) ) {
 			$this->render_single_ticket_view( $ticket_num );
 		} else {
 			$this->render_user_tickets_list();
 		}
 	}
 
-	private function render_guest_login_prompt() {
-		$login_url = wp_login_url( get_permalink() );
+	private function render_guest_login_prompt( $ticket_num = '' ) {
+		$target_url = self::get_portal_url( $ticket_num );
+		$login_url  = wp_login_url( $target_url );
+
+		$title = ! empty( $ticket_num )
+			/* translators: %s: Ticket Number */
+			? sprintf( __( 'Sign In to View Ticket #%s', 'nik-voice-ticketing-ai' ), esc_html( $ticket_num ) )
+			: __( 'Customer Ticket Portal', 'nik-voice-ticketing-ai' );
+
+		$desc = ! empty( $ticket_num )
+			/* translators: %s: Ticket Number */
+			? sprintf( __( 'Your voice ticket #%s has been securely received. To protect your privacy and conversation details, support tickets can only be viewed by registered account holders. Please sign in or register to view your ticket and support responses.', 'nik-voice-ticketing-ai' ), esc_html( $ticket_num ) )
+			: __( 'Please sign in to your account to view your voice tickets, track status, and read replies from our support team.', 'nik-voice-ticketing-ai' );
+
 		return '
-		<div style="max-width: 520px; margin: 40px auto; padding: 32px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: -apple-system, sans-serif;">
+		<div style="max-width: 540px; margin: 40px auto; padding: 32px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: -apple-system, sans-serif;">
 			<div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
-			<h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">' . esc_html__( 'Customer Ticket Portal', 'nik-voice-ticketing-ai' ) . '</h3>
-			<p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">' . esc_html__( 'Please sign in to your account to view your voice tickets, track status, and read replies from our support team.', 'nik-voice-ticketing-ai' ) . '</p>
+			<h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">' . esc_html( $title ) . '</h3>
+			<p style="color: #64748b; font-size: 14px; margin-bottom: 24px; line-height: 1.6;">' . esc_html( $desc ) . '</p>
 			<a href="' . esc_url( $login_url ) . '" style="display: inline-block; background: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 14px;">' . esc_html__( 'Sign In to Your Account', 'nik-voice-ticketing-ai' ) . '</a>
 		</div>';
 	}
@@ -468,19 +579,36 @@ class Nikvotia_Frontend {
 
 		$post = $posts[0];
 
-		// Strict Security Check: only the authenticated author (user_id > 0) or admin can view this ticket
+		// Strict Security Check: only the authenticated author (user_id > 0), admin, or matching verified email can view this ticket
 		$post_author_id = (int) $post->post_author;
-		$can_view = false;
+		$can_view       = false;
 		if ( current_user_can( 'manage_options' ) ) {
 			$can_view = true;
 		} elseif ( $user_id > 0 && $post_author_id === $user_id ) {
 			$can_view = true;
 		}
 
+		// If ticket was recorded while guest (author 0), bind to account if email matches
+		if ( ! $can_view && $user_id > 0 ) {
+			$ticket_email = get_post_meta( $post->ID, '_nikvotia_user_email', true );
+			$current_user = wp_get_current_user();
+			$user_email   = $current_user->user_email;
+
+			if ( ! empty( $ticket_email ) && ! empty( $user_email ) && strtolower( trim( (string) $ticket_email ) ) === strtolower( trim( (string) $user_email ) ) ) {
+				$can_view = true;
+				if ( 0 === $post_author_id ) {
+					wp_update_post( array(
+						'ID'          => $post->ID,
+						'post_author' => $user_id,
+					) );
+				}
+			}
+		}
+
 		if ( ! $can_view ) {
 			echo '<div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 8px; text-align: center;">';
 			echo '<strong>' . esc_html__( 'Access Denied', 'nik-voice-ticketing-ai' ) . '</strong><br>';
-			echo esc_html__( 'You do not have permission to view this support ticket.', 'nik-voice-ticketing-ai' );
+			echo esc_html__( 'You do not have permission to view this support ticket. Please ensure you are logged in with the account associated with this ticket.', 'nik-voice-ticketing-ai' );
 			echo '</div>';
 			return;
 		}
@@ -558,6 +686,7 @@ Manage Ticket:
 			}
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only success notice parameter from PRG redirect.
 		if ( isset( $_GET['reply_sent'] ) ) {
 			echo '<div style="background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">' . esc_html__( 'Your reply has been sent to our support team.', 'nik-voice-ticketing-ai' ) . '</div>';
 		}

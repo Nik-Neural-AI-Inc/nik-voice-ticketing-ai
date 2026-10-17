@@ -21,7 +21,9 @@ class Nikvotia_Core {
 	 * Includes all necessary files.
 	 */
 	private function includes() {
+		require_once NIKVOTIA_DIR . 'includes/class-nikvotia-logger.php';
 		require_once NIKVOTIA_DIR . 'includes/class-nikvotia-telemetry.php';
+		require_once NIKVOTIA_DIR . 'includes/class-nikvotia-cloud.php';
 		require_once NIKVOTIA_DIR . 'includes/class-nikvotia-settings.php';
 		require_once NIKVOTIA_DIR . 'includes/class-nikvotia-cpt.php';
 		require_once NIKVOTIA_DIR . 'includes/class-nikvotia-api.php';
@@ -32,6 +34,8 @@ class Nikvotia_Core {
 	 * Instantiates the required classes.
 	 */
 	private function instantiate() {
+		Nikvotia_Logger::init();
+
 		$telemetry = new Nikvotia_Telemetry();
 		$telemetry->init();
 

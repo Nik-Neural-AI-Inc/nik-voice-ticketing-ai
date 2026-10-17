@@ -578,6 +578,84 @@
     font-weight: 500;
 }
 
+/* AI Provider Badges & Audit Grid */
+.nik-ai-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    white-space: nowrap;
+}
+
+.nik-ai-pill.nik-ai-cloud {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #6ee7b7;
+}
+
+.nik-ai-pill.nik-ai-openai {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+
+.nik-ai-pill.nik-ai-modulate {
+    background: #faf5ff;
+    color: #6b21a8;
+    border-color: #d8b4fe;
+}
+
+.nik-vd-audit-card {
+    border-left: 3px solid #10b981;
+}
+
+.nik-vd-audit-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.nik-vd-audit-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.nik-vd-audit-label {
+    font-weight: 600;
+    color: #475569;
+}
+
+.nik-vd-audit-val {
+    text-align: right;
+    color: #0f172a;
+}
+
+.nik-vd-badge-success {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
 /* Responsive Leaderboard Ad Banner (Free Tier) */
 .nik-vd-leaderboard-banner {
     max-width: 100%;

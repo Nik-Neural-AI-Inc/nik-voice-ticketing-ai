@@ -89,40 +89,60 @@ class Nikvotia_API {
 		}
 
 		// 2. Anti-Executable & Polyglot Inspection
-		$fh = fopen( $audio_file['tmp_name'], 'rb' );
-		if ( ! $fh ) {
+		global $wp_filesystem;
+		if ( empty( $wp_filesystem ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			WP_Filesystem();
+		}
+
+		$file_content = '';
+		if ( $wp_filesystem && $wp_filesystem->is_readable( $audio_file['tmp_name'] ) ) {
+			$file_content = (string) $wp_filesystem->get_contents( $audio_file['tmp_name'] );
+		} elseif ( is_readable( $audio_file['tmp_name'] ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Fallback read for uploaded temporary audio file verification.
+			$file_content = (string) @file_get_contents( $audio_file['tmp_name'] );
+		}
+
+		if ( empty( $file_content ) ) {
 			return new WP_Error( 'file_read_error', __( 'Could not read uploaded audio file for validation.', 'nik-voice-ticketing-ai' ), array( 'status' => 500 ) );
 		}
-		$head = fread( $fh, 8192 );
-		$tail = '';
-		if ( $file_size > 8192 ) {
-			fseek( $fh, max( 0, $file_size - 8192 ) );
-			$tail = fread( $fh, 8192 );
-		}
-		fclose( $fh );
 
+		$head   = substr( $file_content, 0, 8192 );
+		$tail   = ( strlen( $file_content ) > 8192 ) ? substr( $file_content, -8192 ) : '';
 		$sample = $head . $tail;
-		$dangerous_patterns = array(
-			'/<\?php/i',
-			'/<\?=/i',
-			'/<\?(?!xml)/i',
-			'/<script\b/i',
-			'/<html\b/i',
-			'/<svg\b/i',
-			'/<!DOCTYPE/i',
-			'/eval\s*\(/i',
-			'/base64_decode\s*\(/i',
-			'/system\s*\(/i',
-			'/shell_exec\s*\(/i',
-			'/passthru\s*\(/i',
-			'/exec\s*\(/i',
-			'/__halt_compiler/i',
+
+		$executable_markers = array(
+			'php_tag'        => '/<\?php\b/i',
+			'php_short_echo' => '/<\?=/i',
+			'php_script_tag' => '/<script\s+language\s*=\s*["\']?php/i',
+			'html_script'    => '/<script[\s>]/i',
+			'html_doc'       => '/<(html|!doctype)[\s>]/i',
+			'svg_tag'        => '/<svg[\s>]/i',
+			'iframe_tag'     => '/<iframe[\s>]/i',
+			'halt_compiler'  => '/__halt_compiler\s*\(/i',
 		);
-		foreach ( $dangerous_patterns as $pattern ) {
+
+		foreach ( $executable_markers as $name => $pattern ) {
 			if ( preg_match( $pattern, $sample ) ) {
+				Nikvotia_Logger::log(
+					'SECURITY',
+					'SECURITY_VERIFICATION',
+					sprintf( 'Uploaded audio rejected: matched executable marker [%s] in %s', $name, $client_filename ),
+					array(
+						'marker'   => $name,
+						'filename' => $client_filename,
+						'size'     => $file_size,
+					)
+				);
 				return new WP_Error( 'malicious_content', __( 'File content failed security verification.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
 			}
 		}
+
+		Nikvotia_Logger::log(
+			'SUCCESS',
+			'SECURITY_VERIFICATION',
+			sprintf( 'Audio file security verification passed for %s (%s, %s)', $client_filename, strtoupper( $raw_ext ), size_format( $file_size ) )
+		);
 
 		// 3. Audio Container Magic Bytes Check
 		$magic_valid = false;
@@ -354,59 +374,182 @@ class Nikvotia_API {
 		update_post_meta( $post_id, '_nikvotia_status', 'Processing'  );
 		update_post_meta( $post_id, '_nikvotia_priority', 'Normal'  );
 
-		// 5. Process AI Pipeline (Safely wrapped so API delays or errors never crash ticket creation)
-		$summary = __( 'Voice ticket received.', 'nik-voice-ticketing-ai' );
+		// 5. Process AI Pipeline (Strict Single-Provider Isolation Mode)
+		$summary    = __( 'Voice ticket received.', 'nik-voice-ticketing-ai' );
 		$department = __( 'General Support', 'nik-voice-ticketing-ai' );
 
 		try {
-			$stt_model = get_option( 'nikvotia_stt_model', 'openai_whisper' );
-			$llm_model = get_option( 'nikvotia_llm_model', 'openai_gpt' );
+			$active_provider = Nikvotia_Settings::get_active_ai_provider();
+			$provider_label  = Nikvotia_Settings::get_provider_label( $active_provider );
+			$departments     = get_option( 'nikvotia_departments', 'Sales, Technical Support, Billing, General Support' );
 
-			$transcript = '';
+			Nikvotia_Logger::log(
+				'INFO',
+				'AI_GATEWAY',
+				sprintf( 'Initiating AI processing pipeline with active provider: %s', $provider_label ),
+				array( 'provider' => $active_provider, 'ticket' => $ticket_number )
+			);
 
-			// Execute STT
-			if ( 'openai_whisper' === $stt_model ) {
-				$transcript = $this->call_openai_whisper( $filepath );
-			} elseif ( 'modulate_ai' === $stt_model ) {
-				$transcript = $this->call_modulate_stt( $filepath );
-			}
+			$transcript   = '';
+			$audit_stt    = '';
+			$audit_llm    = '';
+			$audit_stt_ok = false;
+			$audit_llm_ok = false;
 
-			if ( is_wp_error( $transcript ) ) {
-				$transcript_error = $transcript->get_error_message();
-				/* translators: %s: Speech transcription error message */
-				update_post_meta( $post_id, '_nikvotia_transcript', sprintf( __( 'STT Note: %s', 'nik-voice-ticketing-ai' ), $transcript_error ) );
-				update_post_meta( $post_id, '_nikvotia_status', 'Open' );
-			} else {
-				update_post_meta( $post_id, '_nikvotia_transcript', $transcript );
+			if ( 'nik_voice_cloud' === $active_provider ) {
+				// Exclusive Nik Voice Cloud Pipeline (Zero third-party calls to Modulate or OpenAI)
+				$audit_stt  = 'Nik Voice Cloud (Groq Whisper-large-v3)';
+				$transcript = Nikvotia_Cloud_Client::transcribe( $filepath );
 
-				// Execute LLM Analysis
-				$departments = get_option( 'nikvotia_departments', 'Sales, Technical Support, Billing, General Support' );
+				if ( is_wp_error( $transcript ) ) {
+					$transcript_error = $transcript->get_error_message();
+					Nikvotia_Logger::log(
+						'ERROR',
+						'AI_GATEWAY',
+						sprintf( 'Speech-to-Text failed via %s: %s', $audit_stt, $transcript_error ),
+						array( 'provider' => $active_provider, 'ticket' => $ticket_number )
+					);
+					/* translators: %s: Speech transcription error message */
+					update_post_meta( $post_id, '_nikvotia_transcript', sprintf( __( 'STT Note: %s', 'nik-voice-ticketing-ai' ), $transcript_error ) );
+					update_post_meta( $post_id, '_nikvotia_status', 'Open' );
+				} else {
+					$audit_stt_ok = true;
+					update_post_meta( $post_id, '_nikvotia_transcript', $transcript );
+					Nikvotia_Logger::log(
+						'SUCCESS',
+						'AI_GATEWAY',
+						sprintf( 'Speech-to-Text completed via %s (%d words)', $audit_stt, str_word_count( $transcript ) ),
+						array( 'provider' => $active_provider, 'ticket' => $ticket_number )
+					);
 
-				if ( 'openai_gpt' === $llm_model ) {
-					$analysis = $this->call_openai_gpt( $transcript, $departments );
-					if ( ! is_wp_error( $analysis ) && is_array( $analysis ) ) {
-						$summary = $analysis['summary'] ?? $summary;
-						$department = $analysis['department'] ?? $department;
-					}
-				} elseif ( 'modulate_ai' === $llm_model ) {
-					$analysis = $this->call_modulate_analysis( $filepath, $transcript, $departments );
-					if ( ! is_wp_error( $analysis ) && is_array( $analysis ) ) {
-						$summary = $analysis['summary'] ?? $summary;
-						$department = $analysis['department'] ?? $department;
+					// Nik Voice Cloud sovereign triage (Never contacts Modulate or OpenAI)
+					$triage = Nikvotia_Cloud_Client::summarize( $transcript, $departments );
+					if ( is_array( $triage ) ) {
+						$summary      = $triage['summary'] ?? $summary;
+						$department   = $triage['department'] ?? $department;
+						$audit_llm    = $triage['source'] ?? 'Nik Voice Cloud (Sovereign Triage)';
+						$audit_llm_ok = true;
+
+						Nikvotia_Logger::log(
+							'SUCCESS',
+							'AI_GATEWAY',
+							sprintf( 'Triage complete: Assigned department [%s] via %s', $department, $audit_llm ),
+							array( 'provider' => $active_provider, 'department' => $department )
+						);
 					}
 				}
+			} elseif ( 'openai' === $active_provider ) {
+				// Exclusive OpenAI Pipeline (Zero calls to Nik Voice Cloud or Modulate)
+				$audit_stt  = 'OpenAI Whisper (whisper-1)';
+				$transcript = $this->call_openai_whisper( $filepath );
 
-				update_post_meta( $post_id, '_nikvotia_summary', $summary );
-				update_post_meta( $post_id, '_nikvotia_department', $department );
-				update_post_meta( $post_id, '_nikvotia_status', 'Open' );
+				if ( is_wp_error( $transcript ) ) {
+					$transcript_error = $transcript->get_error_message();
+					Nikvotia_Logger::log(
+						'ERROR',
+						'AI_GATEWAY',
+						sprintf( 'Speech-to-Text failed via %s: %s', $audit_stt, $transcript_error ),
+						array( 'provider' => $active_provider, 'ticket' => $ticket_number )
+					);
+					/* translators: %s: Speech transcription error message */
+					update_post_meta( $post_id, '_nikvotia_transcript', sprintf( __( 'STT Note: %s', 'nik-voice-ticketing-ai' ), $transcript_error ) );
+					update_post_meta( $post_id, '_nikvotia_status', 'Open' );
+				} else {
+					$audit_stt_ok = true;
+					update_post_meta( $post_id, '_nikvotia_transcript', $transcript );
+					Nikvotia_Logger::log(
+						'SUCCESS',
+						'AI_GATEWAY',
+						sprintf( 'Speech-to-Text completed via %s (%d words)', $audit_stt, str_word_count( $transcript ) ),
+						array( 'provider' => $active_provider, 'ticket' => $ticket_number )
+					);
 
-				// Update post title with department
-				wp_update_post( array(
-					'ID'         => $post_id,
-					/* translators: 1: Ticket unique identifier, 2: Department name */
-					'post_title' => sprintf( __( 'Ticket %1$s - %2$s', 'nik-voice-ticketing-ai' ), $ticket_number, $department ),
-				) );
+					$analysis  = $this->call_openai_gpt( $transcript, $departments );
+					$audit_llm = 'OpenAI GPT-4o-mini';
+					if ( ! is_wp_error( $analysis ) && is_array( $analysis ) ) {
+						$summary      = $analysis['summary'] ?? $summary;
+						$department   = $analysis['department'] ?? $department;
+						$audit_llm_ok = true;
+
+						Nikvotia_Logger::log(
+							'SUCCESS',
+							'AI_GATEWAY',
+							sprintf( 'Triage complete: Assigned department [%s] via %s', $department, $audit_llm ),
+							array( 'provider' => $active_provider, 'department' => $department )
+						);
+					}
+				}
+			} elseif ( 'modulate_ai' === $active_provider ) {
+				// Exclusive Modulate.ai Pipeline (Zero calls to Nik Voice Cloud or OpenAI)
+				$audit_stt  = 'Modulate.ai (Velma-2 Fast STT)';
+				$transcript = $this->call_modulate_stt( $filepath );
+
+				if ( is_wp_error( $transcript ) ) {
+					$transcript_error = $transcript->get_error_message();
+					Nikvotia_Logger::log(
+						'ERROR',
+						'AI_GATEWAY',
+						sprintf( 'Speech-to-Text failed via %s: %s', $audit_stt, $transcript_error ),
+						array( 'provider' => $active_provider, 'ticket' => $ticket_number )
+					);
+					/* translators: %s: Speech transcription error message */
+					update_post_meta( $post_id, '_nikvotia_transcript', sprintf( __( 'STT Note: %s', 'nik-voice-ticketing-ai' ), $transcript_error ) );
+					update_post_meta( $post_id, '_nikvotia_status', 'Open' );
+				} else {
+					$audit_stt_ok = true;
+					update_post_meta( $post_id, '_nikvotia_transcript', $transcript );
+					Nikvotia_Logger::log(
+						'SUCCESS',
+						'AI_GATEWAY',
+						sprintf( 'Speech-to-Text completed via %s (%d words)', $audit_stt, str_word_count( $transcript ) ),
+						array( 'provider' => $active_provider, 'ticket' => $ticket_number )
+					);
+
+					$analysis  = $this->call_modulate_analysis( $filepath, $transcript, $departments );
+					$audit_llm = 'Modulate.ai (Voice Intelligence Batch Analytics)';
+					if ( ! is_wp_error( $analysis ) && is_array( $analysis ) ) {
+						$summary      = $analysis['summary'] ?? $summary;
+						$department   = $analysis['department'] ?? $department;
+						$audit_llm_ok = true;
+
+						Nikvotia_Logger::log(
+							'SUCCESS',
+							'AI_GATEWAY',
+							sprintf( 'Triage complete: Assigned department [%s] via %s', $department, $audit_llm ),
+							array( 'provider' => $active_provider, 'department' => $department )
+						);
+					}
+				}
 			}
+
+			// Save AI classification & summary
+			update_post_meta( $post_id, '_nikvotia_summary', $summary );
+			update_post_meta( $post_id, '_nikvotia_department', $department );
+			update_post_meta( $post_id, '_nikvotia_status', 'Open' );
+
+			// Save AI Provider & Audit Log
+			$provider_label = Nikvotia_Settings::get_provider_label( $active_provider );
+			$audit_log      = array(
+				'provider_id'    => $active_provider,
+				'provider_label' => $provider_label,
+				'timestamp'      => current_time( 'mysql' ),
+				'stt_engine'     => $audit_stt,
+				'stt_status'     => $audit_stt_ok ? 'Success' : 'Error / Incomplete',
+				'llm_engine'     => $audit_llm ?: 'N/A',
+				'llm_status'     => $audit_llm_ok ? 'Success' : 'Error / Incomplete',
+				'isolation_mode' => 'Enforced (No secondary APIs contacted)',
+			);
+
+			update_post_meta( $post_id, '_nikvotia_ai_provider', $active_provider );
+			update_post_meta( $post_id, '_nikvotia_ai_provider_name', $provider_label );
+			update_post_meta( $post_id, '_nikvotia_ai_audit_log', $audit_log );
+
+			// Update post title with department
+			wp_update_post( array(
+				'ID'         => $post_id,
+				/* translators: 1: Ticket unique identifier, 2: Department name */
+				'post_title' => sprintf( __( 'Ticket %1$s - %2$s', 'nik-voice-ticketing-ai' ), $ticket_number, $department ),
+			) );
 		} catch ( Throwable $e ) {
 			// Catch any API or parsing exception gracefully
 			update_post_meta( $post_id, '_nikvotia_status', 'Open' );
@@ -427,25 +570,8 @@ class Nikvotia_API {
 			// Email delivery failure should not block user success response
 		}
 
-		$portal_page_id = get_option( 'nikvotia_portal_page_id', 0   );
-		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : '';
-		if ( empty( $portal_url ) ) {
-			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
-				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
-			} else {
-				$pages = get_posts( array(
-					'post_type'      => 'page',
-					'post_status'    => 'publish',
-					'posts_per_page' => 1,
-					's'              => 'nikvotia_tickets',
-					'fields'         => 'ids',
-				) );
-				if ( ! empty( $pages ) ) {
-					$portal_url = get_permalink( $pages[0] );
-				}
-			}
-		}
-		$ticket_url = ! empty( $portal_url ) ? add_query_arg( 'ticket', $ticket_number, $portal_url ) : '';
+		$portal_url = Nikvotia_Frontend::get_portal_url();
+		$ticket_url = Nikvotia_Frontend::get_portal_url( $ticket_number );
 
 		return rest_ensure_response( array(
 			'success'       => true,
@@ -667,6 +793,7 @@ class Nikvotia_API {
 		$payload = '--' . $boundary . "\r\n";
 		$payload .= 'Content-Disposition: form-data; name="file"; filename="' . basename( $filepath ) . '"' . "\r\n";
 		$payload .= 'Content-Type: audio/webm' . "\r\n\r\n";
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local audio recording payload for OpenAI Whisper STT.
 		$payload .= file_get_contents( $filepath ) . "\r\n";
 		$payload .= '--' . $boundary . "\r\n";
 		$payload .= 'Content-Disposition: form-data; name="model"' . "\r\n\r\nwhisper-1\r\n";
@@ -715,6 +842,7 @@ class Nikvotia_API {
 		$payload = '--' . $boundary . "\r\n";
 		$payload .= 'Content-Disposition: form-data; name="upload_file"; filename="' . basename( $filepath ) . '"' . "\r\n";
 		$payload .= 'Content-Type: audio/webm' . "\r\n\r\n";
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local audio recording payload for Modulate STT.
 		$payload .= file_get_contents( $filepath ) . "\r\n";
 		$payload .= '--' . $boundary . "\r\n";
 		$payload .= 'Content-Disposition: form-data; name="language"' . "\r\n\r\nen\r\n";
@@ -832,6 +960,7 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 		$payload = '--' . $boundary . "\r\n";
 		$payload .= 'Content-Disposition: form-data; name="upload_file"; filename="' . basename( $filepath ) . '"' . "\r\n";
 		$payload .= 'Content-Type: audio/webm' . "\r\n\r\n";
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local audio recording payload for Modulate analysis.
 		$payload .= file_get_contents( $filepath ) . "\r\n";
 		$payload .= '--' . $boundary . "\r\n";
 		$payload .= 'Content-Disposition: form-data; name="config"' . "\r\n\r\ndefault\r\n";

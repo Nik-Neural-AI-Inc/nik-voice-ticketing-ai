@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Nik Voice Ticketing AI
  * Plugin URI:        https://nikneural.ca/pl/voicedesk.php
- * Description:       Zero-friction, AI-powered voice ticketing system for WordPress with Whisper and Modulate.ai speech-to-text.
- * Version:           1.2.5
+ * Description:       Zero-friction, AI-powered voice ticketing system for WordPress with 1-Click Nik Voice Cloud, Groq Whisper-v3, and PIPEDA zero-disk retention.
+ * Version:           1.3.5
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Nik Neural AI Inc.
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Plugin Constants
-define( 'NIKVOTIA_VERSION', '1.2.5' );
+define( 'NIKVOTIA_VERSION', '1.3.5' );
 define( 'NIKVOTIA_FILE', __FILE__ );
 define( 'NIKVOTIA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NIKVOTIA_URL', plugin_dir_url( __FILE__ ) );
@@ -93,9 +93,14 @@ add_action( 'plugins_loaded', 'nikvotia_init' );
 function nikvotia_activate() {
 	require_once NIKVOTIA_DIR . 'includes/class-nikvotia-core.php';
 	require_once NIKVOTIA_DIR . 'includes/class-nikvotia-cpt.php';
+	require_once NIKVOTIA_DIR . 'includes/class-nikvotia-frontend.php';
 	
 	$cpt = new Nikvotia_CPT();
 	$cpt->register_post_type();
+
+	$frontend = new Nikvotia_Frontend();
+	$frontend->wc_add_endpoint();
+
 	flush_rewrite_rules();
 
 	nikvotia_ensure_uploads_dir();
