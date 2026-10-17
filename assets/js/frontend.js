@@ -176,6 +176,81 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Close Modal on backdrop click
+    if (successModal) {
+        successModal.addEventListener('click', function(e) {
+            if (e.target === successModal) {
+                successModal.classList.add('nik-vd-hidden');
+            }
+        });
+    }
+
+    // Success Modal Theme Handler
+    function getPreferredModalTheme() {
+        const saved = localStorage.getItem('nikvotia_portal_theme');
+        if (saved === 'dark' || saved === 'light') return saved;
+
+        // Check if portal is in dark mode
+        if (document.querySelector('.nik-portal-dark')) return 'dark';
+
+        // Check theme dark mode classes
+        const darkClasses = ['dark', 'dark-mode', 'theme-dark', 'is-dark-theme', 'wp-dark-mode-active'];
+        for (let i = 0; i < darkClasses.length; i++) {
+            if (document.body.classList.contains(darkClasses[i]) || document.documentElement.classList.contains(darkClasses[i])) {
+                return 'dark';
+            }
+        }
+        if (document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark' || document.documentElement.getAttribute('data-bs-theme') === 'dark') {
+            return 'dark';
+        }
+
+        // Check background luminance of body
+        try {
+            const bg = window.getComputedStyle(document.body).backgroundColor;
+            const rgb = bg.match(/\d+/g);
+            if (rgb && rgb.length >= 3) {
+                const brightness = (parseInt(rgb[0], 10) * 299 + parseInt(rgb[1], 10) * 587 + parseInt(rgb[2], 10) * 114) / 1000;
+                if (brightness < 128) return 'dark';
+            }
+        } catch (e) {}
+
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+
+        return 'light';
+    }
+
+    function applyModalTheme(theme) {
+        if (!successModal) return;
+        const themeIcon = document.getElementById('nik-vd-modal-theme-icon');
+        const themeToggle = document.getElementById('nik-vd-modal-theme-toggle');
+        if (theme === 'dark') {
+            successModal.classList.add('nik-vd-modal-dark');
+            successModal.classList.remove('nik-vd-modal-light');
+            if (themeIcon) themeIcon.textContent = '☀️';
+            if (themeToggle) themeToggle.setAttribute('title', 'Switch to Light Mode');
+        } else {
+            successModal.classList.remove('nik-vd-modal-dark');
+            successModal.classList.add('nik-vd-modal-light');
+            if (themeIcon) themeIcon.textContent = '🌙';
+            if (themeToggle) themeToggle.setAttribute('title', 'Switch to Dark Mode');
+        }
+    }
+
+    // Modal Theme Toggle Button
+    const modalThemeBtn = document.getElementById('nik-vd-modal-theme-toggle');
+    if (modalThemeBtn && successModal) {
+        modalThemeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const willBeDark = !successModal.classList.contains('nik-vd-modal-dark');
+            const newTheme = willBeDark ? 'dark' : 'light';
+            applyModalTheme(newTheme);
+            localStorage.setItem('nikvotia_portal_theme', newTheme);
+        });
+    }
+
     // Copy Ticket ID
     if (copyIdBtn) {
         copyIdBtn.addEventListener('click', function() {
@@ -435,6 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (successModal) {
+                    applyModalTheme(getPreferredModalTheme());
                     successModal.classList.remove('nik-vd-hidden');
                 } else {
                     // Always show success notification if modal is not in DOM

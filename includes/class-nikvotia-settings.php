@@ -613,7 +613,13 @@ class Nikvotia_Settings {
 		?>
 		<?php if ( $nik_cloud_tested ) : ?>
 			<div class="notice notice-success is-dismissible" style="margin-bottom: 20px;">
-				<p><strong><span class="dashicons dashicons-yes-alt" style="color: #16a34a;"></span> <?php esc_html_e( 'Nik Voice Cloud Gateway Verified Live!', 'nik-voice-ticketing-ai' ); ?></strong> <?php printf( esc_html__( 'Connected to %1$s (Engine: %2$s • Canada PIPEDA Zero-Disk). Diagnostic health status logged in System & AI Logs.', 'nik-voice-ticketing-ai' ), esc_html( $active_gateway ), esc_html( $cloud_engine_name ) ); ?></p>
+				<p>
+					<strong><span class="dashicons dashicons-yes-alt" style="color: #16a34a;"></span> <?php esc_html_e( 'Nik Voice Cloud Gateway Verified Live!', 'nik-voice-ticketing-ai' ); ?></strong>
+					<?php
+					/* translators: 1: Active Gateway URL, 2: Cloud engine name */
+					printf( esc_html__( 'Connected to %1$s (Engine: %2$s • Canada PIPEDA Zero-Disk). Diagnostic health status logged in System & AI Logs.', 'nik-voice-ticketing-ai' ), esc_html( $active_gateway ), esc_html( $cloud_engine_name ) );
+					?>
+				</p>
 			</div>
 		<?php elseif ( $nik_cloud_success ) : ?>
 			<div class="notice notice-success is-dismissible" style="margin-bottom: 20px;">

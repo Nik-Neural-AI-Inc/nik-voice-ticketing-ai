@@ -397,12 +397,12 @@ class Nikvotia_API {
 			$audit_llm_ok = false;
 
 			if ( 'nik_voice_cloud' === $active_provider ) {
-				// Exclusive Nik Voice Cloud Pipeline (Zero third-party calls to Modulate or OpenAI)
-				$audit_stt  = 'Nik Voice Cloud (Groq Whisper-large-v3)';
-				$transcript = Nikvotia_Cloud_Client::transcribe( $filepath );
+				// Exclusive Nik Voice Cloud Pipeline (Modulate.ai Voice Intelligence + Groq Whisper)
+				$audit_stt = 'Nik Voice Cloud (Groq Whisper-large-v3)';
+				$intel_res = Nikvotia_Cloud_Client::transcribe_full( $filepath, $departments );
 
-				if ( is_wp_error( $transcript ) ) {
-					$transcript_error = $transcript->get_error_message();
+				if ( is_wp_error( $intel_res ) ) {
+					$transcript_error = $intel_res->get_error_message();
 					Nikvotia_Logger::log(
 						'ERROR',
 						'AI_GATEWAY',
@@ -414,6 +414,7 @@ class Nikvotia_API {
 					update_post_meta( $post_id, '_nikvotia_status', 'Open' );
 				} else {
 					$audit_stt_ok = true;
+					$transcript   = $intel_res['text'] ?? '';
 					update_post_meta( $post_id, '_nikvotia_transcript', $transcript );
 					Nikvotia_Logger::log(
 						'SUCCESS',
@@ -422,19 +423,34 @@ class Nikvotia_API {
 						array( 'provider' => $active_provider, 'ticket' => $ticket_number )
 					);
 
-					// Nik Voice Cloud sovereign triage (Never contacts Modulate or OpenAI)
-					$triage = Nikvotia_Cloud_Client::summarize( $transcript, $departments );
-					if ( is_array( $triage ) ) {
-						$summary      = $triage['summary'] ?? $summary;
-						$department   = $triage['department'] ?? $department;
-						$audit_llm    = $triage['source'] ?? 'Nik Voice Cloud (Sovereign Triage)';
+					if ( ! empty( $intel_res['summary'] ) ) {
+						$summary      = $intel_res['summary'];
+						$department   = $intel_res['department'] ?? $department;
+						$audit_llm    = 'Nik Voice Cloud (Modulate.ai Voice Intelligence Engine)';
 						$audit_llm_ok = true;
+
+						// Save Voice Intelligence metadata (Sentiment, Priority, Action Items)
+						if ( ! empty( $intel_res['sentiment'] ) ) {
+							update_post_meta( $post_id, '_nikvotia_sentiment', sanitize_text_field( $intel_res['sentiment'] ) );
+						}
+						if ( ! empty( $intel_res['urgency'] ) ) {
+							$prio = ucfirst( strtolower( $intel_res['urgency'] ) );
+							update_post_meta( $post_id, '_nikvotia_priority', sanitize_text_field( $prio ) );
+						}
+						if ( ! empty( $intel_res['action_items'] ) && is_array( $intel_res['action_items'] ) ) {
+							update_post_meta( $post_id, '_nikvotia_action_items', $intel_res['action_items'] );
+						}
 
 						Nikvotia_Logger::log(
 							'SUCCESS',
 							'AI_GATEWAY',
-							sprintf( 'Triage complete: Assigned department [%s] via %s', $department, $audit_llm ),
-							array( 'provider' => $active_provider, 'department' => $department )
+							sprintf( 'Voice Intelligence complete: Dept [%s], Priority [%s], Sentiment [%s]', $department, $intel_res['urgency'] ?? 'normal', $intel_res['sentiment'] ?? 'neutral' ),
+							array(
+								'provider'   => $active_provider,
+								'department' => $department,
+								'priority'   => $intel_res['urgency'] ?? 'normal',
+								'sentiment'  => $intel_res['sentiment'] ?? 'neutral',
+							)
 						);
 					}
 				}

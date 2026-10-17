@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.5
+Stable tag: 1.3.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,11 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 4. VoiceDesk Settings page with Dark Mode toggle and AI configuration.
 
 == Changelog ==
+
+= 1.3.6 =
+* UI & Accessibility: Redesigned the ticket submission confirmation modal with ultra-high contrast styling for dark and light modes.
+* Feature: Added automatic theme detection and an interactive Dark/Light mode switcher toggle right inside the success confirmation modal.
+* Hardening: Applied strict CSS specificity and !important property isolation across modal typography and notices, preventing WordPress theme stylesheet text bleed.
 
 = 1.3.5 =
 * Feature: Added seamless manual API Key ID pairing for multi-site deployments and client licensing.
@@ -171,6 +176,9 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 * Initial release of Nik VoiceDesk AI.
 
 == Upgrade Notice ==
+
+= 1.3.6 =
+Recommended update: Resolves low contrast and faint text on the ticket submission modal across dark and light themes, and adds an interactive modal theme switcher.
 
 = 1.3.5 =
 Recommended update: Enables standalone customer API keys without HMAC secrets and prevents automatic key overwrites on client sites.

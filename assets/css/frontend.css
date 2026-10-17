@@ -383,176 +383,564 @@ body.nik-vd-recording-active {
     }
 }
 
-/* Success Modal */
+/* ==========================================================================
+   Success Confirmation Modal - Ultra High Contrast & Multi-Theme Engine
+   ========================================================================== */
 #nik-vd-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100000;
-    padding: 20px;
-    box-sizing: border-box;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(15, 23, 42, 0.72) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 999999 !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    transition: background 0.25s ease !important;
 }
 
-.nik-vd-modal-card {
-    background: #ffffff;
-    max-width: 480px;
-    width: 100%;
-    border-radius: 16px;
-    padding: 32px 28px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-    text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: #1e293b;
-    position: relative;
-    animation: nik-vd-modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+#nik-vd-modal.nik-vd-hidden {
+    display: none !important;
+}
+
+#nik-vd-modal .nik-vd-modal-card {
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    max-width: 480px !important;
+    width: 100% !important;
+    border-radius: 20px !important;
+    padding: 36px 30px 28px 30px !important;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    text-align: center !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    color: #0f172a !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    animation: nik-vd-modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease !important;
 }
 
 @keyframes nik-vd-modal-pop {
     from {
-        transform: scale(0.9);
+        transform: scale(0.92);
         opacity: 0;
     }
-
     to {
         transform: scale(1);
         opacity: 1;
     }
 }
 
-.nik-vd-success-icon {
-    width: 56px;
-    height: 56px;
-    background: #dcfce7;
-    color: #16a34a;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px auto;
-    font-size: 28px;
+/* Modal Quick Dark/Light Switcher */
+#nik-vd-modal .nik-vd-modal-theme-toggle {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 15px !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transition: all 0.2s ease !important;
+    z-index: 10 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
 }
 
-.nik-vd-modal-card h2 {
-    margin: 0 0 8px 0;
-    font-size: 22px;
-    font-weight: 700;
-    color: #0f172a;
+#nik-vd-modal .nik-vd-modal-theme-toggle:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    transform: scale(1.08) !important;
 }
 
-.nik-vd-modal-subtitle {
-    margin: 0 0 20px 0;
-    font-size: 14px;
-    color: #64748b;
+/* Animated Green Success Badge */
+#nik-vd-modal .nik-vd-success-icon {
+    width: 58px !important;
+    height: 58px !important;
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border: 2px solid #bbf7d0 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 16px auto !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    box-shadow: 0 0 0 6px #f0fdf4 !important;
+    transition: all 0.25s ease !important;
 }
 
-.nik-vd-id-container {
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
+#nik-vd-modal .nik-vd-modal-card h2 {
+    margin: 0 0 8px 0 !important;
+    font-size: 23px !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.25 !important;
+    font-family: inherit !important;
 }
 
-#nik-vd-modal-ticket-id {
-    font-size: 20px;
-    font-weight: 800;
-    color: #0284c7;
-    letter-spacing: 0.5px;
+#nik-vd-modal .nik-vd-modal-subtitle {
+    margin: 0 0 20px 0 !important;
+    font-size: 14.5px !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    line-height: 1.5 !important;
+    font-family: inherit !important;
 }
 
-#nik-vd-copy-id-btn {
-    background: #0284c7;
-    color: #ffffff;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease;
+/* Ticket ID Container */
+#nik-vd-modal .nik-vd-id-container {
+    background: #f8fafc !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    padding: 12px 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 18px !important;
+    box-sizing: border-box !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    transition: background-color 0.25s ease, border-color 0.25s ease !important;
 }
 
-#nik-vd-copy-id-btn:hover {
-    background: #0369a1;
+#nik-vd-modal #nik-vd-modal-ticket-id {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #0284c7 !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    letter-spacing: 0.5px !important;
+    line-height: 1 !important;
 }
 
-.nik-vd-modal-meta {
-    text-align: left;
-    background: #f8fafc;
-    border: 1px solid #f1f5f9;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 24px;
-    font-size: 13.5px;
-    line-height: 1.5;
+#nik-vd-modal #nik-vd-copy-id-btn {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 7px 14px !important;
+    border-radius: 8px !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25) !important;
 }
 
-.nik-vd-modal-meta p {
-    margin: 4px 0;
+#nik-vd-modal #nik-vd-copy-id-btn:hover {
+    background: #0369a1 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(2, 132, 199, 0.35) !important;
 }
 
-.nik-vd-dept-pill {
-    background: #e2e8f0;
-    color: #334155;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 12px;
+/* Metadata Box: Department & Summary */
+#nik-vd-modal .nik-vd-modal-meta {
+    text-align: left !important;
+    background: #f8fafc !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 14px 16px !important;
+    margin-bottom: 20px !important;
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+    box-sizing: border-box !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    transition: background-color 0.25s ease, border-color 0.25s ease !important;
 }
 
-.nik-vd-email-notice {
-    font-size: 13px;
-    color: #475569;
-    margin-bottom: 20px;
+#nik-vd-modal .nik-vd-modal-meta p {
+    margin: 6px 0 !important;
+    padding: 0 !important;
+    color: #334155 !important;
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+    font-family: inherit !important;
 }
 
-.nik-vd-modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
+#nik-vd-modal .nik-vd-modal-meta strong {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    margin-right: 6px !important;
 }
 
-.nik-vd-btn-primary {
-    background: #2563eb;
-    color: #ffffff;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    display: inline-block;
-    transition: background 0.2s ease;
+#nik-vd-modal .nik-vd-dept-pill {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+    border: 1px solid #bae6fd !important;
+    padding: 3px 10px !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    transition: background-color 0.25s ease, color 0.25s ease !important;
 }
 
-.nik-vd-btn-primary:hover {
-    background: #1d4ed8;
+#nik-vd-modal #nik-vd-modal-summary {
+    color: #1e293b !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
 }
 
-.nik-vd-btn-secondary {
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.2s ease;
+/* Email Notice */
+#nik-vd-modal .nik-vd-email-notice {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    margin: 0 0 22px 0 !important;
+    line-height: 1.5 !important;
+    font-family: inherit !important;
 }
 
-.nik-vd-btn-secondary:hover {
-    background: #e2e8f0;
+/* Actions Footer */
+#nik-vd-modal .nik-vd-modal-actions {
+    display: flex !important;
+    gap: 12px !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+#nik-vd-modal .nik-vd-btn-primary {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 11px 22px !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    display: inline-block !important;
+    border: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+    transition: all 0.2s ease !important;
+}
+
+#nik-vd-modal .nik-vd-btn-primary:hover {
+    background: #1d4ed8 !important;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45) !important;
+    transform: translateY(-1px) !important;
+    color: #ffffff !important;
+}
+
+#nik-vd-modal .nik-vd-btn-secondary {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1.5px solid #cbd5e1 !important;
+    padding: 11px 22px !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    display: inline-block !important;
+    transition: all 0.2s ease !important;
+}
+
+#nik-vd-modal .nik-vd-btn-secondary:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* ==========================================================================
+   Success Confirmation Modal - Dark Mode Enforcement
+   ========================================================================== */
+#nik-vd-modal.nik-vd-modal-dark,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light),
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light),
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light),
+body.is-dark-theme #nik-vd-modal:not(.nik-vd-modal-light),
+body.wp-dark-mode-active #nik-vd-modal:not(.nik-vd-modal-light),
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light),
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light),
+html[data-bs-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light),
+body[data-bs-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) {
+    background: rgba(0, 0, 0, 0.82) !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-modal-card,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card,
+body.is-dark-theme #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card,
+body.wp-dark-mode-active #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card,
+html[data-bs-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card,
+body[data-bs-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-modal-theme-toggle,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle,
+body.is-dark-theme #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle,
+body.wp-dark-mode-active #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle,
+html[data-bs-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle,
+body[data-bs-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-modal-theme-toggle:hover,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle:hover,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle:hover,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle:hover,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle:hover,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-success-icon,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-success-icon,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-success-icon,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-success-icon,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-success-icon,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-success-icon {
+    background: rgba(22, 163, 74, 0.22) !important;
+    color: #4ade80 !important;
+    border-color: rgba(74, 222, 128, 0.45) !important;
+    box-shadow: 0 0 22px rgba(34, 197, 94, 0.35) !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-modal-card h2,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card h2,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card h2,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card h2,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card h2,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card h2 {
+    color: #f8fafc !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-modal-subtitle,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-subtitle,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-subtitle,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-subtitle,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-subtitle,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-subtitle {
+    color: #94a3b8 !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-id-container,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-id-container,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-id-container,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-id-container,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-id-container,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-id-container {
+    background: #0b1329 !important;
+    border-color: #1e293b !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark #nik-vd-modal-ticket-id,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-ticket-id,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-ticket-id,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-ticket-id,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-ticket-id,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-ticket-id {
+    color: #38bdf8 !important;
+    text-shadow: 0 0 14px rgba(56, 189, 248, 0.45) !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark #nik-vd-copy-id-btn,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn {
+    background: #0284c7 !important;
+    border: 1px solid #38bdf8 !important;
+    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35) !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark #nik-vd-copy-id-btn:hover,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn:hover,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn:hover,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn:hover,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn:hover,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn:hover {
+    background: #0369a1 !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-modal-meta,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-modal-meta p,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta p,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta p,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta p,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta p,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta p {
+    color: #cbd5e1 !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-modal-meta strong,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta strong,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta strong,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta strong,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta strong,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta strong {
+    color: #f8fafc !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-dept-pill,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-dept-pill,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-dept-pill,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-dept-pill,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-dept-pill,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-dept-pill {
+    background: rgba(2, 132, 199, 0.25) !important;
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark #nik-vd-modal-summary,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-summary,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-summary,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-summary,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-summary,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-summary {
+    color: #e2e8f0 !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-email-notice,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-email-notice,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-email-notice,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-email-notice,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-email-notice,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-email-notice {
+    color: #94a3b8 !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-btn-secondary,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary {
+    background: #1e293b !important;
+    color: #cbd5e1 !important;
+    border-color: #334155 !important;
+}
+
+#nik-vd-modal.nik-vd-modal-dark .nik-vd-btn-secondary:hover,
+body.dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary:hover,
+body.dark-mode #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary:hover,
+body.theme-dark #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary:hover,
+html[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary:hover,
+body[data-theme="dark"] #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+    border-color: #475569 !important;
+}
+
+/* Fallback for OS prefers-color-scheme when no explicit light class is set */
+@media (prefers-color-scheme: dark) {
+    #nik-vd-modal:not(.nik-vd-modal-light) {
+        background: rgba(0, 0, 0, 0.82) !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+        box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+        color: #f8fafc !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-theme-toggle {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-success-icon {
+        background: rgba(22, 163, 74, 0.22) !important;
+        color: #4ade80 !important;
+        border-color: rgba(74, 222, 128, 0.45) !important;
+        box-shadow: 0 0 22px rgba(34, 197, 94, 0.35) !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-card h2 {
+        color: #f8fafc !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-subtitle {
+        color: #94a3b8 !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-id-container {
+        background: #0b1329 !important;
+        border-color: #1e293b !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-ticket-id {
+        color: #38bdf8 !important;
+        text-shadow: 0 0 14px rgba(56, 189, 248, 0.45) !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-copy-id-btn {
+        background: #0284c7 !important;
+        border: 1px solid #38bdf8 !important;
+        box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35) !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta p {
+        color: #cbd5e1 !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-modal-meta strong {
+        color: #f8fafc !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-dept-pill {
+        background: rgba(2, 132, 199, 0.25) !important;
+        color: #38bdf8 !important;
+        border-color: rgba(56, 189, 248, 0.45) !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) #nik-vd-modal-summary {
+        color: #e2e8f0 !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-email-notice {
+        color: #94a3b8 !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary {
+        background: #1e293b !important;
+        color: #cbd5e1 !important;
+        border-color: #334155 !important;
+    }
+    #nik-vd-modal:not(.nik-vd-modal-light) .nik-vd-btn-secondary:hover {
+        background: #334155 !important;
+        color: #ffffff !important;
+        border-color: #475569 !important;
+    }
 }
 
 /* Element Highlight during click tracking */
@@ -715,73 +1103,102 @@ body.nik-vd-recording-active {
 }
 
 .nik-vd-notice-card {
-    background: #ffffff;
-    border: 1px solid #fecaca;
-    border-left: 4px solid #ef4444;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    padding: 14px 16px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    box-sizing: border-box;
+    background: #ffffff !important;
+    border: 1.5px solid #fecaca !important;
+    border-left: 5px solid #ef4444 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    padding: 14px 16px !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    box-sizing: border-box !important;
 }
 
 .nik-vd-notice-icon {
-    font-size: 20px;
-    line-height: 1;
-    flex-shrink: 0;
-    margin-top: 2px;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
 }
 
 .nik-vd-notice-body {
-    flex: 1;
-    min-width: 0;
+    flex: 1 !important;
+    min-width: 0 !important;
 }
 
 .nik-vd-notice-title {
-    display: block;
-    font-size: 14px;
-    font-weight: 700;
-    color: #991b1b;
-    margin-bottom: 4px;
-    line-height: 1.3;
+    display: block !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #991b1b !important;
+    margin-bottom: 4px !important;
+    line-height: 1.3 !important;
 }
 
 #nik-vd-notice.nik-vd-notice-success .nik-vd-notice-card {
-    border-color: #bbf7d0;
-    border-left-color: #16a34a;
+    border-color: #bbf7d0 !important;
+    border-left-color: #16a34a !important;
 }
 
 #nik-vd-notice.nik-vd-notice-success .nik-vd-notice-title {
-    color: #15803d;
+    color: #15803d !important;
 }
 
 .nik-vd-notice-msg {
-    margin: 0;
-    font-size: 13px;
-    color: #475569;
-    line-height: 1.45;
-    word-break: break-word;
+    margin: 0 !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+    line-height: 1.45 !important;
+    word-break: break-word !important;
 }
 
 .nik-vd-notice-close {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0 4px;
-    border-radius: 4px;
-    transition: color 0.15s ease, background-color 0.15s ease;
-    flex-shrink: 0;
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    padding: 0 4px !important;
+    border-radius: 4px !important;
+    transition: color 0.15s ease, background-color 0.15s ease !important;
+    flex-shrink: 0 !important;
 }
 
 .nik-vd-notice-close:hover {
-    color: #0f172a;
-    background-color: #f1f5f9;
+    color: #0f172a !important;
+    background-color: #f1f5f9 !important;
+}
+
+/* Notice Dark Mode support */
+body.dark #nik-vd-notice .nik-vd-notice-card,
+body.dark-mode #nik-vd-notice .nik-vd-notice-card,
+body.theme-dark #nik-vd-notice .nik-vd-notice-card,
+html[data-theme="dark"] #nik-vd-notice .nik-vd-notice-card,
+body[data-theme="dark"] #nik-vd-notice .nik-vd-notice-card {
+    background: #0f172a !important;
+    border-color: #7f1d1d !important;
+    border-left-color: #ef4444 !important;
+}
+
+body.dark #nik-vd-notice.nik-vd-notice-success .nik-vd-notice-card,
+body.dark-mode #nik-vd-notice.nik-vd-notice-success .nik-vd-notice-card,
+body.theme-dark #nik-vd-notice.nik-vd-notice-success .nik-vd-notice-card,
+html[data-theme="dark"] #nik-vd-notice.nik-vd-notice-success .nik-vd-notice-card,
+body[data-theme="dark"] #nik-vd-notice.nik-vd-notice-success .nik-vd-notice-card {
+    background: #0f172a !important;
+    border-color: #14532d !important;
+    border-left-color: #22c55e !important;
+}
+
+body.dark #nik-vd-notice .nik-vd-notice-msg,
+body.dark-mode #nik-vd-notice .nik-vd-notice-msg,
+body.theme-dark #nik-vd-notice .nik-vd-notice-msg,
+html[data-theme="dark"] #nik-vd-notice .nik-vd-notice-msg,
+body[data-theme="dark"] #nik-vd-notice .nik-vd-notice-msg {
+    color: #cbd5e1 !important;
 }
 
 @keyframes nik-vd-notice-slide {

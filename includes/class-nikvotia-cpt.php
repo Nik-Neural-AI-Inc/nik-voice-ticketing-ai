@@ -352,6 +352,41 @@ class Nikvotia_CPT {
 								<?php echo wp_kses_post( wpautop( esc_html( $summary ?: __( 'No AI summary available.', 'nik-voice-ticketing-ai' ) ) ) ); ?>
 							</div>
 
+							<?php
+							$sentiment    = get_post_meta( $post->ID, '_nikvotia_sentiment', true );
+							$action_items = get_post_meta( $post->ID, '_nikvotia_action_items', true );
+							if ( ! empty( $sentiment ) || ! empty( $priority ) || ( is_array( $action_items ) && ! empty( $action_items ) ) ) :
+							?>
+								<div class="nik-vd-insights-pills" style="margin: 14px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+									<?php if ( ! empty( $sentiment ) ) : ?>
+										<span class="nik-ai-pill" style="background: rgba(18, 130, 162, 0.12); color: #0284c7; border: 1px solid rgba(18, 130, 162, 0.3); font-weight: 600;">
+											😊 <?php
+											/* translators: %s: Customer sentiment or tone */
+											printf( esc_html__( 'Tone: %s', 'nik-voice-ticketing-ai' ), esc_html( ucfirst( $sentiment ) ) );
+											?>
+										</span>
+									<?php endif; ?>
+									<?php if ( ! empty( $priority ) ) : ?>
+										<span class="nik-ai-pill" style="background: rgba(255, 109, 0, 0.12); color: #ea580c; border: 1px solid rgba(255, 109, 0, 0.3); font-weight: 600;">
+											⚡ <?php
+											/* translators: %s: Ticket priority level */
+											printf( esc_html__( 'Priority: %s', 'nik-voice-ticketing-ai' ), esc_html( ucfirst( $priority ) ) );
+											?>
+										</span>
+									<?php endif; ?>
+								</div>
+								<?php if ( is_array( $action_items ) && ! empty( $action_items ) ) : ?>
+									<div style="margin: 14px 0; padding: 12px 16px; background: #f8fafc; border-radius: 6px; border-left: 3px solid #1282a2;">
+										<strong style="font-size: 11px; text-transform: uppercase; color: #475569; display: block; margin-bottom: 6px; letter-spacing: 0.5px;">🎯 <?php esc_html_e( 'Action Items for Support Agent:', 'nik-voice-ticketing-ai' ); ?></strong>
+										<ul style="margin: 0 0 0 16px; padding: 0; font-size: 13px; color: #1e293b; line-height: 1.5;">
+											<?php foreach ( $action_items as $action ) : ?>
+												<li><?php echo esc_html( $action ); ?></li>
+											<?php endforeach; ?>
+										</ul>
+									</div>
+								<?php endif; ?>
+							<?php endif; ?>
+
 							<div class="nik-vd-transcript-section">
 								<h4><span class="dashicons dashicons-text"></span> <?php esc_html_e( 'Full Voice Transcript', 'nik-voice-ticketing-ai' ); ?></h4>
 								<div class="nik-vd-transcript-content">

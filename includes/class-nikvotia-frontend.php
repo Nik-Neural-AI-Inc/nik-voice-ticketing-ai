@@ -254,6 +254,9 @@ class Nikvotia_Frontend {
 			<!-- Dedicated Success Confirmation Modal (Doesn't auto-disappear) -->
 			<div id="nik-vd-modal" class="nik-vd-hidden">
 				<div class="nik-vd-modal-card">
+					<button type="button" id="nik-vd-modal-theme-toggle" class="nik-vd-modal-theme-toggle" aria-label="<?php esc_attr_e( 'Toggle Dark or Light Mode', 'nik-voice-ticketing-ai' ); ?>" title="<?php esc_attr_e( 'Toggle Dark/Light Mode', 'nik-voice-ticketing-ai' ); ?>">
+						<span id="nik-vd-modal-theme-icon">🌙</span>
+					</button>
 					<div class="nik-vd-success-icon">✓</div>
 					<h2><?php esc_html_e( 'Ticket Submitted!', 'nik-voice-ticketing-ai' ); ?></h2>
 					<p class="nik-vd-modal-subtitle"><?php esc_html_e( 'Your voice ticket has been recorded and processed by AI.', 'nik-voice-ticketing-ai' ); ?></p>

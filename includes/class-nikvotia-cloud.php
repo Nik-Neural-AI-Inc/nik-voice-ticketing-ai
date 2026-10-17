@@ -86,12 +86,14 @@ class Nikvotia_Cloud_Client {
 	}
 
 	/**
-	 * Stream audio file directly to Nik Voice Cloud gateway with HMAC-SHA256 signature.
+	 * Stream audio file directly to Nik Voice Cloud gateway with HMAC-SHA256 signature
+	 * and retrieve full Voice Intelligence results (Transcription, Summary, Department, Sentiment, Urgency, Action Items).
 	 *
 	 * @param string $filepath Path to temporary audio recording.
-	 * @return string|WP_Error Transcribed text.
+	 * @param string $departments Optional comma-separated departments.
+	 * @return array|WP_Error Array with text, summary, department, sentiment, urgency, action_items.
 	 */
-	public static function transcribe( $filepath ) {
+	public static function transcribe_full( $filepath, $departments = '' ) {
 		$key_id     = get_option( 'nikvotia_cloud_key', '' );
 		$secret_key = get_option( 'nikvotia_cloud_secret', '' );
 
@@ -141,6 +143,12 @@ class Nikvotia_Cloud_Client {
 		$payload .= $file_content . "\r\n";
 		$payload .= '--' . $boundary . "\r\n";
 		$payload .= 'Content-Disposition: form-data; name="model"' . "\r\n\r\nwhisper-large-v3\r\n";
+
+		if ( ! empty( $departments ) ) {
+			$payload .= '--' . $boundary . "\r\n";
+			$payload .= 'Content-Disposition: form-data; name="departments"' . "\r\n\r\n" . $departments . "\r\n";
+		}
+
 		$payload .= '--' . $boundary . "--\r\n";
 
 		$endpoint = self::get_gateway_url() . '/v1/audio/transcriptions';
@@ -189,12 +197,36 @@ class Nikvotia_Cloud_Client {
 			Nikvotia_Logger::log(
 				'SUCCESS',
 				'AI_GATEWAY',
-				sprintf( 'Nik Voice Cloud returned transcription successfully (HTTP 200, %d chars)', strlen( $text ) ),
+				sprintf( 'Nik Voice Cloud returned voice intelligence successfully (HTTP 200, %d chars)', strlen( $text ) ),
 				array( 'model' => $model_resp )
 			);
 		}
 
-		return $text;
+		return array(
+			'text'         => $text,
+			'summary'      => $body['summary'] ?? $text,
+			'department'   => $body['department'] ?? 'General Support',
+			'sentiment'    => $body['sentiment'] ?? 'neutral',
+			'urgency'      => $body['urgency'] ?? 'normal',
+			'action_items' => $body['action_items'] ?? array(),
+			'duration'     => $body['duration'] ?? 0,
+			'model'        => $model_resp,
+		);
+	}
+
+	/**
+	 * Stream audio file directly to Nik Voice Cloud gateway and return transcription text.
+	 *
+	 * @param string $filepath Path to temporary audio recording.
+	 * @param string $departments Optional comma-separated departments.
+	 * @return string|WP_Error Transcribed text.
+	 */
+	public static function transcribe( $filepath, $departments = '' ) {
+		$res = self::transcribe_full( $filepath, $departments );
+		if ( is_wp_error( $res ) ) {
+			return $res;
+		}
+		return $res['text'] ?? '';
 	}
 
 	/**
