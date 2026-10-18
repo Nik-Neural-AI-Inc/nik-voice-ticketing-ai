@@ -32,6 +32,9 @@ if ( ! $bootstrapped ) {
 if ( ! defined( 'REST_REQUEST' ) ) {
 	define( 'REST_REQUEST', true );
 }
+if ( ! defined( 'NIKVOTIA_TESTING' ) ) {
+	define( 'NIKVOTIA_TESTING', true );
+}
 
 echo "\n====================================================================\n";
 echo "  Nik Voice Ticketing AI - Automated Regression & Security Test Suite\n";
@@ -59,6 +62,7 @@ class Nikvotia_Regression_Runner {
 		$this->test_data_retention_pruning();
 		$this->test_privacy_export_and_erase_hooks();
 		$this->test_security_remediation_suite();
+		$this->test_view_ticket_navigation_suite();
 
 		$this->cleanup();
 		$this->report();
@@ -698,6 +702,146 @@ class Nikvotia_Regression_Runner {
 		$erase_result = Nikvotia_Core::erase_personal_data( $priv_email );
 		$erase_success = ( isset( $erase_result['items_removed'] ) && $erase_result['items_removed'] >= 1 );
 		$this->assert( $erase_success, 'TEST-20: WordPress Core Personal Data Eraser removes ticket data and audio file' );
+
+		echo "\n";
+	}
+
+	/**
+	 * 13. View Ticket Navigation, Redirection & Portal Auto-Creation Suite
+	 */
+	private function test_view_ticket_navigation_suite() {
+		echo "Suite 13: View Ticket Navigation, Redirection & Portal Auto-Creation (Requirements 1-5)\n";
+
+		// TEST-NAV-01: Auto-create portal page when WooCommerce is inactive
+		$orig_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
+		delete_option( 'nikvotia_portal_page_id' );
+
+		$page_id = Nikvotia_Frontend::ensure_portal_page();
+		$this->test_post_ids[] = $page_id;
+		$page_obj = get_post( $page_id );
+
+		$page_created = ( $page_id > 0 && $page_obj && 'publish' === $page_obj->post_status && strpos( $page_obj->post_content, '[nikvotia_tickets]' ) !== false );
+		$this->assert( $page_created, 'TEST-NAV-01: Portal page auto-creation creates published page with [nikvotia_tickets] shortcode' );
+
+		// TEST-NAV-02: get_portal_url returns the auto-created page URL with ticket parameter (never bare home_url)
+		$synth_ticket = 'VD-TESTNAV' . rand( 1000, 9999 );
+		$portal_url   = Nikvotia_Frontend::get_portal_url( $synth_ticket );
+		$has_page_link = ( ! empty( $portal_url ) && $portal_url !== home_url( '/' ) && strpos( $portal_url, 'ticket=' . $synth_ticket ) !== false );
+		$this->assert( $has_page_link, 'TEST-NAV-02: get_portal_url resolves to canonical portal page with ?ticket= param' );
+
+		// TEST-NAV-03: Guest user get_view_ticket_url redirects to login page with redirect_to pointing to the ticket URL
+		wp_set_current_user( 0 );
+		$guest_view_url = Nikvotia_Frontend::get_view_ticket_url( $synth_ticket );
+		$is_login_url   = ( strpos( $guest_view_url, 'wp-login.php' ) !== false );
+		$has_redirect   = ( strpos( $guest_view_url, 'redirect_to=' ) !== false && strpos( $guest_view_url, rawurlencode( $synth_ticket ) ) !== false );
+		$this->assert( $is_login_url && $has_redirect, 'TEST-NAV-03: Guest view ticket URL routes to wp-login.php with secure redirect_to parameter' );
+
+		// TEST-NAV-04: Authenticated user get_view_ticket_url links directly to ticket portal without login redirection
+		wp_set_current_user( 1 );
+		$auth_view_url = Nikvotia_Frontend::get_view_ticket_url( $synth_ticket );
+		$is_direct_portal = ( strpos( $auth_view_url, 'wp-login.php' ) === false && strpos( $auth_view_url, 'ticket=' . $synth_ticket ) !== false );
+		$this->assert( $is_direct_portal, 'TEST-NAV-04: Authenticated user view ticket URL links directly to ticket portal' );
+
+		// TEST-NAV-05: REST API /submit returns ticket_url with login redirect and is_logged_in=false for guest
+		wp_set_current_user( 0 );
+		$guest_email = 'guest_nav_' . time() . '@example.com';
+		$header = 'RIFF' . pack( 'V', 36 + 100 ) . 'WAVEfmt ' . pack( 'V', 16 ) . pack( 'v', 1 ) . pack( 'v', 1 ) . pack( 'V', 8000 ) . pack( 'V', 8000 ) . pack( 'v', 1 ) . pack( 'v', 8 ) . 'data' . pack( 'V', 100 ) . str_repeat( "\x00", 100 );
+		$synth_audio = wp_upload_dir()['basedir'] . '/nikvotia/test_nav_audio.wav';
+		file_put_contents( $synth_audio, $header );
+		$this->test_files[] = $synth_audio;
+		$audio_param = array(
+			'name'     => 'test_nav_audio.wav',
+			'type'     => 'audio/wav',
+			'tmp_name' => $synth_audio,
+			'error'    => UPLOAD_ERR_OK,
+			'size'     => filesize( $synth_audio ),
+		);
+
+		$api = new Nikvotia_API();
+		$api_req = new WP_REST_Request( 'POST', '/nikvotia/v1/submit' );
+		$api_req->set_file_params( array( 'audio' => $audio_param ) );
+		$api_req->set_param( 'guest_email', $guest_email );
+		$api_req->set_param( 'username', 'Guest Nav Tester' );
+		$api_req->set_param( 'page_url', 'http://127.0.0.1/nik/' );
+
+		$submit_res = $api->handle_submission( $api_req );
+		$submit_data = is_wp_error( $submit_res ) ? array() : $submit_res->get_data();
+		$created_guest_post = get_posts( array(
+			'post_type'      => 'voicedesk_ticket',
+			'posts_per_page' => 1,
+			'meta_key'       => '_nikvotia_ticket_number',
+			'meta_value'     => $submit_data['ticket_number'] ?? '',
+		) );
+		if ( ! empty( $created_guest_post ) ) {
+			$this->test_post_ids[] = (int) $created_guest_post[0]->ID;
+		}
+
+		$guest_res_ok = ( ! empty( $submit_data['success'] ) && false === $submit_data['is_logged_in'] && strpos( $submit_data['ticket_url'], 'wp-login.php' ) !== false );
+		$this->assert( $guest_res_ok, 'TEST-NAV-05: REST API ticket submission as guest returns ticket_url pointing to login and is_logged_in=false' );
+
+		// TEST-NAV-06: REST API /submit returns direct portal ticket_url and is_logged_in=true for logged-in user
+		wp_set_current_user( 1 );
+		$api_req_auth = new WP_REST_Request( 'POST', '/nikvotia/v1/submit' );
+		$api_req_auth->set_file_params( array( 'audio' => $audio_param ) );
+		$api_req_auth->set_param( 'username', 'Admin Tester' );
+		$api_req_auth->set_param( 'page_url', 'http://127.0.0.1/nik/' );
+		$submit_res_auth = $api->handle_submission( $api_req_auth );
+		$submit_data_auth = is_wp_error( $submit_res_auth ) ? array() : $submit_res_auth->get_data();
+		$created_auth_post = get_posts( array(
+			'post_type'      => 'voicedesk_ticket',
+			'posts_per_page' => 1,
+			'meta_key'       => '_nikvotia_ticket_number',
+			'meta_value'     => $submit_data_auth['ticket_number'] ?? '',
+		) );
+		if ( ! empty( $created_auth_post ) ) {
+			$this->test_post_ids[] = (int) $created_auth_post[0]->ID;
+		}
+
+		$auth_res_ok = ( ! empty( $submit_data_auth['success'] ) && true === $submit_data_auth['is_logged_in'] && strpos( $submit_data_auth['ticket_url'], 'wp-login.php' ) === false && strpos( $submit_data_auth['ticket_url'], 'ticket=' ) !== false );
+		$this->assert( $auth_res_ok, 'TEST-NAV-06: REST API ticket submission as logged-in user returns direct ticket_url and is_logged_in=true' );
+
+		// TEST-NAV-07: Guest direct access to shortcode renders locked sign-in prompt without ticket leaks
+		wp_set_current_user( 0 );
+		$frontend = new Nikvotia_Frontend();
+		$_GET['ticket'] = $submit_data['ticket_number'] ?? '';
+		$shortcode_out = $frontend->render_user_panel_shortcode( array() );
+		$shows_login_lock = ( strpos( $shortcode_out, 'Sign In to View Ticket' ) !== false && strpos( $shortcode_out, 'wp-login.php' ) !== false );
+		$this->assert( $shows_login_lock, 'TEST-NAV-07: Unauthenticated visit to ticket shortcode renders secure login prompt' );
+
+		// TEST-NAV-08: Guest ticket auto-binds to user when email matches upon login
+		$test_user_id = wp_create_user( 'nav_user_' . time(), 'Password123!', $guest_email );
+		wp_set_current_user( $test_user_id );
+		$_GET['ticket'] = $submit_data['ticket_number'] ?? '';
+		$view_out = $frontend->render_user_panel_shortcode( array() );
+
+		$ticket_post_id = ! empty( $created_guest_post ) ? $created_guest_post[0]->ID : 0;
+		$updated_author = (int) get_post_field( 'post_author', $ticket_post_id );
+		$bound_successfully = ( $updated_author === $test_user_id && strpos( $view_out, 'Access Denied' ) === false );
+		$this->assert( $bound_successfully, 'TEST-NAV-08: Guest ticket auto-binds to customer account on matching verified email upon login' );
+
+		if ( $test_user_id > 1 ) {
+			wp_delete_user( $test_user_id );
+		}
+
+		// TEST-NAV-09: Self-healing portal page resolution auto-provisions page if deleted
+		delete_option( 'nikvotia_portal_page_id' );
+		$self_healed_id = Nikvotia_Frontend::ensure_portal_page();
+		$this->assert( $self_healed_id > 0, 'TEST-NAV-09: Self-healing portal page resolution auto-provisions page if deleted' );
+
+		// TEST-NAV-10: Template UI injection renders view ticket button with context-aware URL
+		wp_set_current_user( 1 );
+		ob_start();
+		$frontend->inject_ui();
+		$ui_out = ob_get_clean();
+		$has_btn_ui = ( strpos( $ui_out, 'id="nik-vd-view-tickets-btn"' ) !== false && strpos( $ui_out, 'View My Ticket' ) !== false );
+		$this->assert( $has_btn_ui, 'TEST-NAV-10: Template UI injection renders #nik-vd-view-tickets-btn with authenticated label' );
+
+		// Restore original page ID
+		if ( $orig_page_id > 0 ) {
+			update_option( 'nikvotia_portal_page_id', $orig_page_id );
+		}
+		wp_set_current_user( 1 );
+		unset( $_GET['ticket'], $_FILES['audio'] );
 
 		echo "\n";
 	}

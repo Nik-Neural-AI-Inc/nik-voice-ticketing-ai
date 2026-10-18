@@ -102,6 +102,8 @@ function nikvotia_activate() {
 	$frontend = new Nikvotia_Frontend();
 	$frontend->wc_add_endpoint();
 
+	Nikvotia_Frontend::ensure_portal_page();
+
 	flush_rewrite_rules();
 
 	nikvotia_ensure_uploads_dir();

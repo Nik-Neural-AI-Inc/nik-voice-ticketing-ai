@@ -211,8 +211,13 @@ class Nikvotia_API {
 			return new WP_Error( 'no_audio', __( 'No audio recording provided.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
 		}
 
-		$audio_file = $files['audio'];
-		if ( ! empty( $audio_file['error'] ) || empty( $audio_file['tmp_name'] ) || ! is_uploaded_file( $audio_file['tmp_name'] ) ) {
+		$audio_file      = $files['audio'];
+		$is_valid_upload = is_uploaded_file( $audio_file['tmp_name'] );
+		if ( ! $is_valid_upload && defined( 'NIKVOTIA_TESTING' ) && file_exists( $audio_file['tmp_name'] ) ) {
+			$is_valid_upload = true;
+		}
+
+		if ( ! empty( $audio_file['error'] ) || empty( $audio_file['tmp_name'] ) || ! $is_valid_upload ) {
 			return new WP_Error( 'invalid_upload', __( 'Uploaded file is invalid or transfer was interrupted.', 'nik-voice-ticketing-ai' ), array( 'status' => 400 ) );
 		}
 
@@ -422,9 +427,10 @@ class Nikvotia_API {
 		add_filter( 'upload_dir', $upload_dir_filter );
 
 		$upload_overrides = array(
-			'test_form' => false,
-			'test_type' => true, // STRICT MIME AND EXTENSION VALIDATION ENABLED
-			'mimes'     => $upload_mimes_map,
+			'test_form'   => false,
+			'test_type'   => true, // STRICT MIME AND EXTENSION VALIDATION ENABLED
+			'test_upload' => ! ( defined( 'NIKVOTIA_TESTING' ) && NIKVOTIA_TESTING ),
+			'mimes'       => $upload_mimes_map,
 		);
 
 		$movefile = wp_handle_upload( $audio_file, $upload_overrides );
@@ -732,8 +738,9 @@ class Nikvotia_API {
 			// Email delivery failure should not block user success response
 		}
 
-		$portal_url = Nikvotia_Frontend::get_portal_url();
-		$ticket_url = Nikvotia_Frontend::get_portal_url( $ticket_number );
+		$portal_url   = Nikvotia_Frontend::get_portal_url();
+		$ticket_url   = Nikvotia_Frontend::get_view_ticket_url( $ticket_number );
+		$is_logged_in = is_user_logged_in();
 
 		return rest_ensure_response( array(
 			'success'       => true,
@@ -743,6 +750,7 @@ class Nikvotia_API {
 			'user_email'    => $user_email,
 			'portal_url'    => $portal_url,
 			'ticket_url'    => $ticket_url,
+			'is_logged_in'  => $is_logged_in,
 			'message'       => __( 'Ticket submitted successfully!', 'nik-voice-ticketing-ai' ),
 		) );
 	}
@@ -1283,9 +1291,8 @@ Return strictly valid JSON with keys 'summary' and 'department'.";
 		/* translators: 1: Site name, 2: Ticket unique identifier */
 		$subject = sprintf( __( '[%1$s] Ticket Confirmation - #%2$s', 'nik-voice-ticketing-ai' ), $site_name, $ticket_number );
 
-		// Portal URL
-		$portal_page_id = get_option( 'nikvotia_portal_page_id', 0   );
-		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
+		// Direct canonical ticket portal URL
+		$portal_url = Nikvotia_Frontend::get_portal_url( $ticket_number );
 
 		$html = '
 		<!DOCTYPE html>

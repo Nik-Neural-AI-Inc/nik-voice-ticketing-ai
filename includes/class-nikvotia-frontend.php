@@ -16,6 +16,9 @@ class Nikvotia_Frontend {
 		add_shortcode( 'nikvotia_tickets', array( $this, 'render_user_panel_shortcode' ) );
 		add_shortcode( 'nik_voicedesk_tickets', array( $this, 'render_user_panel_shortcode' ) );
 
+		// Default portal page auto-provisioning
+		add_action( 'init', array( $this, 'ensure_portal_page_on_init' ) );
+
 		// WooCommerce "My Account" Endpoint & Dashboard Integration
 		add_action( 'init', array( $this, 'wc_add_endpoint' ) );
 		add_filter( 'query_vars', array( $this, 'wc_add_query_vars' ), 0 );
@@ -27,9 +30,93 @@ class Nikvotia_Frontend {
 		add_action( 'show_user_profile', array( $this, 'render_user_profile_ticket_section' ) );
 		add_action( 'edit_user_profile', array( $this, 'render_user_profile_ticket_section' ) );
 
-		// Self-healing rewrite rules & 404 fallback interceptor
+		// Self-healing rewrite rules, 404 fallback & guest security redirect
 		add_action( 'wp_loaded', array( $this, 'maybe_flush_rewrite_rules' ) );
 		add_action( 'template_redirect', array( $this, 'handle_404_endpoint_fallback' ) );
+		add_action( 'template_redirect', array( $this, 'maybe_redirect_guest_portal' ) );
+	}
+
+	/**
+	 * Automatically ensure a default frontend page with the required shortcode exists.
+	 *
+	 * If WooCommerce is not installed, this method ensures a published WordPress page
+	 * containing [nikvotia_tickets] is created and configured as the active portal page.
+	 *
+	 * @return int Page ID.
+	 */
+	public static function ensure_portal_page() {
+		$portal_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
+
+		if ( $portal_page_id > 0 ) {
+			$page = get_post( $portal_page_id );
+			if ( $page && 'page' === $page->post_type && 'publish' === $page->post_status ) {
+				// Ensure shortcode is present in content
+				if ( false === strpos( $page->post_content, '[nikvotia_tickets]' ) && false === strpos( $page->post_content, '[nik_voicedesk_tickets]' ) ) {
+					wp_update_post( array(
+						'ID'           => $page->ID,
+						'post_content' => $page->post_content . "\n\n<!-- wp:shortcode -->\n[nikvotia_tickets]\n<!-- /wp:shortcode -->",
+					) );
+				}
+				return $page->ID;
+			}
+		}
+
+		// Check if an existing published page contains our shortcode
+		$existing_pages = get_posts( array(
+			'post_type'      => 'page',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			's'              => 'nikvotia_tickets',
+		) );
+
+		if ( ! empty( $existing_pages ) ) {
+			update_option( 'nikvotia_portal_page_id', $existing_pages[0]->ID );
+			return $existing_pages[0]->ID;
+		}
+
+		// Check if a page with slug 'support-tickets' or 'my-tickets' exists
+		$existing_by_slug = get_page_by_path( 'support-tickets' ) ?: get_page_by_path( 'my-tickets' );
+		if ( $existing_by_slug && 'publish' === $existing_by_slug->post_status ) {
+			if ( false === strpos( $existing_by_slug->post_content, '[nikvotia_tickets]' ) && false === strpos( $existing_by_slug->post_content, '[nik_voicedesk_tickets]' ) ) {
+				wp_update_post( array(
+					'ID'           => $existing_by_slug->ID,
+					'post_content' => $existing_by_slug->post_content . "\n\n<!-- wp:shortcode -->\n[nikvotia_tickets]\n<!-- /wp:shortcode -->",
+				) );
+			}
+			update_option( 'nikvotia_portal_page_id', $existing_by_slug->ID );
+			return $existing_by_slug->ID;
+		}
+
+		// Automatically create a default frontend support tickets page
+		$new_page_id = wp_insert_post( array(
+			'post_title'     => __( 'Support Tickets', 'nik-voice-ticketing-ai' ),
+			'post_name'      => 'support-tickets',
+			'post_status'    => 'publish',
+			'post_type'      => 'page',
+			'post_content'   => "<!-- wp:paragraph -->\n<p>" . __( 'Track your voice tickets, listen to audio recordings, and view support updates.', 'nik-voice-ticketing-ai' ) . "</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:shortcode -->\n[nikvotia_tickets]\n<!-- /wp:shortcode -->",
+			'comment_status' => 'closed',
+			'ping_status'    => 'closed',
+		) );
+
+		if ( ! is_wp_error( $new_page_id ) && $new_page_id > 0 ) {
+			update_option( 'nikvotia_portal_page_id', $new_page_id );
+			return $new_page_id;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Fast init check: ensure default portal page exists when WooCommerce is not active.
+	 */
+	public function ensure_portal_page_on_init() {
+		$portal_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
+		if ( $portal_page_id > 0 && get_post_status( $portal_page_id ) === 'publish' ) {
+			return;
+		}
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			self::ensure_portal_page();
+		}
 	}
 
 	/**
@@ -39,26 +126,37 @@ class Nikvotia_Frontend {
 	 * @return string Canonical URL.
 	 */
 	public static function get_portal_url( $ticket_num = '' ) {
-		$portal_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
-		$portal_url     = $portal_page_id ? get_permalink( $portal_page_id ) : '';
+		$portal_url = '';
 
-		if ( empty( $portal_url ) ) {
-			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
-				$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
-			} else {
-				$pages = get_posts( array(
-					'post_type'      => 'page',
-					'post_status'    => 'publish',
-					'posts_per_page' => 1,
-					's'              => 'nikvotia_tickets',
-					'fields'         => 'ids',
-				) );
-				if ( ! empty( $pages ) ) {
-					$portal_url = get_permalink( $pages[0] );
+		// 1. If WooCommerce is installed, default to WooCommerce "My Account" voicedesk-tickets endpoint
+		if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_account_endpoint_url' ) ) {
+			$portal_url = wc_get_account_endpoint_url( 'voicedesk-tickets' );
+			if ( empty( $portal_url ) && function_exists( 'wc_get_page_permalink' ) ) {
+				$portal_url = add_query_arg( 'voicedesk-tickets', '1', wc_get_page_permalink( 'myaccount' ) );
+			}
+		}
+
+		// 2. Check explicitly configured portal page or automatically ensure default page exists
+		$portal_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
+		if ( $portal_page_id > 0 ) {
+			$page_link = get_permalink( $portal_page_id );
+			if ( ! empty( $page_link ) ) {
+				// If WooCommerce is not installed, custom page takes precedence
+				if ( ! class_exists( 'WooCommerce' ) || empty( $portal_url ) ) {
+					$portal_url = $page_link;
 				}
 			}
 		}
 
+		// 3. If WooCommerce is not installed and no valid portal URL exists, automatically create & use default page
+		if ( empty( $portal_url ) && ! class_exists( 'WooCommerce' ) ) {
+			$ensured_id = self::ensure_portal_page();
+			if ( $ensured_id > 0 ) {
+				$portal_url = get_permalink( $ensured_id );
+			}
+		}
+
+		// 4. Absolute fallback
 		if ( empty( $portal_url ) ) {
 			$portal_url = home_url( '/' );
 		}
@@ -68,6 +166,75 @@ class Nikvotia_Frontend {
 		}
 
 		return esc_url_raw( $portal_url );
+	}
+
+	/**
+	 * Get the secure destination URL for viewing a ticket.
+	 * If the user is logged in, links directly to the ticket portal.
+	 * If the user is NOT logged in, redirects to the login page for security,
+	 * with a safe redirect_to pointing back to the ticket once authenticated.
+	 *
+	 * @param string $ticket_num Optional ticket number.
+	 * @return string Secure destination URL.
+	 */
+	public static function get_view_ticket_url( $ticket_num = '' ) {
+		$target_ticket_url = self::get_portal_url( $ticket_num );
+
+		// If user is authenticated, link directly to the ticket viewing page
+		if ( is_user_logged_in() ) {
+			return $target_ticket_url;
+		}
+
+		// If user is NOT logged in: redirect to login page for security
+		if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_page_permalink' ) ) {
+			$myaccount_url = wc_get_page_permalink( 'myaccount' );
+			if ( ! empty( $myaccount_url ) ) {
+				$args = array(
+					'redirect_to' => rawurlencode( $target_ticket_url ),
+				);
+				if ( ! empty( $ticket_num ) ) {
+					$args['ticket'] = rawurlencode( $ticket_num );
+				}
+				return esc_url_raw( add_query_arg( $args, $myaccount_url ) );
+			}
+		}
+
+		// Default WordPress login URL with safe redirect to the canonical ticket portal URL
+		return esc_url_raw( wp_login_url( $target_ticket_url ) );
+	}
+
+	/**
+	 * Security Enforcer: If an unauthenticated user accesses the ticket portal page
+	 * or WooCommerce endpoint, redirect them to the login page with redirect_to parameter.
+	 */
+	public function maybe_redirect_guest_portal() {
+		if ( is_user_logged_in() ) {
+			return;
+		}
+
+		$is_portal = false;
+		$portal_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
+
+		if ( $portal_page_id > 0 && is_page( $portal_page_id ) ) {
+			$is_portal = true;
+		} elseif ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'voicedesk-tickets' ) ) {
+			$is_portal = true;
+		}
+
+		if ( ! $is_portal && is_singular( 'page' ) ) {
+			global $post;
+			if ( $post && ( false !== strpos( $post->post_content, '[nikvotia_tickets]' ) || false !== strpos( $post->post_content, '[nik_voicedesk_tickets]' ) ) ) {
+				$is_portal = true;
+			}
+		}
+
+		if ( $is_portal ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$ticket_num = isset( $_GET['ticket'] ) ? sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) : '';
+			$login_url  = self::get_view_ticket_url( $ticket_num );
+			wp_safe_redirect( $login_url );
+			exit;
+		}
 	}
 
 	private function is_visible() {
@@ -115,7 +282,9 @@ class Nikvotia_Frontend {
 		wp_localize_script( 'nikvotia-frontend', 'nikvotiaData', array(
 			'restUrl'      => esc_url_raw( rest_url( 'nikvotia/v1/submit' ) ),
 			'nonce'        => wp_create_nonce( 'wp_rest' ),
-			'portalUrl'    => esc_url( $portal_url ),
+			'portalUrl'    => esc_url_raw( self::get_portal_url() ),
+			'viewUrl'      => esc_url_raw( self::get_view_ticket_url() ),
+			'isLoggedIn'   => is_user_logged_in(),
 		) );
 
 		// Dynamic styles via standard wp_add_inline_style
@@ -286,8 +455,8 @@ class Nikvotia_Frontend {
 					</p>
 
 					<div class="nik-vd-modal-actions">
-						<a href="<?php echo esc_url( $portal_url ); ?>" id="nik-vd-view-tickets-btn" class="nik-vd-btn-primary">
-							<?php esc_html_e( 'View My Ticket', 'nik-voice-ticketing-ai' ); ?>
+						<a href="<?php echo esc_url( self::get_view_ticket_url() ); ?>" id="nik-vd-view-tickets-btn" class="nik-vd-btn-primary">
+							<?php echo esc_html( is_user_logged_in() ? __( 'View My Ticket', 'nik-voice-ticketing-ai' ) : __( 'Sign In to View Ticket', 'nik-voice-ticketing-ai' ) ); ?>
 						</a>
 						<button type="button" id="nik-vd-modal-close" class="nik-vd-btn-secondary">
 							<?php esc_html_e( 'Close', 'nik-voice-ticketing-ai' ); ?>
@@ -794,11 +963,7 @@ Manage Ticket:
 	 * Render prominent Voice Support Card on WooCommerce My Account Dashboard.
 	 */
 	public function wc_account_dashboard_ticket_btn() {
-		$portal_url = function_exists( 'wc_get_account_endpoint_url' ) ? wc_get_account_endpoint_url( 'voicedesk-tickets' ) : '';
-		if ( empty( $portal_url ) ) {
-			$portal_page_id = get_option( 'nikvotia_portal_page_id', 0   );
-			$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
-		}
+		$portal_url = self::get_portal_url();
 		?>
 		<div class="nik-vd-woo-dashboard-card" style="background: #0f172a; color: #ffffff; padding: 22px 26px; border-radius: 12px; margin: 24px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
 			<div>
@@ -823,8 +988,7 @@ Manage Ticket:
 		if ( ! current_user_can( 'manage_options' ) && get_current_user_id() !== $user->ID ) {
 			return;
 		}
-		$portal_page_id = get_option( 'nikvotia_portal_page_id', 0   );
-		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : ( function_exists( 'wc_get_account_endpoint_url' ) ? wc_get_account_endpoint_url( 'voicedesk-tickets' ) : home_url() );
+		$portal_url = self::get_portal_url();
 		?>
 		<h2><?php esc_html_e( 'VoiceDesk Support Tickets', 'nik-voice-ticketing-ai' ); ?></h2>
 		<table class="form-table">

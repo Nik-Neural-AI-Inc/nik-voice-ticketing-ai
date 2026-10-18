@@ -726,8 +726,7 @@ class Nikvotia_CPT {
 							$site_name = get_bloginfo( 'name' );
 							/* translators: 1: Site name, 2: Ticket number */
 							$subject = sprintf( __( '[%1$s] New Reply on Ticket #%2$s', 'nik-voice-ticketing-ai' ), $site_name, $ticket_num );
-							$portal_page_id = get_option( 'nikvotia_portal_page_id', 0 );
-							$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url();
+							$portal_url = class_exists( 'Nikvotia_Frontend' ) ? Nikvotia_Frontend::get_portal_url( $ticket_num ) : ( get_permalink( get_option( 'nikvotia_portal_page_id', 0 ) ) ?: home_url() );
 
 							$body = sprintf(
 								/* translators: 1: Customer name, 2: Ticket number, 3: Staff reply message, 4: Customer portal URL, 5: Site name */

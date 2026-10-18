@@ -185,6 +185,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // View Ticket Button Navigation Handler
+    const viewTicketBtn = document.getElementById('nik-vd-view-tickets-btn');
+    if (viewTicketBtn) {
+        viewTicketBtn.addEventListener('click', function(e) {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) {
+                return; // Allow new-tab / middle click
+            }
+            const dest = viewTicketBtn.getAttribute('href');
+            if (dest && dest !== '#' && dest !== '' && !dest.startsWith('javascript:')) {
+                e.preventDefault();
+                window.location.href = dest;
+            }
+        });
+    }
+
     // Success Modal Theme Handler
     function getPreferredModalTheme() {
         const saved = localStorage.getItem('nikvotia_portal_theme');
@@ -504,8 +519,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (result.ticket_url) {
                         viewTicketBtn.href = result.ticket_url;
                     } else if (result.ticket_number) {
-                        const basePortal = apiData.portalUrl || window.location.href;
+                        const basePortal = (result.is_logged_in === false && apiData.viewUrl) ? apiData.viewUrl : (apiData.portalUrl || window.location.href);
                         viewTicketBtn.href = basePortal + (basePortal.indexOf('?') !== -1 ? '&' : '?') + 'ticket=' + encodeURIComponent(result.ticket_number);
+                    }
+                    if (result.is_logged_in === false) {
+                        viewTicketBtn.innerText = 'Sign In to View Ticket';
+                    } else {
+                        viewTicketBtn.innerText = 'View My Ticket';
                     }
                 }
 
