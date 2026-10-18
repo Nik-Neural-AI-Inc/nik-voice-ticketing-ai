@@ -47,8 +47,8 @@ This plugin connects to external third-party APIs to process voice audio recordi
 * Privacy Policy: https://www.modulate.ai/privacy-policy
 
 3. **Nik Neural AI Telemetry** (Optional - Explicit Opt-In Only)
-* Purpose: Anonymous diagnostic telemetry (WordPress version, PHP version, server environment, and site URL) to improve plugin compatibility.
-* Data Sent: Site URL, administrator email (optional), PHP version, WordPress version, server software.
+* Purpose: Diagnostic telemetry (WordPress version, PHP version, server environment, and pseudonymous site identifier) to improve plugin compatibility.
+* Data Sent: Pseudonymous site hash (SHA-256 of home URL), administrator email (optional, disabled by default), PHP version, WordPress version, server software, plugin version, ticket count, and timestamp.
 * Service URL: https://nikneural.ca/tracking/
 * Privacy Policy: https://nikneural.ca/
 

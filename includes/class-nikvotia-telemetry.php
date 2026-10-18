@@ -79,7 +79,7 @@ class Nikvotia_Telemetry {
 						🎙️ <?php esc_html_e( 'Help Improve Nik Voice Ticketing AI', 'nik-voice-ticketing-ai' ); ?>
 					</h3>
 					<p style="margin: 0; font-size: 13.5px; color: #475569; line-height: 1.5;">
-						<?php esc_html_e( 'Opt in to share anonymous diagnostic and usage data (WordPress version, PHP version, server environment, and site URL) to assist future development and bug fixes. No personal information or customer voice recordings are ever collected.', 'nik-voice-ticketing-ai' ); ?>
+						<?php esc_html_e( 'Opt in to share anonymous diagnostic and usage data (WordPress version, PHP version, server environment, and pseudonymous site identifier) to assist future development and bug fixes. No personal information or customer voice recordings are ever collected.', 'nik-voice-ticketing-ai' ); ?>
 					</p>
 				</div>
 				<div style="display: flex; gap: 8px; align-items: center;">
@@ -120,6 +120,35 @@ class Nikvotia_Telemetry {
 	}
 
 	/**
+	 * Build diagnostic telemetry payload.
+	 *
+	 * Uses a pseudonymous SHA-256 hash of home_url() as installation identifier
+	 * instead of transmitting the raw site URL.
+	 *
+	 * @return array
+	 */
+	public static function build_telemetry_payload() {
+		$server_software = isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'Unknown';
+		$ticket_counts   = wp_count_posts( 'voicedesk_ticket' );
+		$total_tickets   = (int) ( ( $ticket_counts->publish ?? 0 ) + ( $ticket_counts->draft ?? 0 ) + ( $ticket_counts->pending ?? 0 ) );
+		$plan_status     = 'community';
+
+		$share_email = 'yes' === get_option( 'nikvotia_telemetry_share_email', 'no' );
+
+		return array(
+			'site_hash'       => hash( 'sha256', home_url() ),
+			'admin_email'     => $share_email ? sanitize_email( (string) get_option( 'admin_email' ) ) : '',
+			'wp_version'      => get_bloginfo( 'version' ),
+			'php_version'     => PHP_VERSION,
+			'server_software' => $server_software,
+			'plugin_version'  => NIKVOTIA_VERSION,
+			'plan_status'     => $plan_status,
+			'ticket_count'    => $total_tickets,
+			'timestamp'       => time(),
+		);
+	}
+
+	/**
 	 * Send collected non-sensitive metrics.
 	 *
 	 * @param bool $force Whether to force sync and bypass throttle.
@@ -132,24 +161,7 @@ class Nikvotia_Telemetry {
 		}
 		set_transient( $throttle_key, time(), 5 );
 
-		$server_software = isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'Unknown';
-		$ticket_counts = wp_count_posts( 'voicedesk_ticket' );
-		$total_tickets = (int) ( ( $ticket_counts->publish ?? 0 ) + ( $ticket_counts->draft ?? 0 ) + ( $ticket_counts->pending ?? 0 ) );
-		$plan_status = 'community';
-
-		$share_email = 'yes' === get_option( 'nikvotia_telemetry_share_email', 'no' );
-
-		$data = array(
-			'site_url'        => home_url(),
-			'admin_email'     => $share_email ? (string) get_option( 'admin_email' ) : '',
-			'wp_version'      => get_bloginfo( 'version' ),
-			'php_version'     => PHP_VERSION,
-			'server_software' => $server_software,
-			'plugin_version'  => NIKVOTIA_VERSION,
-			'plan_status'     => $plan_status,
-			'ticket_count'    => $total_tickets,
-			'timestamp'       => time(),
-		);
+		$data = self::build_telemetry_payload();
 
 		wp_remote_post( self::TELEMETRY_ENDPOINT, array(
 			'body'        => wp_json_encode( $data ),

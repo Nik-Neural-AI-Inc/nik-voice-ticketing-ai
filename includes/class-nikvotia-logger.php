@@ -24,6 +24,35 @@ class Nikvotia_Logger {
 	}
 
 	/**
+	 * Defensively sanitize and redact sensitive credentials from context data.
+	 *
+	 * @param mixed $data Context data array or scalar.
+	 * @return mixed
+	 */
+	public static function sanitize_context( $data ) {
+		if ( ! is_array( $data ) ) {
+			return $data;
+		}
+
+		$redacted_patterns = '/(key|secret|token|pass|auth|bearer|credential|signature)/i';
+		$clean             = array();
+
+		foreach ( $data as $k => $v ) {
+			if ( is_string( $k ) && preg_match( $redacted_patterns, $k ) ) {
+				$clean[ $k ] = '[REDACTED]';
+			} elseif ( is_array( $v ) ) {
+				$clean[ $k ] = self::sanitize_context( $v );
+			} elseif ( is_string( $v ) && ( strlen( $v ) > 20 && preg_match( '/^[A-Za-z0-9_\-\.]{32,}$/', $v ) ) ) {
+				$clean[ $k ] = '[REDACTED]';
+			} else {
+				$clean[ $k ] = $v;
+			}
+		}
+
+		return $clean;
+	}
+
+	/**
 	 * Record a structured log entry.
 	 *
 	 * @param string $level    Log severity: 'INFO', 'SUCCESS', 'WARNING', 'ERROR', 'SECURITY'.
@@ -32,9 +61,10 @@ class Nikvotia_Logger {
 	 * @param array  $context  Optional context data.
 	 */
 	public static function log( $level, $category, $message, $context = array() ) {
-		$level    = strtoupper( sanitize_key( $level ) );
-		$category = strtoupper( sanitize_key( $category ) );
-		$message  = sanitize_text_field( $message );
+		$level         = strtoupper( sanitize_key( $level ) );
+		$category      = strtoupper( sanitize_key( $category ) );
+		$message       = sanitize_text_field( $message );
+		$clean_context = ! empty( $context ) ? self::sanitize_context( (array) $context ) : array();
 
 		$entry = array(
 			'id'        => wp_generate_password( 8, false ),
@@ -43,7 +73,7 @@ class Nikvotia_Logger {
 			'level'     => $level,
 			'category'  => $category,
 			'message'   => $message,
-			'context'   => ! empty( $context ) ? (array) $context : array(),
+			'context'   => $clean_context,
 		);
 
 		// 1. Store in WordPress option (rolling buffer)
@@ -62,7 +92,7 @@ class Nikvotia_Logger {
 
 		// 2. Stream to standard PHP/WordPress error_log if WP_DEBUG is enabled
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			$context_str = ! empty( $context ) ? ' ' . wp_json_encode( $context ) : '';
+			$context_str = ! empty( $clean_context ) ? ' ' . wp_json_encode( $clean_context ) : '';
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Official debug logging when WP_DEBUG is on.
 			error_log( sprintf( '[VoiceDesk AI][%s][%s] %s%s', $level, $category, $message, $context_str ) );
 		}
@@ -79,7 +109,13 @@ class Nikvotia_Logger {
 		if ( ! is_array( $logs ) ) {
 			return array();
 		}
-		return array_slice( $logs, 0, $limit );
+		$sliced = array_slice( $logs, 0, $limit );
+		foreach ( $sliced as &$log_item ) {
+			if ( ! empty( $log_item['context'] ) ) {
+				$log_item['context'] = self::sanitize_context( $log_item['context'] );
+			}
+		}
+		return $sliced;
 	}
 
 	/**

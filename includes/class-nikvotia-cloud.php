@@ -76,7 +76,7 @@ class Nikvotia_Cloud_Client {
 			update_option( 'nikvotia_cloud_key', sanitize_text_field( $body['key_id'] ) );
 			update_option( 'nikvotia_cloud_secret', sanitize_text_field( $body['secret_key'] ) );
 			update_option( 'nikvotia_cloud_connected', 'yes' );
-			Nikvotia_Logger::log( 'SUCCESS', 'AI_GATEWAY', 'Nik Voice Cloud handshake succeeded. Key ID: ' . sanitize_text_field( $body['key_id'] ) );
+			Nikvotia_Logger::log( 'SUCCESS', 'AI_GATEWAY', 'Nik Voice Cloud handshake succeeded. Authenticated with gateway.' );
 			return $body;
 		}
 
@@ -156,7 +156,7 @@ class Nikvotia_Cloud_Client {
 			'INFO',
 			'AI_GATEWAY',
 			sprintf( 'Streaming audio to Nik Voice Cloud (%s, %s)', basename( $filepath ), size_format( strlen( $file_content ) ) ),
-			array( 'endpoint' => $endpoint, 'key_id' => $key_id )
+			array( 'endpoint' => $endpoint, 'authenticated' => ! empty( $key_id ) )
 		);
 
 		$response = wp_remote_post( $endpoint, array(

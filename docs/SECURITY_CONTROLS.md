@@ -232,10 +232,13 @@ All rendered data is escaped at the point of output:
 
 ## 8. Summary of Security Verification Status
 
-| Vulnerability ID | Vulnerability Description | Mitigation Status in v1.4.0 |
+| Vulnerability ID | Vulnerability Description | Mitigation Status in v1.4.1 |
 | :--- | :--- | :--- |
 | **FINDING-SEC-01** | Audio tokens lacked expiration and revocation. | **RESOLVED**: 1-hour HMAC-SHA256 tokens with transient revocation on status changes. |
 | **FINDING-SEC-02** | Direct HTTP access to physical audio files. | **RESOLVED**: Managed `.htaccess` block blocks all direct requests (HTTP 403) across all audio extensions. |
 | **FINDING-SEC-03** | Weak `.htaccess` update logic bypassed on substring match. | **RESOLVED**: Marker-based idempotent block rewrite logic protects all audio types and scripts. |
 | **FINDING-SEC-04** | Direct physical upload URLs exposed in HTML source. | **RESOLVED**: All physical URLs replaced with authenticated streaming proxy URLs. |
 | **FINDING-SEC-05** | Lack of byte-range streaming for large recordings. | **RESOLVED**: Native HTTP 206 partial content streaming engine with 64KB memory chunking. |
+| **FINDING-SEC-06** | Potential credential logging in cloud gateway context. | **RESOLVED**: Removed key_id from cloud logging; implemented defensive recursive credential redaction in `Nikvotia_Logger`. |
+| **FINDING-SEC-07** | Excessive 1-year browser cache-control header on private audio. | **RESOLVED**: Enforced `Cache-Control: private, no-cache, no-store, must-revalidate, max-age=0` with `Pragma: no-cache` and `Expires: 0`. |
+| **FINDING-SEC-08** | Telemetry payload transmitted raw site URL contrary to disclosures. | **RESOLVED**: Removed raw URL; adopted pseudonymous `site_hash` (`hash('sha256', home_url())`); aligned endpoint with `https://nikneural.ca/tracking/`. |

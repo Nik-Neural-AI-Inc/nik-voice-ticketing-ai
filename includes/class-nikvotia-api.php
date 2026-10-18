@@ -936,7 +936,9 @@ class Nikvotia_API {
 		header( 'Content-Type: ' . $mime_type );
 		header( 'Accept-Ranges: bytes' );
 		header( 'X-Content-Type-Options: nosniff' );
-		header( 'Cache-Control: private, no-transform, max-age=31536000' );
+		header( 'Cache-Control: private, no-cache, no-store, must-revalidate, max-age=0' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
 		header( 'X-Robots-Tag: noindex, nofollow, noarchive' );
 
 		$safe_filename = sanitize_file_name( $ticket_number . '-recording.' . $file_ext );

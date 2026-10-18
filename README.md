@@ -143,7 +143,7 @@ Access is granted if and only if one of the following criteria is met:
   - **Export Personal Data** (`Tools > Export Personal Data`): Full data portability for customer voice tickets, summaries, transcripts, and audio references.
   - **Erase Personal Data** (`Tools > Erase Personal Data`): Comprehensive data eraser permanently purging voice recordings, metadata, and ticket posts upon verified erasure requests.
 - **Transparent Frontend Consent Banner**: Configurable voice processing and AI transcription disclosure displayed cleanly on the frontend recording dock.
-- **Data-Minimizing Diagnostic Telemetry**: Administrator email exclusion toggle ensuring telemetry transmissions contain zero personal identifiers when disabled.
+- **Data-Minimizing Diagnostic Telemetry**: Uses a pseudonymous SHA-256 site identifier (no raw domain transmitted) and includes an administrator email exclusion toggle to ensure transmissions contain zero personal identifiers when disabled.
 - **Audio Stream Security**: Authenticated REST endpoint delivery with anti-IDOR cryptographic tokens, upload directory traversal containment, and `X-Robots-Tag: noindex, nofollow, noarchive` search index suppression.
 
 ---
