@@ -2,7 +2,7 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Nik Voice Ticketing AI 1.4.0\n"
+"Project-Id-Version: Nik Voice Ticketing AI 1.4.1\n"
 "Report-Msgid-Bugs-To: https://nikneural.ca/\n"
 "Last-Translator: Nik Neural AI Inc.\n"
 "Language-Team: English\n"

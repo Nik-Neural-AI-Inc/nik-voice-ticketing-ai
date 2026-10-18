@@ -134,7 +134,7 @@ body.nik-vd-recording-active {
     animation: nik-vd-dock-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* PIPEDA & GDPR Consent Notice */
+/* Privacy Consent Notice */
 .nik-vd-consent-notice {
     font-size: 11px !important;
     color: #cbd5e1 !important;

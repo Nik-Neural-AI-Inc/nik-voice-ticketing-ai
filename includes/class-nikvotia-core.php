@@ -51,7 +51,7 @@ class Nikvotia_Core {
 		$frontend = new Nikvotia_Frontend();
 		$frontend->init();
 
-		// Register core WordPress Privacy Exporters and Erasers (Supports customer data export and right-to-be-forgotten requests)
+		// Register core WordPress Privacy Exporters and Erasers (Supports customer data export and erasure requests)
 		add_filter( 'wp_privacy_personal_data_exporters', array( __CLASS__, 'register_privacy_exporters' ) );
 		add_filter( 'wp_privacy_personal_data_erasers', array( __CLASS__, 'register_privacy_erasers' ) );
 	}

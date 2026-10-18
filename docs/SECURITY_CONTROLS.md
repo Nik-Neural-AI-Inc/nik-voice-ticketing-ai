@@ -1,7 +1,7 @@
 # Security Controls Specification
-# Nik Voice Ticketing AI v1.4.0
+# Nik Voice Ticketing AI v1.4.1
 
-**Document Reference:** SEC-SPEC-v1.4.0  
+**Document Reference:** SEC-SPEC-v1.4.1  
 **Scope:** Architecture, access enforcement, token cryptography, upload validation, and attack mitigations.  
 **Audience:** Security Auditors, System Administrators, WordPress Platform Engineers.
 
@@ -147,6 +147,9 @@ Because Nginx and IIS ignore `.htaccess`, administrators running non-Apache web 
   </configuration>
   ```
 
+### 3.4 Filesystem Encryption Clarification
+Web server `.htaccess` directives and file permissions implement network-layer access controls. Physical audio files stored on the server filesystem are unencrypted at the application layer. Environments requiring encryption at rest must configure operating-system level or storage-volume level encryption (e.g., Linux LUKS, Windows BitLocker, or managed cloud volume encryption).
+
 ---
 
 ## 4. Cryptographic HMAC-SHA256 Token Architecture
@@ -173,6 +176,7 @@ Token components:
    - Tickets marked "Resolved", "Closed", or moved to Trash automatically invalidate associated active audio tokens.
    - Deleting a ticket instantly purges all token transients from the database.
    - Administrators can trigger full token rotation from the Settings > Logs console.
+5. **Legacy Token Invalidation**: Unsigned static bearer tokens are strictly rejected over HTTP streaming. Authorized administrators and authenticated ticket owners automatically trigger dynamic server-side token renewal (`Nikvotia_API::get_authenticated_stream_url()`) upon accessing ticket records without exposing a public unauthenticated refresh endpoint.
 
 ---
 

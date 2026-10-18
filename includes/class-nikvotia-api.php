@@ -76,12 +76,12 @@ class Nikvotia_API {
 	 *
 	 * @param string   $ticket_number
 	 * @param int      $post_id
-	 * @param int|null $ttl Time to live in seconds (default: 7 days).
+	 * @param int|null $ttl Time to live in seconds (default: 1 hour / 3600 seconds).
 	 * @return string
 	 */
 	public static function generate_audio_stream_token( $ticket_number, $post_id, $ttl = null ) {
 		if ( null === $ttl ) {
-			$ttl = (int) apply_filters( 'nikvotia_audio_token_ttl', 7 * DAY_IN_SECONDS );
+			$ttl = (int) apply_filters( 'nikvotia_audio_token_ttl', HOUR_IN_SECONDS );
 		}
 		$expires     = time() + (int) $ttl;
 		$secret      = self::get_stream_secret();
@@ -108,7 +108,54 @@ class Nikvotia_API {
 	}
 
 	/**
+	 * Get an authenticated, time-bounded streaming URL for an authorized user.
+	 * If the existing token is expired, missing, or legacy static, transparently
+	 * generates and stores a new signed token.
+	 *
+	 * @param string $ticket_number
+	 * @param int    $post_id
+	 * @return string Authenticated stream URL.
+	 */
+	public static function get_authenticated_stream_url( $ticket_number, $post_id ) {
+		$stored_url   = get_post_meta( $post_id, '_nikvotia_audio_stream_url', true ) ?: get_post_meta( $post_id, '_nik_audio_stream_url', true );
+		$stored_token = get_post_meta( $post_id, '_nikvotia_access_token', true ) ?: get_post_meta( $post_id, '_nik_access_token', true );
+
+		$needs_refresh = false;
+
+		if ( empty( $stored_token ) || ! is_string( $stored_token ) ) {
+			$needs_refresh = true;
+		} else {
+			$parts = explode( '.', $stored_token, 2 );
+			if ( count( $parts ) !== 2 || ! is_numeric( $parts[0] ) ) {
+				// Legacy static token or malformed format
+				$needs_refresh = true;
+			} else {
+				$expires = (int) $parts[0];
+				// Refresh if expired or expires within 5 minutes (300 seconds)
+				if ( ( $expires - time() ) < 300 || ! self::verify_audio_stream_token( $ticket_number, $post_id, $stored_token ) ) {
+					$needs_refresh = true;
+				}
+			}
+		}
+
+		if ( $needs_refresh ) {
+			$new_token      = self::generate_audio_stream_token( $ticket_number, $post_id );
+			$new_stream_url = self::generate_stream_url( $ticket_number, $post_id, $new_token );
+
+			update_post_meta( $post_id, '_nikvotia_access_token', $new_token );
+			update_post_meta( $post_id, '_nikvotia_audio_stream_url', $new_stream_url );
+			delete_post_meta( $post_id, '_nik_access_token' );
+			delete_post_meta( $post_id, '_nik_audio_stream_url' );
+
+			return $new_stream_url;
+		}
+
+		return ! empty( $stored_url ) ? $stored_url : self::generate_stream_url( $ticket_number, $post_id, $stored_token );
+	}
+
+	/**
 	 * Verify an audio streaming token.
+	 * Legacy static bearer tokens without cryptographic signature and time-bounding are strictly rejected.
 	 *
 	 * @param string $ticket_number
 	 * @param int    $post_id
@@ -143,17 +190,7 @@ class Nikvotia_API {
 			return hash_equals( $expected_signature, $signature );
 		}
 
-		// Backward compatibility fallback for legacy 32-character static tokens
-		$is_revoked = get_post_meta( $post_id, '_nikvotia_tokens_revoked', true );
-		if ( $is_revoked ) {
-			return false;
-		}
-
-		$stored_token = get_post_meta( $post_id, '_nikvotia_access_token', true ) ?: get_post_meta( $post_id, '_nik_access_token', true );
-		if ( ! empty( $stored_token ) && hash_equals( (string) $stored_token, (string) $token ) ) {
-			return true;
-		}
-
+		// Legacy static bearer tokens are strictly rejected
 		return false;
 	}
 

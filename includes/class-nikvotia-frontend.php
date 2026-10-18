@@ -204,6 +204,31 @@ class Nikvotia_Frontend {
 	}
 
 	/**
+	 * Helper to determine if current request is within the customer ticket portal context.
+	 *
+	 * @return bool
+	 */
+	public static function is_portal_context() {
+		$portal_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
+
+		if ( $portal_page_id > 0 && is_page( $portal_page_id ) ) {
+			return true;
+		}
+		if ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'voicedesk-tickets' ) ) {
+			return true;
+		}
+
+		if ( is_singular( 'page' ) ) {
+			global $post;
+			if ( $post && ( false !== strpos( $post->post_content, '[nikvotia_tickets]' ) || false !== strpos( $post->post_content, '[nik_voicedesk_tickets]' ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Security Enforcer: If an unauthenticated user accesses the ticket portal page
 	 * or WooCommerce endpoint, redirect them to the login page with redirect_to parameter.
 	 */
@@ -212,23 +237,7 @@ class Nikvotia_Frontend {
 			return;
 		}
 
-		$is_portal = false;
-		$portal_page_id = (int) get_option( 'nikvotia_portal_page_id', 0 );
-
-		if ( $portal_page_id > 0 && is_page( $portal_page_id ) ) {
-			$is_portal = true;
-		} elseif ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'voicedesk-tickets' ) ) {
-			$is_portal = true;
-		}
-
-		if ( ! $is_portal && is_singular( 'page' ) ) {
-			global $post;
-			if ( $post && ( false !== strpos( $post->post_content, '[nikvotia_tickets]' ) || false !== strpos( $post->post_content, '[nik_voicedesk_tickets]' ) ) ) {
-				$is_portal = true;
-			}
-		}
-
-		if ( $is_portal ) {
+		if ( self::is_portal_context() ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$ticket_num = isset( $_GET['ticket'] ) ? sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) : '';
 			$login_url  = self::get_view_ticket_url( $ticket_num );
@@ -270,7 +279,8 @@ class Nikvotia_Frontend {
 	}
 
 	public function enqueue_scripts() {
-		if ( ! $this->is_visible() ) {
+		$is_portal = self::is_portal_context();
+		if ( ! $is_portal && ! $this->is_visible() ) {
 			return;
 		}
 
@@ -485,15 +495,15 @@ class Nikvotia_Frontend {
 	 * [nikvotia_tickets] or [nik_voicedesk_tickets]
 	 */
 	public function render_user_panel_shortcode( $atts ) {
+		wp_enqueue_style( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/css/frontend.css', array(), NIKVOTIA_VERSION );
+		wp_enqueue_script( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/js/frontend.js', array(), NIKVOTIA_VERSION, true );
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket identifier parameter in URL.
 		$ticket_num = isset( $_GET['ticket'] ) ? sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) : '';
 
 		if ( ! is_user_logged_in() ) {
 			return $this->render_guest_login_prompt( $ticket_num );
 		}
-
-		wp_enqueue_style( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/css/frontend.css', array(), NIKVOTIA_VERSION );
-		wp_enqueue_script( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/js/frontend.js', array(), NIKVOTIA_VERSION, true );
 
 		ob_start();
 		
@@ -593,6 +603,9 @@ class Nikvotia_Frontend {
 	}
 
 	public function wc_endpoint_content() {
+		wp_enqueue_style( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/css/frontend.css', array(), NIKVOTIA_VERSION );
+		wp_enqueue_script( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/js/frontend.js', array(), NIKVOTIA_VERSION, true );
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only ticket identifier parameter in URL.
 		$ticket_num = isset( $_GET['ticket'] ) ? sanitize_text_field( wp_unslash( $_GET['ticket'] ) ) : '';
 
@@ -600,9 +613,6 @@ class Nikvotia_Frontend {
 			echo wp_kses_post( $this->render_guest_login_prompt( $ticket_num ) );
 			return;
 		}
-
-		wp_enqueue_style( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/css/frontend.css', array(), NIKVOTIA_VERSION );
-		wp_enqueue_script( 'nikvotia-frontend', NIKVOTIA_URL . 'assets/js/frontend.js', array(), NIKVOTIA_VERSION, true );
 
 		if ( ! empty( $ticket_num ) ) {
 			$this->render_single_ticket_view( $ticket_num );
@@ -795,7 +805,9 @@ class Nikvotia_Frontend {
 
 		$audio_path = get_post_meta( $post->ID, '_nikvotia_audio_path', true ) ?: get_post_meta( $post->ID, '_nik_audio_path', true );
 		$has_audio  = ! empty( $audio_path ) && file_exists( $audio_path );
-		$stream_url = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: ( class_exists( 'Nikvotia_API' ) ? Nikvotia_API::generate_stream_url( $ticket_number, $post->ID ) : rest_url( 'nikvotia/v1/audio/' . $ticket_number ) );
+		$stream_url = class_exists( 'Nikvotia_API' ) && ! empty( $ticket_number )
+			? Nikvotia_API::get_authenticated_stream_url( $ticket_number, $post->ID )
+			: ( get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: ( class_exists( 'Nikvotia_API' ) ? Nikvotia_API::generate_stream_url( $ticket_number, $post->ID ) : rest_url( 'nikvotia/v1/audio/' . $ticket_number ) ) );
 		$transcript = get_post_meta( $post->ID, '_nikvotia_transcript', true );
 		$summary = get_post_meta( $post->ID, '_nikvotia_summary', true );
 		$dept = get_post_meta( $post->ID, '_nikvotia_department', true ) ?: 'General Support';

@@ -223,7 +223,9 @@ class Nikvotia_CPT {
 		$ticket_number = get_post_meta( $post->ID, '_nikvotia_ticket_number', true );
 		$audio_path    = get_post_meta( $post->ID, '_nikvotia_audio_path', true ) ?: get_post_meta( $post->ID, '_nik_audio_path', true );
 		$has_audio     = ! empty( $audio_path ) && file_exists( $audio_path );
-		$stream_url    = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nikvotia/v1/audio/' . $ticket_number );
+		$stream_url    = class_exists( 'Nikvotia_API' ) && ! empty( $ticket_number )
+			? Nikvotia_API::get_authenticated_stream_url( $ticket_number, $post->ID )
+			: ( get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nikvotia/v1/audio/' . $ticket_number ) );
 		$transcript = get_post_meta( $post->ID, '_nikvotia_transcript', true );
 		$summary = get_post_meta( $post->ID, '_nikvotia_summary', true );
 		$department = get_post_meta( $post->ID, '_nikvotia_department', true ) ?: 'General Support';
@@ -457,7 +459,7 @@ class Nikvotia_CPT {
 								<div class="nik-vd-audit-item">
 									<div class="nik-vd-audit-label"><?php esc_html_e( 'Single-API Isolation Mode:', 'nik-voice-ticketing-ai' ); ?></div>
 									<div class="nik-vd-audit-val">
-										<span style="color: #16a34a; font-weight: 600;">🔒 <?php esc_html_e( 'Enforced (Zero Cross-Leakage)', 'nik-voice-ticketing-ai' ); ?></span>
+										<span style="color: #16a34a; font-weight: 600;">🔒 <?php esc_html_e( 'Enforced (Strict Provider Isolation)', 'nik-voice-ticketing-ai' ); ?></span>
 										<small style="display: block; color: #64748b; font-size: 11.5px; margin-top: 2px;">
 											<?php
 											if ( 'nik_voice_cloud' === $ai_provider_id || empty( $ai_provider_id ) ) {

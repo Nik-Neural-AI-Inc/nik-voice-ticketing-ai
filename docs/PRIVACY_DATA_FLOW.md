@@ -1,6 +1,6 @@
 # Nik Voice Ticketing AI - Privacy & Data Flow Architecture
 
-**Document Version**: 1.4.0  
+**Document Version**: 1.4.1  
 **Last Updated**: October 2026  
 **Engineering Organization**: Nik Neural AI Inc.  
 **Classification**: Technical Privacy & Architecture Specification  
@@ -9,7 +9,7 @@
 
 ## 1. Scope & Objective
 
-This document defines the comprehensive data flow, data classification inventory, storage lifecycle, transit controls, and single-provider isolation architecture implemented in **Nik Voice Ticketing AI (v1.4.0)**.
+This document defines the comprehensive data flow, data classification inventory, storage lifecycle, transit controls, and single-provider isolation architecture implemented in **Nik Voice Ticketing AI (v1.4.1)**.
 
 It provides technical transparency for website administrators, security engineers, and privacy officers assessing compliance with the **Personal Information Protection and Electronic Documents Act (PIPEDA)**, the British Columbia **Personal Information Protection Act (BC PIPA)**, and the **General Data Protection Regulation (GDPR)**.
 
@@ -71,22 +71,22 @@ The following inventory identifies every data element captured, processed, or st
 
 | Data Element | Classification | Source | Storage Location | Retention Lifecycle | Transit Protection |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Voice Audio Bitstream** | Sensitive Personal Data (Biometric / Voice) | Customer Microphone via `MediaRecorder` | `wp-content/uploads/nikvotia/` (Direct HTTP blocked) | Configurable: 0 to 365 days, or indefinite. Daily WP Cron auto-purge. | TLS 1.3 HTTPS via REST API |
-| **Voice Transcript** | Personal Data (Customer Communication) | AI Speech-to-Text Output | Database (`_nikvotia_transcript` postmeta) | Retained with ticket record until erased via WordPress Core Privacy Eraser. | TLS 1.3 HTTPS |
-| **AI Summary & Action Items** | Derivative Support Data | AI LLM Triage Output | Database (`_nikvotia_summary`, `_nikvotia_action_items`) | Retained with ticket record. | TLS 1.3 HTTPS |
-| **Customer Email** | Direct Personal Identifier (PII) | User Input or WP User Object | Database (`_nikvotia_user_email`) | Retained with ticket record. Included in Core Privacy Exporter/Eraser. | TLS 1.3 HTTPS |
-| **Customer Username / Display Name** | Direct Personal Identifier (PII) | User Input or WP User Object | Database (`_nikvotia_username`) | Retained with ticket record. | TLS 1.3 HTTPS |
-| **Client Environment (OS & Browser)** | Pseudonymous Technical Data | Client `navigator.userAgent` (Sanitized) | Database (`_nikvotia_environment`) | High-level family only (e.g. "Windows 11 / Chrome"). Stripped of hardware serials. | TLS 1.3 HTTPS |
-| **Clicked DOM Elements Timeline** | Telemetric Interaction Data | Frontend Click Event Listener | Database (`_nikvotia_clicked_elements`) | Tag names, truncated inner text (max 8 words), CSS selector, and time offset. | TLS 1.3 HTTPS |
-| **Page URL of Submission** | Contextual Support Data | `window.location.href` | Database (`_nikvotia_page_url`) | Retained with ticket record. | TLS 1.3 HTTPS |
-| **Cryptographic Stream Token** | Security Credential | Server generated (`hash_hmac`) | Dynamic computation (not persisted as stale meta) | Time-bounded (default 7 days). Invalidated upon per-ticket salt rotation. | URL Query Parameter / TLS 1.3 |
-| **Diagnostic Telemetry Payload** | Non-PII Technical Data | WordPress Environment Options | Remote Telemetry Server (`nikneural.ca/tracking/`) | Disabled by default. Opt-in only. Zero customer data transmitted. | TLS 1.3 HTTPS |
+| **Voice Audio Bitstream** | Sensitive Personal Data (Biometric / Voice) | Customer Microphone via `MediaRecorder` | `wp-content/uploads/nikvotia/` (Direct HTTP blocked) | Configurable: 0 to 365 days, or indefinite. Daily WP Cron auto-purge. | TLS 1.2 / TLS 1.3 HTTPS (negotiated by host) |
+| **Voice Transcript** | Personal Data (Customer Communication) | AI Speech-to-Text Output | Database (`_nikvotia_transcript` postmeta) | Retained with ticket record until erased via WordPress Core Privacy Eraser. | TLS 1.2 / TLS 1.3 HTTPS |
+| **AI Summary & Action Items** | Derivative Support Data | AI LLM Triage Output | Database (`_nikvotia_summary`, `_nikvotia_action_items`) | Retained with ticket record. | TLS 1.2 / TLS 1.3 HTTPS |
+| **Customer Email** | Direct Personal Identifier (PII) | User Input or WP User Object | Database (`_nikvotia_user_email`) | Retained with ticket record. Included in Core Privacy Exporter/Eraser. | TLS 1.2 / TLS 1.3 HTTPS |
+| **Customer Username / Display Name** | Direct Personal Identifier (PII) | User Input or WP User Object | Database (`_nikvotia_username`) | Retained with ticket record. | TLS 1.2 / TLS 1.3 HTTPS |
+| **Client Environment (OS & Browser)** | Pseudonymous Technical Data | Client `navigator.userAgent` (Sanitized) | Database (`_nikvotia_environment`) | High-level family only (e.g. "Windows 11 / Chrome"). Stripped of hardware serials. | TLS 1.2 / TLS 1.3 HTTPS |
+| **Clicked DOM Elements Timeline** | Telemetric Interaction Data | Frontend Click Event Listener | Database (`_nikvotia_clicked_elements`) | Tag names, truncated inner text (max 8 words), CSS selector, and time offset. | TLS 1.2 / TLS 1.3 HTTPS |
+| **Page URL of Submission** | Contextual Support Data | `window.location.href` | Database (`_nikvotia_page_url`) | Retained with ticket record. | TLS 1.2 / TLS 1.3 HTTPS |
+| **Cryptographic Stream Token** | Security Credential | Server generated (`hash_hmac`) | Dynamic computation (not persisted as stale meta) | Time-bounded (default 1 hour / 3600 seconds). Invalidated upon per-ticket salt rotation. Authorized sessions dynamically refresh URLs. | URL Query Parameter / TLS 1.2+ |
+| **Diagnostic Telemetry Payload** | Non-PII Technical Data | WordPress Environment Options | Remote Telemetry Server (`nikneural.ca/tracking/`) | Disabled by default. Opt-in only. Zero customer data transmitted. | TLS 1.2 / TLS 1.3 HTTPS |
 
 ---
 
 ## 4. Strict Single-Provider AI Engine Isolation
 
-To prevent unintended data leakage to third parties, Nik Voice Ticketing AI enforces **Strict Single-Provider Isolation**:
+To prevent unintended data transmission across multiple third parties, Nik Voice Ticketing AI enforces **Strict Single-Provider Isolation**:
 
 1. **Deterministic Dispatch**: The administrator selects one primary AI provider under **VoiceDesk Tickets > Settings > AI Provider**:
    - `nik_voice_cloud`: Routes exclusively to Sovereign Canadian Gateway at `voice.nikneural.ca`.
@@ -121,14 +121,16 @@ To prevent unintended data leakage to third parties, Nik Voice Ticketing AI enfo
      # END NikVoiceTicketingAI Protection
      ```
    - Direct requests for `.webm`, `.wav`, `.mp3`, or `.htaccess` return `HTTP 403 Forbidden`.
+   - **Filesystem Encryption Notice**: The web server configuration files (`.htaccess`) and filesystem permissions enforce network access control to prevent unauthorized HTTP requests. Audio recordings on disk are unencrypted at the application layer. Organizations requiring encryption at rest must implement host-level or volume-level encryption (such as Linux LUKS, Windows BitLocker, or cloud provider encrypted volumes).
 2. **Authenticated Streaming**:
    - Direct physical URLs are completely purged from HTML templates.
-   - Playback is delivered via `GET /wp-json/nikvotia/v1/audio/{ticket_number}` requiring administrative capabilities, ticket author authentication, or a valid time-bounded cryptographic HMAC-SHA256 token.
+   - Playback is delivered via `GET /wp-json/nikvotia/v1/audio/{ticket_number}` requiring administrative capabilities, ticket author authentication, or a valid time-bounded cryptographic HMAC-SHA256 token (default 1-hour lifetime).
+   - Authorized administrative and customer portal views automatically invoke server-side dynamic URL refresh (`Nikvotia_API::get_authenticated_stream_url()`).
    - Stream responses deliver `X-Robots-Tag: noindex, nofollow, noarchive` to prevent search engine indexing.
 
 ---
 
-## 6. Data Retention & Right-to-be-Forgotten Integration
+## 6. Data Retention & Erasure Integration
 
 1. **Automated Audio Pruning (Storage Limitation)**:
    - Configurable retention periods: 0 days (instant purge post-transcription), 7 days, 14 days, 30 days, 60 days, 90 days, 180 days, 365 days, or indefinite.

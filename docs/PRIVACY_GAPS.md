@@ -1,6 +1,6 @@
 # Nik Voice Ticketing AI - Privacy Gap Analysis & Environmental Limitations
 
-**Document Version**: 1.4.0  
+**Document Version**: 1.4.1  
 **Last Updated**: October 2026  
 **Engineering Organization**: Nik Neural AI Inc.  
 **Classification**: Compliance Transparency & Security Advisory  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary & Legal Disclaimer
 
-This document identifies environmental dependencies, architectural boundaries, and operational considerations relevant to organizations deploying **Nik Voice Ticketing AI (v1.4.0)** in jurisdictions governed by privacy legislation, including:
+This document identifies environmental dependencies, architectural boundaries, and operational considerations relevant to organizations deploying **Nik Voice Ticketing AI (v1.4.1)** in jurisdictions governed by privacy legislation, including:
 - **PIPEDA** (Personal Information Protection and Electronic Documents Act - Canada)
 - **BC PIPA** (Personal Information Protection Act - British Columbia)
 - **GDPR** (General Data Protection Regulation - Regulation (EU) 2016/679)
@@ -24,12 +24,12 @@ This document identifies environmental dependencies, architectural boundaries, a
 | Privacy Domain | Implemented Technical Safeguard | Remaining Environmental or Operational Gap | Recommended Action for Data Controller |
 | :--- | :--- | :--- | :--- |
 | **Direct Audio Access** | Auto-managed `.htaccess` with `# BEGIN NikVoiceTicketingAI Protection` blocking audio extensions and script execution on Apache/LiteSpeed. | **Webserver Dependency**: Nginx, Microsoft IIS, and Caddy do not parse `.htaccess` files by default. | Site operators running Nginx, IIS, or Caddy must manually apply the server directives documented in `README.md`. |
-| **Audio Stream Protection** | Time-bounded HMAC-SHA256 tokens (`?token=`) with 7-day TTL and instant per-ticket salt rotation revocation. | **Server Access Logs**: Standard Apache/Nginx access logs record complete query strings, potentially storing token strings in access log files. | Configure webserver access log formatting to strip or sanitize query parameters from `/wp-json/nikvotia/v1/audio/` log entries, or implement log rotation/encryption. |
+| **Audio Stream Protection** | Time-bounded HMAC-SHA256 tokens (`?token=`) with 1-hour TTL, dynamic URL refresh for authorized sessions, and instant per-ticket salt rotation revocation. | **Server Access Logs**: Standard Apache/Nginx access logs record complete query strings, potentially storing token strings in access log files. | Configure webserver access log formatting to strip or sanitize query parameters from `/wp-json/nikvotia/v1/audio/` log entries, or implement log rotation/encryption. |
 | **Storage Limitation** | Configurable automatic audio retention window (0-365 days) with daily scheduled WP Cron physical file unlinking. | **Cron Reliability**: If WordPress Cron is not triggered by site traffic or a system cron daemon, pruning could be delayed. | Configure system-level `crontab` calling `wp-cron.php` every 15 minutes to ensure timely execution of data retention tasks. |
 | **Data at Rest Encryption** | File permissions restricted to web server user; direct HTTP access denied. | **Host Disk Encryption**: Software does not perform native file-level symmetric encryption on physical audio files stored in `uploads/nikvotia/`. | Deploy WordPress on an operating system with full-disk encryption (LUKS, BitLocker) and configure encrypted database storage. |
 | **Shared Hosting Risks** | File system separation via WordPress upload directory paths. | **Multi-Tenant Server Isolation**: On shared hosting with improper `umask` or shared PHP processes, other local users might inspect files directly on disk. | Host production environments on dedicated virtual private servers (VPS), containers, or enterprise hosts with strict tenant isolation. |
-| **Third-Party AI Processing** | Deterministic single-provider isolation; zero cross-provider leakage. | **Data Processor Terms**: When using commercial third-party APIs (OpenAI or Modulate.ai), audio leaves the site server for processing in external jurisdictions (USA). | Execute formal Data Processing Agreements (DPAs) with OpenAI or Modulate.ai, or select the Sovereign Canadian Cloud gateway (`voice.nikneural.ca`). |
-| **Right-to-be-Forgotten** | Full integration with WordPress Core Personal Data Exporter and Personal Data Eraser. | **Off-Site Backups**: Site backups created by external backup plugins or hosting snapshots will contain audio copies created prior to erasure. | Document backup retention cycles in the organization's privacy policy and ensure deleted data is cycled out of disaster recovery snapshots within statutory timeframes. |
+| **Third-Party AI Processing** | Deterministic single-provider isolation; inactive APIs remain completely dormant. | **Data Processor Terms**: When using commercial third-party APIs (OpenAI or Modulate.ai), audio leaves the site server for processing in external jurisdictions (USA). | Execute formal Data Processing Agreements (DPAs) with OpenAI or Modulate.ai, or select the Sovereign Canadian Cloud gateway (`voice.nikneural.ca`). |
+| **Data Erasure Rights** | Full integration with WordPress Core Personal Data Exporter and Personal Data Eraser. | **Off-Site Backups**: Site backups created by external backup plugins or hosting snapshots will contain audio copies created prior to erasure. | Document backup retention cycles in the organization's privacy policy and ensure deleted data is cycled out of disaster recovery snapshots within statutory timeframes. |
 | **Consent & Transparency** | Frontend recording dock consent banner with configurable disclosure text. | **User Acknowledgment**: Voice recordings submitted without explicit affirmative checkbox toggle (banner is informational unless customized). | Update terms of service and customize the recording consent text under VoiceDesk Settings > Privacy to reflect corporate data handling policies. |
 
 ---

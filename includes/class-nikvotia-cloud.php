@@ -1,7 +1,7 @@
 <?php
 /**
  * Nik Voice Cloud Integration Client for WordPress.
- * Connects Nik VoiceDesk directly to https://voice.nikneural.ca/ with zero local disk retention.
+ * Connects Nik VoiceDesk directly to https://voice.nikneural.ca/ for cloud-based voice processing.
  *
  * @package Nik_VoiceDesk_AI
  */
@@ -231,7 +231,7 @@ class Nikvotia_Cloud_Client {
 
 	/**
 	 * Triage and summarize transcript sovereignly via Nik Voice Cloud gateway or local sovereign engine.
-	 * Guarantees zero data leakage to third parties (Modulate/OpenAI).
+	 * Routes requests directly to the configured gateway under single-provider isolation.
 	 *
 	 * @param string $transcript Text of customer voice note.
 	 * @param string $departments Comma-separated list of departments.
@@ -389,7 +389,7 @@ class Nikvotia_Cloud_Client {
 				'ok'           => true,
 				'service'      => $body['service'] ?? 'Nik Voice Cloud',
 				'engine'       => $body['engine'] ?? 'Groq Whisper-Large-v3',
-				'jurisdiction' => $body['jurisdiction'] ?? 'Canada (PIPEDA)',
+				'jurisdiction' => $body['jurisdiction'] ?? 'Canada',
 				'status'       => $body['status'] ?? 'ok',
 				'raw'          => $body,
 			);

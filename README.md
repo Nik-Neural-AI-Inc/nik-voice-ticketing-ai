@@ -88,7 +88,7 @@ Access is granted if and only if one of the following criteria is met:
 - **Token Format**: `{expires}.{signature}` (transmitted via `?token=`).
 - **Cryptographic Secret**: Site-specific 64-character persistent secret combined with WordPress core `AUTH_SALT`.
 - **Per-Ticket Salt**: Unique 16-character salt stored in `_nikvotia_ticket_salt`.
-- **Time-to-Live (TTL)**: Configured with a default TTL of 7 days (604,800 seconds). Developers can adjust this duration using the `nikvotia_audio_token_ttl` filter.
+- **Time-to-Live (TTL)**: Standardized to 1 hour (3,600 seconds). Developers can adjust this duration using the `nikvotia_audio_token_ttl` filter. Authorized administrators and authenticated ticket owners benefit from transparent, server-side dynamic token refresh when viewing tickets.
 - **Instant Revocation**:
   - Rotating the per-ticket salt or clicking "Revoke Link" in the Admin Ticket Console immediately invalidates all previously issued HMAC tokens.
   - Setting a ticket to **Closed** immediately blocks audio streaming access for guests and non-staff.
@@ -141,7 +141,7 @@ Access is granted if and only if one of the following criteria is met:
 - **Automated Audio Lifecycle Pruning**: Configurable retention window (from 0 to 365 days, or indefinite) with scheduled daily WP Cron pruning (`nikvotia_daily_data_retention_cleanup`) and on-demand manual purge. Expired audio files are physically unlinked from server disk while retaining anonymized text tickets.
 - **Native WordPress Privacy Integration**: Registered with WordPress Core Privacy Tools:
   - **Export Personal Data** (`Tools > Export Personal Data`): Full data portability for customer voice tickets, summaries, transcripts, and audio references.
-  - **Erase Personal Data** (`Tools > Erase Personal Data`): Comprehensive right-to-be-forgotten eraser permanently purging voice recordings, metadata, and ticket posts.
+  - **Erase Personal Data** (`Tools > Erase Personal Data`): Comprehensive data eraser permanently purging voice recordings, metadata, and ticket posts upon verified erasure requests.
 - **Transparent Frontend Consent Banner**: Configurable voice processing and AI transcription disclosure displayed cleanly on the frontend recording dock.
 - **Data-Minimizing Diagnostic Telemetry**: Administrator email exclusion toggle ensuring telemetry transmissions contain zero personal identifiers when disabled.
 - **Audio Stream Security**: Authenticated REST endpoint delivery with anti-IDOR cryptographic tokens, upload directory traversal containment, and `X-Robots-Tag: noindex, nofollow, noarchive` search index suppression.
@@ -190,7 +190,7 @@ Nik Voice Ticketing AI was developed by **Nik Neural AI Inc.** to assist site ow
 - **Direct Processing Architecture**: Outbound API requests communicate directly with the chosen AI provider with zero hidden third-party SaaS relays.
 - **Device Minimization**: User environment telemetry is restricted to sanitized OS and browser family identifiers; hardware serials and canvas fingerprints are never captured.
 - **Secure Audio Segregation**: Voice recordings are stored in a dedicated, server-protected upload folder (`wp-content/uploads/nikvotia/`) with direct HTTP requests denied.
-- **Data Minimization & Erasure**: Scheduled retention pruning unlinks physical audio recordings while maintaining text records, and full core privacy hooks support right-to-be-forgotten requests.
+- **Data Minimization & Erasure**: Scheduled retention pruning unlinks physical audio recordings while maintaining text records, and full core privacy hooks support customer data erasure requests.
 - **Regulatory Notice**: Technical privacy safeguards assist with regulatory obligations (including PIPEDA, BC PIPA, and GDPR) but do not constitute legal compliance certification. Site operators are responsible for their own organizational, privacy, and legal policies.
 
 ---
@@ -208,6 +208,15 @@ Nik Voice Ticketing AI was developed by **Nik Neural AI Inc.** to assist site ow
 - **Contributors**: `nikneuralaiinc`, `aboozaresmaili`
 
 ## Changelog
+
+### 1.4.1
+* **Security & Token Hardening**: Replaced static legacy bearer token fallback with strict rejection of unauthenticated static tokens, eliminating indefinite token validity.
+* **Token Lifetime Standardization**: Formally standardized on an explicit 1-hour (3,600 seconds) token TTL across all code, API endpoints, tests, and documentation.
+* **Dynamic Stream URL Refresh**: Implemented server-side authenticated URL refresh (`Nikvotia_API::get_authenticated_stream_url()`) ensuring authorized administrators and authenticated ticket owners always receive valid, time-bounded streaming tokens upon accessing ticket views.
+* **Zero Public Refresh Exposure**: Refresh logic executes strictly inside authenticated server-side render contexts without exposing any unauthenticated public token refresh endpoints.
+* **Portal Asset Reliability**: Guaranteed frontend stylesheet and script enqueuing across all custom portal pages, shortcodes, and WooCommerce account endpoints.
+* **Documentation & Regulatory Accuracy**: Comprehensively audited all codebase strings and documentation to qualify data residency, TLS version negotiation, local unencrypted filesystem storage, and compliance assertions.
+* **Regression Verification**: Added test cases covering legacy token rejection, 1-hour TTL enforcement, and authenticated stream URL dynamic refresh.
 
 ### 1.4.0
 * **Upload Protection Hardening**: Hardened `.htaccess` generation with explicit idempotent managed markers (`# BEGIN NikVoiceTicketingAI Protection` / `# END NikVoiceTicketingAI Protection`) to protect all supported audio formats (`webm`, `ogg`, `oga`, `wav`, `mp3`, `m4a`) while preserving unrelated administrator rules.
@@ -237,10 +246,10 @@ Nik Voice Ticketing AI was developed by **Nik Neural AI Inc.** to assist site ow
 ### 1.3.7
 * **Audio Access Protection (SEC-02 & SEC-03)**: Hardened `wp-content/uploads/nikvotia/` via automated `.htaccess` rules denying direct HTTP access to audio file extensions (`webm|ogg|oga|wav|mp3|m4a`) and enforcing `X-Robots-Tag: noindex, nofollow, noarchive`. Added Nginx, IIS, and Caddy directives for non-Apache environments.
 * **Direct URL Leak Elimination (SEC-04)**: Fully eliminated physical storage URLs (`_nikvotia_audio_url`) from rendered admin console and frontend customer portal HTML templates, routing all playback and downloads exclusively through the authenticated REST endpoint with `download=1` parameter support.
-* **Cryptographic HMAC-SHA256 Streaming Tokens (SEC-01 & DOC-01)**: Implemented time-bounded, cryptographically signed streaming tokens (`hash_hmac('sha256', ...)`) with 7-day default TTL (`nikvotia_audio_token_ttl`), per-ticket salt rotation for instant revocation, and automated playback blocking on closed tickets.
+* **Cryptographic HMAC-SHA256 Streaming Tokens (SEC-01 & DOC-01)**: Implemented time-bounded, cryptographically signed streaming tokens (`hash_hmac('sha256', ...)`) with configurable TTL (`nikvotia_audio_token_ttl`), per-ticket salt rotation for instant revocation, and automated playback blocking on closed tickets.
 * **HTTP Range Seeking**: Added full support for HTTP 206 Partial Content range requests (`Accept-Ranges: bytes`) for smooth audio seeking in browser players.
-* **Privacy & Data Retention**: Added configurable audio retention window (PIPEDA Limiting Retention Principle 4.5 & GDPR Storage Limitation) with daily automated WP Cron pruning (`nikvotia_daily_data_retention_cleanup`).
-* **Privacy Exporter & Eraser**: Integrated native WordPress Core Privacy Tools (`Tools > Export Personal Data` and `Tools > Erase Personal Data`) for full customer right-to-be-forgotten and data portability compliance.
+* **Privacy & Data Retention**: Added configurable audio retention window (supporting storage limitation and retention management) with daily automated WP Cron pruning (`nikvotia_daily_data_retention_cleanup`).
+* **Privacy Exporter & Eraser**: Integrated native WordPress Core Privacy Tools (`Tools > Export Personal Data` and `Tools > Erase Personal Data`) to support customer data subject access and erasure requests.
 * **Security Hardening**: Enforced cross-platform path normalization (`wp_normalize_path` and case-insensitive containment verification) and `X-Robots-Tag: noindex, nofollow, noarchive` on audio stream responses.
 * **Consent Controls**: Added frontend AI voice processing consent notice on the floating recording dock with customizable admin notice text.
 * **Telemetry Privacy**: Added site administrator email exclusion toggle ensuring zero personal identifiers in diagnostic telemetry.
@@ -261,7 +270,7 @@ Nik Voice Ticketing AI was developed by **Nik Neural AI Inc.** to assist site ow
 * **Feature**: Added 1-Click "Test Gateway Health" diagnostic button in Settings under Nik Voice Cloud.
 * **Diagnostics**: Added real-time detection and logging for Nik Voice Cloud gateway demo mode vs live Groq Whisper-v3 mode.
 * **UI Transparency**: Added demo fallback indicator badge in Admin Ticket Console and All Tickets list table when gateway runs in demo fallback mode.
-* **Security & Reliability**: Gateway health check probes `/v1/health` with PIPEDA compliance verification and auto-logging.
+* **Security & Reliability**: Gateway health check probes `/v1/health` with gateway status verification and auto-logging.
 
 ### 1.3.3
 * **Fix**: Refined audio container security scanning to eliminate false-positive "File content failed security verification" rejections caused by compressed Opus bitstream entropy.
@@ -271,7 +280,7 @@ Nik Voice Ticketing AI was developed by **Nik Neural AI Inc.** to assist site ow
 ### 1.3.2
 * **Strict Single-Provider Isolation**: Incoming voice tickets strictly use the selected active AI provider (Nik Voice Cloud, OpenAI, or Modulate.ai). Automatic cross-provider fallback and unintended secondary API calls are completely disabled.
 * **AI Engine & Pipeline Audit Log**: Added comprehensive audit tracking displaying the exact active AI engine, STT provider, and triage model used for each ticket in the Admin Ticket Console and All Tickets list table.
-* **Sovereign Cloud Triage**: Integrated sovereign triage and smart categorization for Nik Voice Cloud tickets with zero third-party data leakage.
+* **Sovereign Cloud Triage**: Integrated sovereign triage and smart categorization for Nik Voice Cloud tickets with strict single-provider isolation.
 * **UI Status Transparency**: Added clear Active/Dormant visual badges in VoiceDesk Settings indicating active single-engine mode and dormant API keys.
 
 ### 1.3.1
@@ -282,9 +291,9 @@ Nik Voice Ticketing AI was developed by **Nik Neural AI Inc.** to assist site ow
 * **UI**: Added prominent ticket notice banner on WooCommerce customer login form.
 
 ### 1.3.0
-* **Feature**: Added 1-Click Connect to Nik Voice Cloud (Groq Whisper-v3) with zero local disk retention.
+* **Feature**: Added 1-Click Connect to Nik Voice Cloud (Groq Whisper-v3) with in-flight ephemeral cloud processing.
 * **Security**: Added automatic cryptographic handshake and domain-bound API key provisioning.
-* **Compliance**: Added Canadian PIPEDA compliance and zero-disk streaming gateway support.
+* **Compliance**: Added Canadian data residency support and in-flight streaming gateway integration.
 
 ### 1.2.5
 * **Critical Security**: Resolved unauthenticated arbitrary file upload vulnerability in the public REST voice submission endpoint (props pnn219).

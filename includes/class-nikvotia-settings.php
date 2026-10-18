@@ -21,7 +21,7 @@ class Nikvotia_Settings {
 		add_action( 'admin_post_nikvotia_test_cloud', array( $this, 'handle_test_cloud' ) );
 		add_action( 'admin_post_nikvotia_purge_expired_audio', array( $this, 'handle_purge_expired_audio' ) );
 
-		// Scheduled PIPEDA / GDPR daily audio data retention cleanup
+		// Scheduled daily audio data retention cleanup
 		add_action( 'nikvotia_daily_data_retention_cleanup', array( __CLASS__, 'run_daily_retention_cleanup' ) );
 		if ( ! wp_next_scheduled( 'nikvotia_daily_data_retention_cleanup' ) ) {
 			wp_schedule_event( time(), 'daily', 'nikvotia_daily_data_retention_cleanup' );
@@ -743,7 +743,7 @@ class Nikvotia_Settings {
 						</p>
 					</div>
 					<span class="nik-ai-pill nik-ai-cloud nik-isolation-pill">
-						🔒 <?php esc_html_e( 'Zero Cross-Leakage', 'nik-voice-ticketing-ai' ); ?>
+						🔒 <?php esc_html_e( 'Strict Provider Isolation', 'nik-voice-ticketing-ai' ); ?>
 					</span>
 				</div>
 			</div>
@@ -841,7 +841,7 @@ class Nikvotia_Settings {
 											<span class="dashicons dashicons-cloud"></span> <?php esc_html_e( 'Nik Voice Cloud • Groq Whisper v3 Gateway', 'nik-voice-ticketing-ai' ); ?>
 										</h4>
 										<p class="nik-api-cloud-desc">
-											<?php esc_html_e( 'Instant zero-configuration pairing. Provisions 50 free transcription requests/month immediately on Free Starter. Audio streams in-flight with Zero Local Disk Retention (Engineered for Canadian Data Residency).', 'nik-voice-ticketing-ai' ); ?>
+											<?php esc_html_e( 'Instant zero-configuration pairing. Provisions 50 free transcription requests/month on Free Starter. Ephemeral cloud AI inference with configurable local storage retention on your WordPress server.', 'nik-voice-ticketing-ai' ); ?>
 										</p>
 									</div>
 									<div>
@@ -1258,7 +1258,7 @@ class Nikvotia_Settings {
 								<div class="nik-about-features-grid">
 									<div class="nik-about-feature-box">
 										<strong class="nik-about-feature-title">🍁 <?php esc_html_e( 'Sovereign Cloud Gateway', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span class="nik-about-feature-desc"><?php esc_html_e( 'Instant pairing with voice.nikneural.ca for Groq Whisper-v3 STT. In-flight zero-disk processing (Engineered for Canadian Data Residency).', 'nik-voice-ticketing-ai' ); ?></span>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Instant pairing with voice.nikneural.ca for Groq Whisper-v3 STT with in-flight ephemeral cloud inference.', 'nik-voice-ticketing-ai' ); ?></span>
 									</div>
 									<div class="nik-about-feature-box">
 										<strong class="nik-about-feature-title">🔒 <?php esc_html_e( 'HMAC-SHA256 Audio Streaming', 'nik-voice-ticketing-ai' ); ?></strong>
@@ -1266,11 +1266,11 @@ class Nikvotia_Settings {
 									</div>
 									<div class="nik-about-feature-box">
 										<strong class="nik-about-feature-title">🧹 <?php esc_html_e( 'Daily Data Retention Cron', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span class="nik-about-feature-desc"><?php esc_html_e( 'Configurable 0-365 day retention window. Automatically unlinks expired physical recordings from disk to guarantee right-to-be-forgotten.', 'nik-voice-ticketing-ai' ); ?></span>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Configurable 0-365 day retention window. Automatically unlinks expired physical recordings from disk to assist data minimization practices.', 'nik-voice-ticketing-ai' ); ?></span>
 									</div>
 									<div class="nik-about-feature-box">
 										<strong class="nik-about-feature-title">⚖️ <?php esc_html_e( 'WP Core Privacy Exporter/Eraser', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span class="nik-about-feature-desc"><?php esc_html_e( 'Native integration with Tools > Export Personal Data and Tools > Erase Personal Data for full statutory compliance.', 'nik-voice-ticketing-ai' ); ?></span>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Native integration with Tools > Export Personal Data and Tools > Erase Personal Data to support privacy and data subject rights.', 'nik-voice-ticketing-ai' ); ?></span>
 									</div>
 									<div class="nik-about-feature-box">
 										<strong class="nik-about-feature-title">🚪 <?php esc_html_e( 'Customer Portal Auto-Creation', 'nik-voice-ticketing-ai' ); ?></strong>
@@ -1384,7 +1384,7 @@ class Nikvotia_Settings {
 							</div>
 							<div class="nik-vd-card-body">
 								<p class="nik-about-cta-text">
-									<?php esc_html_e( 'Need dedicated private cloud hosting, custom VoIP telephony integrations, or 24/7 SLA coverage? Explore our Canadian enterprise solutions.', 'nik-voice-ticketing-ai' ); ?>
+									<?php esc_html_e( 'Need dedicated cloud infrastructure, custom CRM integrations, or enhanced enterprise SLA coverage? Explore our enterprise options.', 'nik-voice-ticketing-ai' ); ?>
 								</p>
 								<div style="margin-top: 14px;">
 									<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=voicedesk_ticket&page=nikvotia-settings&tab=pro' ) ); ?>" class="button button-secondary nik-about-pro-link">
@@ -1458,7 +1458,7 @@ class Nikvotia_Settings {
 					'Manual Gateway Health Check OK: Service [%s], Engine [%s], Jurisdiction [%s]',
 					$health['service'] ?? 'Nik Voice Cloud',
 					$health['engine'] ?? 'Groq Whisper-Large-v3',
-					$health['jurisdiction'] ?? 'Canada (PIPEDA)'
+					$health['jurisdiction'] ?? 'Canada'
 				),
 				$health
 			);
@@ -1475,7 +1475,7 @@ class Nikvotia_Settings {
 	/**
 	 * Prune audio recording files older than specified retention window.
 	 *
-	 * Implements Canadian PIPEDA Limiting Retention Principle 4.5 & GDPR Storage Limitation.
+	 * Supports retention management aligned with data minimization principles.
 	 *
 	 * @param int|null $days Retention period in days. Defaults to option value.
 	 * @return int Number of audio files pruned.

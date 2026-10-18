@@ -1,7 +1,7 @@
 # Third-Party Service Review & Data Processing Assessment
-# Nik Voice Ticketing AI v1.4.0
+# Nik Voice Ticketing AI v1.4.1
 
-**Document Reference:** TPR-REVIEW-v1.4.0  
+**Document Reference:** TPR-REVIEW-v1.4.1  
 **Last Assessment Date:** October 2026  
 **Reviewing Team:** Information Security & Privacy Engineering  
 **Scope:** External endpoints, AI transcription backends, API gateways, and telemetry services utilized by Nik Voice Ticketing AI.
@@ -52,11 +52,11 @@ This document reviews the data handling, privacy commitments, terms of service, 
 - **Terms of Service**: [https://nikneural.ca/terms/](https://nikneural.ca/terms/) (Reviewed October 2026).
 
 ### 2.2 Data Processing & Privacy Assessment
-- **Data Residency**: 100% Canadian data residency. Data remains exclusively within Canadian territorial jurisdiction during transit and processing.
+- **Data Residency**: Canadian data residency infrastructure for voice.nikneural.ca. Data processed via Canadian gateway endpoints.
 - **Retention Policy**: Ephemeral by default. Audio streams processed through standard API tiers are held in memory during inference and permanently purged immediately upon completion of the transcription response.
 - **Model Training**: Customer audio streams, transcripts, and metadata are **never** used to train, fine-tune, or improve foundational machine learning models.
 - **Encryption**:
-  - In Transit: TLS 1.3 enforced with modern cipher suites.
+  - In Transit: TLS 1.2 / TLS 1.3 as negotiated with the gateway endpoint.
   - At Rest: If temporary diagnostic spooling is configured by enterprise contract, data is encrypted via AES-256.
 - **Canadian Regulatory Alignment**: Designed to assist organizations in meeting their obligations under the Personal Information Protection and Electronic Documents Act (PIPEDA) and British Columbia Personal Information Protection Act (BC PIPA).
 
@@ -134,9 +134,9 @@ The telemetry payload is strictly limited to non-identifying operational metrics
 | **Physical Processing Location** | Canada (Vancouver/Calgary) | United States | United States | Canada |
 | **Data Retention Default** | Ephemeral (0 days) | 30 Days (Abuse monitoring) | Ephemeral (unless flagged) | 90 Days Aggregate |
 | **Model Training on Customer Data** | Never | Never (API data excluded) | Restricted / Opt-out | Never (Metrics only) |
-| **Transport Layer Security** | TLS 1.3 Enforced | TLS 1.2+ | TLS 1.3 | TLS 1.3 |
+| **Transport Layer Security** | TLS 1.2+ / TLS 1.3 | TLS 1.2+ | TLS 1.2+ / TLS 1.3 | TLS 1.2+ / TLS 1.3 |
 | **Cross-Border Transfer from Canada**| No (Domestic) | Yes (Canada -> US) | Yes (Canada -> US) | No (Domestic) |
-| **PIPEDA Schedule 1 Compatibility** | High (Domestic sovereign) | Requires Transfer Assessment| Requires Transfer Assessment| High (No PII) |
+| **Canadian Privacy Framework Alignment** | High (Domestic gateway) | Requires Transfer Assessment| Requires Transfer Assessment| High (No PII) |
 
 ---
 

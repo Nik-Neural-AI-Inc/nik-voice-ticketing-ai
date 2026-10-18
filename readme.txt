@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,7 +53,7 @@ This plugin connects to external third-party APIs to process voice audio recordi
 * Privacy Policy: https://nikneural.ca/
 
 4. **Nik Voice Cloud & Canadian Sovereign AI** (Optional)
-* Purpose: Canadian speech-to-text (Groq Whisper-v3) and in-flight zero-disk sovereign triage, engineered for Canadian data residency requirements.
+* Purpose: Canadian speech-to-text (Groq Whisper-v3) and in-flight ephemeral cloud inference with Canadian data residency options.
 * Service URL: https://voice.nikneural.ca
 * Product Overview: https://nikneural.ca/voicedesk-ai/
 * Terms of Service: https://nikneural.ca/
@@ -82,7 +82,7 @@ No. The plugin operates on a Bring Your Own Key (BYOK) model. You only pay your 
 No. The entire frontend recording dock, modal, click tracking, and audio processing are written in pure Vanilla JavaScript (0 dependencies).
 
 = Are voice recordings stored on my WordPress site? =
-Yes. Voice recordings are stored in `wp-content/uploads/nikvotia/` with direct webserver HTTP access denied via `.htaccess`. Playback and downloads are securely routed through authenticated REST streaming endpoints (`/wp-json/nikvotia/v1/audio/{ticket_id}` and `/wp-json/nik-voice/v1/audio/{ticket_id}`) using time-bounded cryptographic HMAC-SHA256 tokens and WordPress user capabilities.
+Yes. Voice recordings are stored in `wp-content/uploads/nikvotia/` with direct webserver HTTP access denied via `.htaccess`. Playback and downloads are securely routed through authenticated REST streaming endpoints (`/wp-json/nikvotia/v1/audio/{ticket_id}` and `/wp-json/nik-voice/v1/audio/{ticket_id}`) using time-bounded cryptographic HMAC-SHA256 tokens (1-hour TTL with authenticated URL refresh) and WordPress user capabilities.
 
 = Is the developer attribution link optional? =
 Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is completely optional and can be toggled on or off under VoiceDesk Settings > Appearance.
@@ -96,14 +96,23 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 
 == Changelog ==
 
+= 1.4.1 =
+* Security & Token Hardening: Replaced static legacy bearer token fallback with strict rejection of unauthenticated static tokens, eliminating indefinite token validity.
+* Token Lifetime Standardization: Formally standardized on an explicit 1-hour (3600 seconds) token TTL across all code, API endpoints, tests, and documentation.
+* Dynamic Stream URL Refresh: Implemented server-side authenticated URL refresh (`Nikvotia_API::get_authenticated_stream_url()`) ensuring authorized administrators and authenticated ticket owners always receive valid, time-bounded streaming tokens upon accessing ticket views.
+* Zero Public Refresh Exposure: Refresh logic executes strictly inside authenticated server-side render contexts without exposing any unauthenticated public token refresh endpoints.
+* Portal Asset Reliability: Guaranteed frontend stylesheet and script enqueuing across all custom portal pages, shortcodes, and WooCommerce account endpoints.
+* Documentation & Regulatory Accuracy: Comprehensively audited all codebase strings and documentation to qualify data residency, TLS version negotiation, local unencrypted filesystem storage, and compliance assertions.
+* Regression Verification: Added test cases covering legacy token rejection, 1-hour TTL enforcement, and authenticated stream URL dynamic refresh.
+
 = 1.4.0 =
 * Security Remediation: Upgraded .htaccess upload protection with idempotent managed markers (# BEGIN NikVoiceTicketingAI Protection) to protect all audio extensions (webm, ogg, oga, wav, mp3, m4a) while preserving administrator rules.
 * Security Hardening: Completely removed physical audio URLs from customer portal and admin HTML, routing 100% of audio playback through time-bounded HMAC-SHA256 authenticated streaming endpoints.
 * UI/UX Polish: Removed WordPress metabox header bar and up/down handle arrows from Ticket Console on post.php edit screen.
 * Dark Mode Overhaul: Resolved contrast and brightness issues on post.php (transcript, empty replies box, and audit items now use sleek dark backgrounds), and styled list table department badges.
 * Settings & Logs Modernization: Rebuilt API Connected card with a clean, structured key-value table and upgraded Logs tab with responsive action buttons, status bar, and spacious padding.
-* Pro Tab Alignment: Eliminated all references to telephony/VoIP and aligned all feature matrix items to verified capabilities (Sovereign Canadian Cloud, dedicated Groq Whisper-v3 TPU, CRM webhooks, SLA support).
-* Regulatory & Compliance Qualification: Qualified all PIPEDA, BC PIPA, and GDPR claims across documentation and UI to accurately describe technical capabilities and privacy controls.
+* Pro Tab Alignment: Eliminated all references to telephony/VoIP marketing and aligned all feature matrix items to verified capabilities (Sovereign Canadian Cloud, dedicated Groq Whisper-v3 TPU, CRM webhooks, SLA support).
+* Regulatory & Compliance Qualification: Qualified all regulatory and privacy references across documentation and UI to accurately describe technical capabilities and privacy controls.
 * Extended Documentation: Added formal privacy and security references in docs/ (PRIVACY_DATA_FLOW.md, PRIVACY_GAPS.md, SECURITY_CONTROLS.md, THIRD_PARTY_SERVICE_REVIEW.md).
 * Regression Test Suite: Expanded automated test suite with comprehensive assertions covering TEST-01 to TEST-30 with 100% pass rate.
 
@@ -127,8 +136,8 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 * Security: Fully eliminated direct physical audio URLs from rendered admin console and frontend portal HTML templates.
 * Security: Implemented time-bounded, cryptographically signed HMAC-SHA256 streaming tokens with configurable TTL, salt rotation revocation, and automatic playback disabling for closed tickets.
 * Feature: Added HTTP 206 Partial Content Range streaming support for smooth audio seeking in browser audio players.
-* Privacy & Data Retention: Added configurable audio retention window (PIPEDA Limiting Retention Principle 4.5 & GDPR Storage Limitation) with daily automated WP Cron pruning.
-* Privacy Exporter & Eraser: Integrated native WordPress Core Privacy Tools (Tools > Export Personal Data and Tools > Erase Personal Data) for full customer right-to-be-forgotten compliance.
+* Privacy & Data Retention: Added configurable audio retention window (supporting storage limitation and retention management) with daily automated WP Cron pruning.
+* Privacy Exporter & Eraser: Integrated native WordPress Core Privacy Tools (Tools > Export Personal Data and Tools > Erase Personal Data) to support customer data subject access and erasure requests.
 * Security Hardening: Enforced cross-platform path normalization (wp_normalize_path and case-insensitive containment verification) and X-Robots-Tag: noindex, nofollow, noarchive on audio streams.
 * Consent Controls: Added frontend AI voice processing consent notice on the floating recording dock.
 * Telemetry Privacy: Added site administrator email exclusion toggle ensuring zero personal identifiers in diagnostic telemetry.
@@ -149,7 +158,7 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 * Feature: Added 1-Click "Test Gateway Health" diagnostic button in Settings under Nik Voice Cloud.
 * Diagnostics: Added real-time detection and logging for Nik Voice Cloud gateway demo mode vs live Groq Whisper-v3 mode.
 * UI Transparency: Added demo fallback indicator badge in Admin Ticket Console and All Tickets list table when gateway runs in demo fallback mode.
-* Security & Reliability: Gateway health check probes /v1/health with PIPEDA compliance verification and auto-logging.
+* Security & Reliability: Gateway health check probes /v1/health with gateway status verification and auto-logging.
 
 = 1.3.3 =
 * Fix: Refined audio container security scanning to eliminate false-positive "File content failed security verification" rejections caused by compressed Opus bitstream entropy.
@@ -159,7 +168,7 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 = 1.3.2 =
 * Strict Single-Provider Isolation: Incoming voice tickets strictly use the selected active AI provider (Nik Voice Cloud, OpenAI, or Modulate.ai). Automatic cross-provider fallback and unintended secondary API calls are completely disabled.
 * AI Engine & Pipeline Audit Log: Added comprehensive audit tracking displaying the exact active AI engine, STT provider, and triage model used for each ticket in the Admin Ticket Console and All Tickets list table.
-* Sovereign Cloud Triage: Integrated sovereign triage and smart categorization for Nik Voice Cloud tickets with zero third-party data leakage.
+* Sovereign Cloud Triage: Integrated sovereign triage and smart categorization for Nik Voice Cloud tickets with strict single-provider isolation.
 * UI Status Transparency: Added clear Active/Dormant visual badges in VoiceDesk Settings indicating active single-engine mode and dormant API keys.
 
 = 1.3.1 =
@@ -170,9 +179,9 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 * Added prominent ticket notice banner on WooCommerce customer login form.
 
 = 1.3.0 =
-* Added 1-Click Connect to Nik Voice Cloud (Groq Whisper-v3) with zero local disk retention.
+* Added 1-Click Connect to Nik Voice Cloud (Groq Whisper-v3) with in-flight ephemeral cloud processing.
 * Added automatic cryptographic handshake and domain-bound API key provisioning.
-* Added Canadian PIPEDA compliance and zero-disk streaming gateway support.
+* Added Canadian data residency support and in-flight streaming gateway integration.
 
 = 1.2.5 =
 * Critical Security: Resolved unauthenticated arbitrary file upload vulnerability in the public REST voice submission endpoint (props pnn219).
@@ -242,7 +251,7 @@ Recommended update: Enforces strict single-provider AI engine isolation, soverei
 Recommended update: Fixes customer ticket portal 404 on WooCommerce /my-account/ endpoint and secures guest ticket views behind login.
 
 = 1.3.0 =
-Recommended update: 1-Click Connect to Nik Voice Cloud (Groq Whisper-v3) with zero local disk retention.
+Recommended update: 1-Click Connect to Nik Voice Cloud (Groq Whisper-v3) with in-flight ephemeral cloud processing.
 
 = 1.2.5 =
 Critical Security Update: Immediately update to resolve an unauthenticated file upload flaw. Discovered and responsibly disclosed by pnn219.
