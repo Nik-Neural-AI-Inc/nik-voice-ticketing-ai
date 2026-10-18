@@ -12,11 +12,21 @@
     margin-right: 0 !important;
 }
 
+.post-type-voicedesk_ticket #nikvotia_ticket_console {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
 .post-type-voicedesk_ticket #nikvotia_ticket_console .inside {
     padding: 0 !important;
     margin: 0 !important;
 }
 
+.post-type-voicedesk_ticket #nikvotia_ticket_console .postbox-header,
+.post-type-voicedesk_ticket #nikvotia_ticket_console .handle-actions,
+.post-type-voicedesk_ticket #nikvotia_ticket_console .handle-order-higher,
+.post-type-voicedesk_ticket #nikvotia_ticket_console .handle-order-lower,
 .post-type-voicedesk_ticket #nikvotia_ticket_console .hndle,
 .post-type-voicedesk_ticket #nikvotia_ticket_console .handlediv {
     display: none !important;
@@ -1667,20 +1677,58 @@ body.nik-vd-dark-mode .nik-vd-status-indicator.is-invalid {
     background: rgba(245, 158, 11, 0.15) !important;
     color: #fbbf24 !important;
     border-color: rgba(245, 158, 11, 0.3) !important;
-}
-
 /* Dark Mode Console Components */
 body.nik-vd-dark-mode .nik-vd-player-wrapper {
     background: #0f172a !important;
-    border-color: #334155 !important;
+    border: 1px solid #1e293b !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-audio-player {
+    filter: invert(0.9) hue-rotate(180deg) !important;
 }
 
 body.nik-vd-dark-mode .nik-vd-transcript-box,
 body.nik-vd-dark-mode .nik-vd-summary-box,
+body.nik-vd-dark-mode .nik-vd-transcript-content,
+body.nik-vd-dark-mode .nik-vd-no-replies,
+body.nik-vd-dark-mode .nik-vd-empty-notice,
 body.nik-vd-dark-mode .nik-vd-context-table,
 body.nik-vd-dark-mode .nik-vd-composer {
     background: #0f172a !important;
-    border-color: #334155 !important;
+    border: 1px solid #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-no-replies p,
+body.nik-vd-dark-mode .nik-vd-empty-notice {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-audit-card {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-audit-item {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-audit-label {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-audit-val strong {
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .nik-vd-audit-val code {
+    background: #090d16 !important;
+    color: #38bdf8 !important;
+    border: 1px solid #334155 !important;
 }
 
 body.nik-vd-dark-mode .nik-vd-transcript-box blockquote {
@@ -1996,6 +2044,28 @@ body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table tbody td {
     color: #cbd5e1 !important;
 }
 
+/* Enhanced List Table Cell Padding & Alignment */
+body.post-type-voicedesk_ticket .tablenav.top {
+    margin: 12px 0 10px 0 !important;
+    padding: 4px 0 !important;
+}
+
+body.post-type-voicedesk_ticket .tablenav .actions {
+    padding: 0 8px 0 0 !important;
+}
+
+body.post-type-voicedesk_ticket .wp-list-table th,
+body.post-type-voicedesk_ticket .wp-list-table td {
+    padding: 12px 14px !important;
+    vertical-align: middle !important;
+}
+
+body.nik-vd-dark-mode .nik-dept-badge {
+    background: #1e293b !important;
+    color: #94a3b8 !important;
+    border: 1px solid #334155 !important;
+}
+
 body.nik-vd-dark-mode.post-type-voicedesk_ticket .wp-list-table .nik-admin-ticket-link {
     color: #38bdf8 !important;
     font-weight: 700 !important;
@@ -2266,18 +2336,57 @@ body.nik-vd-dark-mode #nikvotia_custom_icon:focus {
     line-height: 28px !important;
     padding: 0 8px !important;
 }
-.nik-api-meta-grid {
-    margin-top: 12px !important;
-    font-size: 13px !important;
-    color: #475569 !important;
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
-    gap: 8px !important;
+.nik-api-meta-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 14px 0 !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
 }
-.nik-api-meta-grid code {
-    background: rgba(0, 0, 0, 0.05) !important;
-    padding: 2px 6px !important;
+.nik-api-meta-table th.nik-api-meta-th {
+    width: 16% !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-right: 1px solid #e2e8f0 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+}
+.nik-api-meta-table th.nik-api-meta-th .dashicons {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+    margin-right: 4px !important;
+    vertical-align: text-bottom !important;
+    color: #0284c7 !important;
+}
+.nik-api-meta-table td.nik-api-meta-td {
+    padding: 8px 12px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-right: 1px solid #e2e8f0 !important;
+    font-size: 12.5px !important;
+}
+.nik-api-meta-table tr:last-child th,
+.nik-api-meta-table tr:last-child td {
+    border-bottom: none !important;
+}
+.nik-api-code-val {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    padding: 3px 8px !important;
     border-radius: 4px !important;
+    font-size: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    word-break: break-all !important;
+}
+.nik-api-code-key {
+    font-weight: 600 !important;
+    color: #0369a1 !important;
 }
 .nik-api-tip-box {
     margin-top: 12px !important;
@@ -2345,28 +2454,78 @@ body.nik-vd-dark-mode #nikvotia_custom_icon:focus {
 /* ==========================================================================
    v1.3.9 Logs Tab Styles (tab=logs) - High-Contrast Light & Dark Mode
    ========================================================================== */
+.nik-logs-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.nik-logs-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 5px 14px !important;
+    height: 34px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    border-radius: 6px !important;
+    line-height: 1 !important;
+}
+.nik-logs-btn .dashicons {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+}
+.nik-logs-btn-danger {
+    color: #dc2626 !important;
+    border-color: #fca5a5 !important;
+}
+.nik-logs-btn-danger:hover {
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+    border-color: #f87171 !important;
+}
 .nik-logs-status-bar {
     border: 1px solid #e2e8f0 !important;
     background: #f8fafc !important;
-    padding: 14px 18px !important;
+    padding: 16px 20px !important;
     border-radius: 8px !important;
-    margin-bottom: 20px !important;
+    margin: 16px 0 20px 0 !important;
 }
 .nik-logs-status-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
-    gap: 12px !important;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+    gap: 16px !important;
     font-size: 13px !important;
     color: #334155 !important;
+    align-items: center !important;
+}
+.nik-logs-status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.nik-logs-status-label {
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
 }
 .nik-logs-status-val {
-    margin-left: 6px !important;
     font-weight: 600 !important;
+    color: #0f172a !important;
 }
 .nik-logs-code {
     background: rgba(0, 0, 0, 0.05) !important;
-    padding: 2px 6px !important;
+    padding: 3px 8px !important;
     border-radius: 4px !important;
+    font-size: 12.5px !important;
+    display: inline-block !important;
+    width: fit-content !important;
+    border: 1px solid #cbd5e1 !important;
 }
 .nik-logs-val-success {
     color: #16a34a !important;
@@ -2401,6 +2560,8 @@ body.nik-vd-dark-mode #nikvotia_custom_icon:focus {
 }
 
 .nik-logs-table-wrapper {
+    margin-top: 18px !important;
+    margin-bottom: 24px !important;
     border: 1px solid #e2e8f0 !important;
     border-radius: 8px !important;
     overflow: hidden !important;
@@ -2851,16 +3012,25 @@ body.nik-vd-dark-mode .nik-api-cloud-unconnected {
 body.nik-vd-dark-mode .nik-api-status-label {
     color: #4ade80 !important;
 }
-body.nik-vd-dark-mode .nik-api-meta-grid {
+body.nik-vd-dark-mode .nik-api-meta-table {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-api-meta-table th.nik-api-meta-th {
+    background: #1e293b !important;
     color: #cbd5e1 !important;
+    border-color: #334155 !important;
 }
-body.nik-vd-dark-mode .nik-api-meta-grid strong {
-    color: #f8fafc !important;
+body.nik-vd-dark-mode .nik-api-meta-table td.nik-api-meta-td {
+    border-color: #334155 !important;
 }
-body.nik-vd-dark-mode .nik-api-meta-grid code {
+body.nik-vd-dark-mode .nik-api-code-val {
     background: #090d16 !important;
     color: #38bdf8 !important;
-    border: 1px solid #334155 !important;
+    border-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-api-code-key {
+    color: #38bdf8 !important;
 }
 body.nik-vd-dark-mode .nik-api-tip-box {
     background: rgba(245, 158, 11, 0.12) !important;
@@ -2888,12 +3058,36 @@ body.nik-vd-dark-mode .nik-api-field-group .description {
     color: #94a3b8 !important;
 }
 
+body.nik-vd-dark-mode .nik-logs-btn {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-logs-btn:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+body.nik-vd-dark-mode .nik-logs-btn-danger {
+    color: #f87171 !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+}
+body.nik-vd-dark-mode .nik-logs-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #fca5a5 !important;
+}
+
 body.nik-vd-dark-mode .nik-logs-status-bar {
     background: #1e293b !important;
     border-color: #334155 !important;
 }
 body.nik-vd-dark-mode .nik-logs-status-grid {
     color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-logs-status-label {
+    color: #94a3b8 !important;
+}
+body.nik-vd-dark-mode .nik-logs-status-val {
+    color: #f8fafc !important;
 }
 body.nik-vd-dark-mode .nik-logs-status-grid strong {
     color: #f8fafc !important;

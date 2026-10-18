@@ -1,6 +1,6 @@
 # Nik Voice Ticketing AI
 
-[![Version](https://img.shields.io/badge/version-1.3.9-blue.svg)](https://nikneural.ca/voicedesk-ai/)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://nikneural.ca/voicedesk-ai/)
 [![WordPress.org](https://img.shields.io/badge/WordPress.org-nik--voice--ticketing--ai-0073aa.svg?logo=wordpress&logoColor=white)](https://wordpress.org/plugins/nik-voice-ticketing-ai/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717.svg?logo=github)](https://github.com/Nik-Neural-AI-Inc/nik-voice-ticketing-ai)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
@@ -19,22 +19,24 @@ Voice recordings are stored securely under `wp-content/uploads/nikvotia/` and pr
 Direct HTTP/HTTPS access to physical audio files (`.webm`, `.ogg`, `.oga`, `.wav`, `.mp3`, `.m4a`) as well as executable scripts (`.php`, `.html`, etc.) is strictly prohibited.
 
 #### Apache & LiteSpeed
-Direct access is automatically blocked via an auto-maintained `.htaccess` file deployed directly to `wp-content/uploads/nikvotia/`:
+Direct access is automatically blocked via an auto-maintained `.htaccess` file deployed directly to `wp-content/uploads/nikvotia/` using managed block markers (`# BEGIN NikVoiceTicketingAI Protection`):
 ```apache
+# BEGIN NikVoiceTicketingAI Protection
+Options -Indexes
+<FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js|webm|ogg|oga|wav|mp3|m4a)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
 <IfModule mod_authz_core.c>
     <FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js|webm|ogg|oga|wav|mp3|m4a)$">
         Require all denied
-    </FilesMatch>
-</IfModule>
-<IfModule !mod_authz_core.c>
-    <FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js|webm|ogg|oga|wav|mp3|m4a)$">
-        Deny from all
     </FilesMatch>
 </IfModule>
 <IfModule mod_headers.c>
     Header set X-Robots-Tag "noindex, nofollow, noarchive"
     Header set X-Content-Type-Options "nosniff"
 </IfModule>
+# END NikVoiceTicketingAI Protection
 ```
 
 #### Nginx
@@ -135,13 +137,13 @@ Access is granted if and only if one of the following criteria is met:
 - Control which pages, posts, or custom post types display the floating recording button.
 - Restrict visibility by user status: All visitors, logged-in users only, logged-out users only, or specific User IDs.
 
-### Enterprise Privacy, Data Retention & Consent Controls (PIPEDA & GDPR)
+### Enterprise Privacy, Data Retention & Consent Controls
 - **Automated Audio Lifecycle Pruning**: Configurable retention window (from 0 to 365 days, or indefinite) with scheduled daily WP Cron pruning (`nikvotia_daily_data_retention_cleanup`) and on-demand manual purge. Expired audio files are physically unlinked from server disk while retaining anonymized text tickets.
 - **Native WordPress Privacy Integration**: Registered with WordPress Core Privacy Tools:
   - **Export Personal Data** (`Tools > Export Personal Data`): Full data portability for customer voice tickets, summaries, transcripts, and audio references.
   - **Erase Personal Data** (`Tools > Erase Personal Data`): Comprehensive right-to-be-forgotten eraser permanently purging voice recordings, metadata, and ticket posts.
 - **Transparent Frontend Consent Banner**: Configurable voice processing and AI transcription disclosure displayed cleanly on the frontend recording dock.
-- **Zero-PII Diagnostic Telemetry**: Administrator email exclusion toggle ensuring telemetry transmissions contain zero personal identifiers.
+- **Data-Minimizing Diagnostic Telemetry**: Administrator email exclusion toggle ensuring telemetry transmissions contain zero personal identifiers when disabled.
 - **Audio Stream Security**: Authenticated REST endpoint delivery with anti-IDOR cryptographic tokens, upload directory traversal containment, and `X-Robots-Tag: noindex, nofollow, noarchive` search index suppression.
 
 ---
@@ -182,12 +184,14 @@ Add this shortcode to any WordPress page (e.g., `/support/` or `/my-tickets/`) t
 
 ---
 
-## Privacy & Compliance (PIPEDA by Default)
+## Privacy Engineering & Regulatory Considerations
 
-Nik Voice Ticketing AI was designed by **Nik Neural AI Inc.** following the principles of Canadian privacy compliance (PIPEDA):
-- No third-party SaaS middleware is used; all API requests go directly from your WordPress server to your chosen AI provider.
-- User environment details are sanitized to only include high-level OS and Browser names, stripping hardware and browser fingerprinting data.
-- Voice audio files are stored securely in WordPress uploads and streamed via authenticated REST endpoints.
+Nik Voice Ticketing AI was developed by **Nik Neural AI Inc.** to assist site owners in implementing technical data protection safeguards:
+- **Direct Processing Architecture**: Outbound API requests communicate directly with the chosen AI provider with zero hidden third-party SaaS relays.
+- **Device Minimization**: User environment telemetry is restricted to sanitized OS and browser family identifiers; hardware serials and canvas fingerprints are never captured.
+- **Secure Audio Segregation**: Voice recordings are stored in a dedicated, server-protected upload folder (`wp-content/uploads/nikvotia/`) with direct HTTP requests denied.
+- **Data Minimization & Erasure**: Scheduled retention pruning unlinks physical audio recordings while maintaining text records, and full core privacy hooks support right-to-be-forgotten requests.
+- **Regulatory Notice**: Technical privacy safeguards assist with regulatory obligations (including PIPEDA, BC PIPA, and GDPR) but do not constitute legal compliance certification. Site operators are responsible for their own organizational, privacy, and legal policies.
 
 ---
 
@@ -205,12 +209,22 @@ Nik Voice Ticketing AI was designed by **Nik Neural AI Inc.** following the prin
 
 ## Changelog
 
+### 1.4.0
+* **Upload Protection Hardening**: Hardened `.htaccess` generation with explicit idempotent managed markers (`# BEGIN NikVoiceTicketingAI Protection` / `# END NikVoiceTicketingAI Protection`) to protect all supported audio formats (`webm`, `ogg`, `oga`, `wav`, `mp3`, `m4a`) while preserving unrelated administrator rules.
+* **Audio Leak Prevention**: Completely purged physical storage URLs from customer portal and admin HTML templates, enforcing cryptographic time-bounded HMAC-SHA256 authenticated streaming.
+* **Admin UI & Dark Mode Overhaul**: Removed postbox header line and up/down arrows from Ticket Console on `post.php`, resolved dark mode contrast issues (transcript, empty notices, audit rows, department badges), and upgraded list table cell padding.
+* **Settings & Logs Modernization**: Rebuilt API Connected card with a dedicated structured table and redesigned Logs tab with responsive action buttons and status indicators.
+* **Pro Tab Realignment**: Removed all references to VoIP/telephony/PBX to reflect verified capabilities (Sovereign Canadian Cloud, dedicated Groq Whisper-v3 engine, CRM webhooks, SLA support).
+* **Compliance Claims Qualification**: Qualified all references to PIPEDA, BC PIPA, and GDPR across code, UI, and documentation to reflect factual technical safeguards.
+* **Comprehensive Documentation**: Added formal reference documents in `docs/`: `PRIVACY_DATA_FLOW.md`, `PRIVACY_GAPS.md`, `SECURITY_CONTROLS.md`, and `THIRD_PARTY_SERVICE_REVIEW.md`.
+* **Automated Regression Suite**: Expanded automated test suite to 100+ comprehensive checks (covering TEST-01 to TEST-30) passing 100% on WordPress 7.1.3 and PHP 8.2+.
+
 ### 1.3.9
 * **Plugin Check Compliance**: Added WordPress-Coding-Standards (WPCS) annotations for direct binary HTTP 206 audio range streaming (`fopen`, `fread`, `fclose`) and Core Privacy Exporter/Eraser and pruning meta queries, resolving all Plugin Check notices.
 * **Admin UI Contrast Overhaul**: Overhauled API Configuration tab (`tab=api`) and System & AI Activity Logs tab (`tab=logs`) with dedicated semantic CSS classes and ultra-high-contrast styling for both Dark and Light modes.
 * **Table Hardening**: Expanded Category column on logs table with nowrap pill badges, eliminating awkward word-wrapping on long event identifiers (such as `SECURITY_VERIFICATION`).
-* **Pro & Enterprise Architecture**: Modernized the Pro tab (`tab=pro`) with a comprehensive feature matrix comparing Community Edition vs. Sovereign Canadian Cloud, VoIP PBX telephony integration, and enterprise CRM/ERP webhooks.
-* **Corporate Records & About Page**: Updated About page (`nikvotia-about`) with verified corporate information, official plugin links, two verified contributors (`nikneuralaiinc, aboozaresmaili`), and v1.3.9 architectural highlights.
+* **Pro & Enterprise Architecture**: Modernized the Pro tab (`tab=pro`) with a comprehensive feature matrix comparing Community Edition vs. Sovereign Canadian Cloud, dedicated inference, and enterprise CRM/ERP webhooks.
+* **Corporate Records & About Page**: Updated About page (`nikvotia-about`) with verified corporate information, official plugin links, two verified contributors (`nikneuralaiinc, aboozaresmaili`), and architectural highlights.
 * **Smart Theming**: Added automatic OS (`prefers-color-scheme`) and admin theme dark mode auto-detection to `admin.js` to prevent theme flashing.
 
 ### 1.3.8

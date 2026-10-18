@@ -304,7 +304,7 @@ class Nikvotia_Cloud_Client {
 			}
 		}
 
-		// Sovereign Local Triage Fallback (zero external calls, instant, PIPEDA-compliant)
+		// Sovereign Local Triage Fallback (zero external calls, instant, on-premise execution)
 		return self::sovereign_local_triage( $transcript, $dept_list, $default_dept );
 	}
 

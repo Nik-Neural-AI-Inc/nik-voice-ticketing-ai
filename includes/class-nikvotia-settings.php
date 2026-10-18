@@ -537,7 +537,7 @@ class Nikvotia_Settings {
 		</div>
 
 		<div class="nik-vd-settings-section">
-			<h3><span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'PIPEDA & GDPR Privacy, Consent & Retention Controls', 'nik-voice-ticketing-ai' ); ?></h3>
+			<h3><span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'Data Retention, Privacy & Storage Limitation Controls', 'nik-voice-ticketing-ai' ); ?></h3>
 			<table class="form-table nik-vd-table">
 				<tr>
 					<th scope="row"><label for="nikvotia_audio_retention_days"><?php esc_html_e( 'Audio Data Retention Window', 'nik-voice-ticketing-ai' ); ?></label></th>
@@ -549,7 +549,7 @@ class Nikvotia_Settings {
 						<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
 							<select id="nikvotia_audio_retention_days" name="nikvotia_audio_retention_days" class="nik-vd-input-select">
 								<option value="0" <?php selected( $retention_days, 0 ); ?>><?php esc_html_e( '0 Days (Purge audio immediately after AI transcription)', 'nik-voice-ticketing-ai' ); ?></option>
-								<option value="7" <?php selected( $retention_days, 7 ); ?>><?php esc_html_e( '7 Days (Strict PIPEDA / Financial / Healthcare Privacy)', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="7" <?php selected( $retention_days, 7 ); ?>><?php esc_html_e( '7 Days (Strict Minimization / Healthcare & Financial Workflows)', 'nik-voice-ticketing-ai' ); ?></option>
 								<option value="14" <?php selected( $retention_days, 14 ); ?>><?php esc_html_e( '14 Days', 'nik-voice-ticketing-ai' ); ?></option>
 								<option value="30" <?php selected( $retention_days, 30 ); ?>><?php esc_html_e( '30 Days (Recommended Support Default)', 'nik-voice-ticketing-ai' ); ?></option>
 								<option value="60" <?php selected( $retention_days, 60 ); ?>><?php esc_html_e( '60 Days', 'nik-voice-ticketing-ai' ); ?></option>
@@ -563,7 +563,7 @@ class Nikvotia_Settings {
 							</a>
 						</div>
 						<p class="description">
-							<?php esc_html_e( 'Automatically purges stored audio recording files from your server once tickets exceed the retention period. AI summaries, ticket metadata, and conversation threads remain intact. Meets Canadian PIPEDA Principle 4.5 and GDPR Article 5(1)(e).', 'nik-voice-ticketing-ai' ); ?>
+							<?php esc_html_e( 'Automatically purges stored audio recording files from your server once tickets exceed the retention period. AI summaries, ticket metadata, and conversation threads remain intact. Designed to assist organizations implementing storage limitation practices under PIPEDA Principle 4.5 and GDPR Article 5(1)(e). Technical controls do not constitute legal compliance certification.', 'nik-voice-ticketing-ai' ); ?>
 						</p>
 					</td>
 				</tr>
@@ -612,7 +612,7 @@ class Nikvotia_Settings {
 							<input type="checkbox" name="nikvotia_telemetry_share_email" value="yes" <?php checked( $share_email, 'yes' ); ?> />
 							<span><?php esc_html_e( 'Include site administrator email in diagnostic telemetry for direct critical security notifications', 'nik-voice-ticketing-ai' ); ?></span>
 						</label>
-						<p class="description"><?php esc_html_e( 'When unchecked (recommended for strict PIPEDA compliance), telemetry packets contain zero personal identifiers.', 'nik-voice-ticketing-ai' ); ?></p>
+						<p class="description"><?php esc_html_e( 'When unchecked (recommended for data minimization), telemetry packets contain zero personal identifiers.', 'nik-voice-ticketing-ai' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -706,7 +706,7 @@ class Nikvotia_Settings {
 					<strong><span class="dashicons dashicons-yes-alt" style="color: #16a34a;"></span> <?php esc_html_e( 'Nik Voice Cloud Gateway Verified Live!', 'nik-voice-ticketing-ai' ); ?></strong>
 					<?php
 					/* translators: 1: Active Gateway URL, 2: Cloud engine name */
-					printf( esc_html__( 'Connected to %1$s (Engine: %2$s • Canada PIPEDA Zero-Disk). Diagnostic health status logged in System & AI Logs.', 'nik-voice-ticketing-ai' ), esc_html( $active_gateway ), esc_html( $cloud_engine_name ) );
+					printf( esc_html__( 'Connected to %1$s (Engine: %2$s • Sovereign In-Flight STT Gateway). Diagnostic health status logged in System & AI Logs.', 'nik-voice-ticketing-ai' ), esc_html( $active_gateway ), esc_html( $cloud_engine_name ) );
 					?>
 				</p>
 			</div>
@@ -754,7 +754,7 @@ class Nikvotia_Settings {
 					<td>
 						<select id="nikvotia_ai_provider" name="nikvotia_ai_provider" class="nik-vd-input-select" style="min-width: 340px; font-weight: 600;">
 							<option value="nik_voice_cloud" <?php selected( $active_provider, 'nik_voice_cloud' ); ?>>
-								⚡ <?php esc_html_e( 'Nik Voice Cloud (Groq Whisper-v3 • PIPEDA Zero-Disk)', 'nik-voice-ticketing-ai' ); ?>
+								⚡ <?php esc_html_e( 'Nik Voice Cloud (Groq Whisper-v3 • In-Flight Zero-Disk)', 'nik-voice-ticketing-ai' ); ?>
 							</option>
 							<option value="openai" <?php selected( $active_provider, 'openai' ); ?>>
 								🤖 <?php esc_html_e( 'OpenAI Cloud (Whisper-1 + GPT-4o-mini)', 'nik-voice-ticketing-ai' ); ?>
@@ -799,11 +799,35 @@ class Nikvotia_Settings {
 										</a>
 									</div>
 								</div>
-								<div class="nik-api-meta-grid">
-									<div><strong><?php esc_html_e( 'API Key ID:', 'nik-voice-ticketing-ai' ); ?></strong> <code><?php echo esc_html( $cloud_key ); ?></code></div>
-									<div><strong><?php esc_html_e( 'Domain Binding:', 'nik-voice-ticketing-ai' ); ?></strong> <code><?php echo esc_html( wp_parse_url( home_url(), PHP_URL_HOST ) ); ?></code></div>
-									<div><strong><?php esc_html_e( 'Gateway URL:', 'nik-voice-ticketing-ai' ); ?></strong> <code><?php echo esc_html( $active_gateway ); ?></code></div>
-								</div>
+								<table class="nik-api-meta-table">
+									<tbody>
+										<tr>
+											<th scope="row" class="nik-api-meta-th">
+												<span class="dashicons dashicons-admin-network"></span>
+												<?php esc_html_e( 'Gateway URL', 'nik-voice-ticketing-ai' ); ?>
+											</th>
+											<td class="nik-api-meta-td">
+												<code class="nik-api-code-val"><?php echo esc_html( $active_gateway ); ?></code>
+											</td>
+											<th scope="row" class="nik-api-meta-th">
+												<span class="dashicons dashicons-admin-site-alt3"></span>
+												<?php esc_html_e( 'Domain Binding', 'nik-voice-ticketing-ai' ); ?>
+											</th>
+											<td class="nik-api-meta-td">
+												<code class="nik-api-code-val"><?php echo esc_html( wp_parse_url( home_url(), PHP_URL_HOST ) ); ?></code>
+											</td>
+										</tr>
+										<tr>
+											<th scope="row" class="nik-api-meta-th">
+												<span class="dashicons dashicons-key"></span>
+												<?php esc_html_e( 'API Key ID', 'nik-voice-ticketing-ai' ); ?>
+											</th>
+											<td colspan="3" class="nik-api-meta-td">
+												<code class="nik-api-code-val nik-api-code-key"><?php echo esc_html( $cloud_key ); ?></code>
+											</td>
+										</tr>
+									</tbody>
+								</table>
 								<div class="nik-api-tip-box">
 									<strong><?php esc_html_e( '💡 Production Tip for Real-Time Speech:', 'nik-voice-ticketing-ai' ); ?></strong>
 									<?php esc_html_e( 'If your tickets display "[Nik Voice Cloud Demo]", the gateway at voice.nikneural.ca is running in demo fallback mode. To enable live speech transcription of customer voices, configure GROQ_API_KEY=gsk_... on your gateway server environment (in docker-compose or .env) and restart the gateway container.', 'nik-voice-ticketing-ai' ); ?>
@@ -817,7 +841,7 @@ class Nikvotia_Settings {
 											<span class="dashicons dashicons-cloud"></span> <?php esc_html_e( 'Nik Voice Cloud • Groq Whisper v3 Gateway', 'nik-voice-ticketing-ai' ); ?>
 										</h4>
 										<p class="nik-api-cloud-desc">
-											<?php esc_html_e( 'Instant zero-configuration pairing. Provisions 50 free transcription requests/month immediately on Free Starter. Audio streams in-flight with Zero Local Disk Retention (Canadian PIPEDA compliant).', 'nik-voice-ticketing-ai' ); ?>
+											<?php esc_html_e( 'Instant zero-configuration pairing. Provisions 50 free transcription requests/month immediately on Free Starter. Audio streams in-flight with Zero Local Disk Retention (Engineered for Canadian Data Residency).', 'nik-voice-ticketing-ai' ); ?>
 										</p>
 									</div>
 									<div>
@@ -909,9 +933,9 @@ class Nikvotia_Settings {
 						<span class="dashicons dashicons-shield"></span>
 						<?php esc_html_e( 'Nik Neural AI Inc. • Sovereign Canadian Enterprise', 'nik-voice-ticketing-ai' ); ?>
 					</div>
-					<h3 class="nik-pro-hero-title"><?php esc_html_e( 'Enterprise Cloud & Sovereign Telephony Solutions', 'nik-voice-ticketing-ai' ); ?></h3>
+					<h3 class="nik-pro-hero-title"><?php esc_html_e( 'Enterprise Cloud & Sovereign Infrastructure Solutions', 'nik-voice-ticketing-ai' ); ?></h3>
 					<p class="nik-pro-hero-desc">
-						<?php esc_html_e( 'Nik Voice Ticketing AI is 100% free and open-source with zero artificial limits. For organizations requiring managed private cloud gateways, Canadian data residency SLAs, custom VoIP PBX telephony integration, or enterprise ERP connectors, Nik Neural AI Inc. delivers bespoke mission-critical engineering.', 'nik-voice-ticketing-ai' ); ?>
+						<?php esc_html_e( 'Nik Voice Ticketing AI is 100% free and open-source with zero artificial limits. For organizations requiring managed private cloud gateways, Canadian data residency SLAs, custom CRM and webhook integrations, or enterprise ERP connectors, Nik Neural AI Inc. delivers bespoke mission-critical engineering.', 'nik-voice-ticketing-ai' ); ?>
 					</p>
 				</div>
 				<div class="nik-pro-hero-actions">
@@ -932,7 +956,7 @@ class Nikvotia_Settings {
 						<h4><?php esc_html_e( 'Sovereign Canadian Cloud', 'nik-voice-ticketing-ai' ); ?></h4>
 					</div>
 					<div class="nik-pro-card-body">
-						<p><?php esc_html_e( 'Zero cloud data leakage; customer audio processed entirely within sovereign Canadian borders with PIPEDA, BC PIPA, and PHIPA compliance guarantees.', 'nik-voice-ticketing-ai' ); ?></p>
+						<p><?php esc_html_e( 'Managed zero-disk speech processing within sovereign Canadian borders, engineered to support organizations subject to Canadian privacy standards.', 'nik-voice-ticketing-ai' ); ?></p>
 						<ul class="nik-pro-bullet-list">
 							<li>✓ <?php esc_html_e( 'Managed Gateway at voice.nikneural.ca', 'nik-voice-ticketing-ai' ); ?></li>
 							<li>✓ <?php esc_html_e( 'Sub-second Groq Whisper-v3 Inference', 'nik-voice-ticketing-ai' ); ?></li>
@@ -943,30 +967,30 @@ class Nikvotia_Settings {
 
 				<div class="nik-vd-card nik-pro-card">
 					<div class="nik-pro-card-header">
-						<span class="dashicons dashicons-phone nik-pro-card-icon" style="color: #16a34a;"></span>
-						<h4><?php esc_html_e( 'Telephony & VoIP PBX Integration', 'nik-voice-ticketing-ai' ); ?></h4>
-					</div>
-					<div class="nik-pro-card-body">
-						<p><?php esc_html_e( 'Bridge your physical phone system directly to WordPress tickets. Converts after-hours customer voicemails into AI-summarized support cases instantly.', 'nik-voice-ticketing-ai' ); ?></p>
-						<ul class="nik-pro-bullet-list">
-							<li>✓ <?php esc_html_e( 'SIP PBX & Asterisk Trunk Connectors', 'nik-voice-ticketing-ai' ); ?></li>
-							<li>✓ <?php esc_html_e( 'Twilio, FreePBX & 3CX Direct Hooks', 'nik-voice-ticketing-ai' ); ?></li>
-							<li>✓ <?php esc_html_e( 'Automatic Caller ID Account Matching', 'nik-voice-ticketing-ai' ); ?></li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="nik-vd-card nik-pro-card">
-					<div class="nik-vd-card-header">
-						<span class="dashicons dashicons-rest-api nik-pro-card-icon" style="color: #f59e0b;"></span>
-						<h4><?php esc_html_e( 'Enterprise CRM & ERP Webhooks', 'nik-voice-ticketing-ai' ); ?></h4>
+						<span class="dashicons dashicons-rest-api nik-pro-card-icon" style="color: #16a34a;"></span>
+						<h4><?php esc_html_e( 'Enterprise CRM & Webhooks', 'nik-voice-ticketing-ai' ); ?></h4>
 					</div>
 					<div class="nik-pro-card-body">
 						<p><?php esc_html_e( 'Automatically dispatch parsed voice tickets, audio streams, and sentiment scores to your core enterprise software in real time.', 'nik-voice-ticketing-ai' ); ?></p>
 						<ul class="nik-pro-bullet-list">
 							<li>✓ <?php esc_html_e( 'Salesforce & HubSpot Live Sync', 'nik-voice-ticketing-ai' ); ?></li>
 							<li>✓ <?php esc_html_e( 'Zendesk & Jira Service Desk Integration', 'nik-voice-ticketing-ai' ); ?></li>
-							<li>✓ <?php esc_html_e( 'Applied Epic & Insurance CRM Connectors', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'Custom Webhook JSON Payloads & Headers', 'nik-voice-ticketing-ai' ); ?></li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="nik-vd-card nik-pro-card">
+					<div class="nik-pro-card-header">
+						<span class="dashicons dashicons-admin-tools nik-pro-card-icon" style="color: #f59e0b;"></span>
+						<h4><?php esc_html_e( 'Dedicated Support & Custom Models', 'nik-voice-ticketing-ai' ); ?></h4>
+					</div>
+					<div class="nik-pro-card-body">
+						<p><?php esc_html_e( 'Direct SLA-backed engineering support with custom domain acoustic model tuning for specialized terminology and dialects.', 'nik-voice-ticketing-ai' ); ?></p>
+						<ul class="nik-pro-bullet-list">
+							<li>✓ <?php esc_html_e( '24/7 Dedicated Support & SLA', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'Industry-Specific Terminology Tuning', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'Custom Acoustic Audio Profiles', 'nik-voice-ticketing-ai' ); ?></li>
 						</ul>
 					</div>
 				</div>
@@ -990,7 +1014,7 @@ class Nikvotia_Settings {
 							<tr>
 								<td><strong><?php esc_html_e( 'Audio Capture & In-Browser Recording', 'nik-voice-ticketing-ai' ); ?></strong></td>
 								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Unlimited', 'nik-voice-ticketing-ai' ); ?></td>
-								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Unlimited + VoIP', 'nik-voice-ticketing-ai' ); ?></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Unlimited + High Fidelity', 'nik-voice-ticketing-ai' ); ?></td>
 							</tr>
 							<tr>
 								<td><strong><?php esc_html_e( 'AI Speech-to-Text & Triage Engine', 'nik-voice-ticketing-ai' ); ?></strong></td>
@@ -1003,7 +1027,7 @@ class Nikvotia_Settings {
 								<td style="text-align: center;"><?php esc_html_e( 'HMAC-SHA256 + Private S3 / KMS', 'nik-voice-ticketing-ai' ); ?></td>
 							</tr>
 							<tr>
-								<td><strong><?php esc_html_e( 'PIPEDA Automated Audio Pruning', 'nik-voice-ticketing-ai' ); ?></strong></td>
+								<td><strong><?php esc_html_e( 'Automated Audio Pruning', 'nik-voice-ticketing-ai' ); ?></strong></td>
 								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Daily WP Cron', 'nik-voice-ticketing-ai' ); ?></td>
 								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Instant Zero-Disk In-Flight', 'nik-voice-ticketing-ai' ); ?></td>
 							</tr>
@@ -1057,15 +1081,15 @@ class Nikvotia_Settings {
 						?>
 					</p>
 				</div>
-				<div style="display: flex; gap: 8px;">
-					<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_download_logs' ), 'nikvotia_download_logs_action', 'nikvotia_download_logs_nonce' ) ); ?>" class="button button-secondary">
-						<span class="dashicons dashicons-download" style="margin-top: 3px;"></span> <?php esc_html_e( 'Download Logs (.txt)', 'nik-voice-ticketing-ai' ); ?>
+				<div class="nik-logs-header-actions">
+					<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_download_logs' ), 'nikvotia_download_logs_action', 'nikvotia_download_logs_nonce' ) ); ?>" class="button button-secondary nik-logs-btn">
+						<span class="dashicons dashicons-download"></span> <?php esc_html_e( 'Download Logs (.txt)', 'nik-voice-ticketing-ai' ); ?>
 					</a>
-					<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_clear_logs' ), 'nikvotia_clear_logs_action', 'nikvotia_clear_logs_nonce' ) ); ?>" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to clear all VoiceDesk debug logs?', 'nik-voice-ticketing-ai' ); ?>');" class="button button-secondary" style="color: #dc2626;">
-						<span class="dashicons dashicons-trash" style="margin-top: 3px;"></span> <?php esc_html_e( 'Clear Logs', 'nik-voice-ticketing-ai' ); ?>
+					<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_clear_logs' ), 'nikvotia_clear_logs_action', 'nikvotia_clear_logs_nonce' ) ); ?>" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to clear all VoiceDesk debug logs?', 'nik-voice-ticketing-ai' ); ?>');" class="button button-secondary nik-logs-btn nik-logs-btn-danger">
+						<span class="dashicons dashicons-trash"></span> <?php esc_html_e( 'Clear Logs', 'nik-voice-ticketing-ai' ); ?>
 					</a>
-					<a href="?post_type=voicedesk_ticket&page=nikvotia-settings&tab=logs" class="button button-secondary">
-						<span class="dashicons dashicons-update" style="margin-top: 3px;"></span> <?php esc_html_e( 'Refresh', 'nik-voice-ticketing-ai' ); ?>
+					<a href="?post_type=voicedesk_ticket&page=nikvotia-settings&tab=logs" class="button button-secondary nik-logs-btn">
+						<span class="dashicons dashicons-update"></span> <?php esc_html_e( 'Refresh', 'nik-voice-ticketing-ai' ); ?>
 					</a>
 				</div>
 			</div>
@@ -1073,16 +1097,16 @@ class Nikvotia_Settings {
 			<!-- Environment & Engine Status Bar -->
 			<div class="nik-vd-card nik-logs-status-bar">
 				<div class="nik-logs-status-grid">
-					<div>
-						<strong><?php esc_html_e( 'Active AI Provider:', 'nik-voice-ticketing-ai' ); ?></strong>
+					<div class="nik-logs-status-item">
+						<span class="nik-logs-status-label"><?php esc_html_e( 'Active AI Provider', 'nik-voice-ticketing-ai' ); ?></span>
 						<span class="nik-logs-status-val"><?php echo esc_html( self::get_provider_label( $active_provider ) ); ?></span>
 					</div>
-					<div>
-						<strong><?php esc_html_e( 'Nik Cloud Gateway:', 'nik-voice-ticketing-ai' ); ?></strong>
+					<div class="nik-logs-status-item">
+						<span class="nik-logs-status-label"><?php esc_html_e( 'Nik Cloud Gateway', 'nik-voice-ticketing-ai' ); ?></span>
 						<code class="nik-logs-code"><?php echo esc_html( Nikvotia_Cloud_Client::get_gateway_url() ); ?></code>
 					</div>
-					<div>
-						<strong><?php esc_html_e( 'WordPress Debug Log:', 'nik-voice-ticketing-ai' ); ?></strong>
+					<div class="nik-logs-status-item">
+						<span class="nik-logs-status-label"><?php esc_html_e( 'WordPress Debug Log', 'nik-voice-ticketing-ai' ); ?></span>
 						<span class="nik-logs-status-val"><?php echo ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) ? '<span class="nik-logs-val-success">✓ Enabled (wp-content/debug.log)</span>' : '<span class="nik-logs-val-muted">Standard (options-backed)</span>'; ?></span>
 					</div>
 				</div>
@@ -1178,7 +1202,7 @@ class Nikvotia_Settings {
 							<span class="dashicons dashicons-tag"></span>
 							<strong>v<?php echo esc_html( NIKVOTIA_VERSION ); ?></strong>
 						</div>
-						<span class="nik-status-pill nik-status-resolved"><?php esc_html_e( 'PIPEDA COMPLIANT', 'nik-voice-ticketing-ai' ); ?></span>
+						<span class="nik-status-pill nik-status-resolved"><?php esc_html_e( 'CANADIAN DATA RESIDENCY', 'nik-voice-ticketing-ai' ); ?></span>
 					</div>
 
 					<div class="nik-vd-header-right">
@@ -1222,19 +1246,19 @@ class Nikvotia_Settings {
 				<div class="nik-vd-grid-layout">
 					<!-- Left Column: Mission & Platform -->
 					<div class="nik-vd-col-main">
-						<!-- v1.3.9 Architecture & Security Highlights Card -->
+						<!-- v1.4.0 Architecture & Security Highlights Card -->
 						<div class="nik-vd-card nik-about-card">
 							<div class="nik-vd-card-header">
-								<h3><span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'v1.3.9 Architecture & Security Highlights', 'nik-voice-ticketing-ai' ); ?></h3>
+								<h3><span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'v1.4.0 Architecture & Security Highlights', 'nik-voice-ticketing-ai' ); ?></h3>
 							</div>
 							<div class="nik-vd-card-body">
 								<p class="nik-about-intro">
-									<?php esc_html_e( 'Nik Voice Ticketing AI v1.3.9 introduces hardened enterprise security, privacy compliance, and multi-mode contrast architecture:', 'nik-voice-ticketing-ai' ); ?>
+									<?php esc_html_e( 'Nik Voice Ticketing AI v1.4.0 introduces hardened enterprise security, privacy compliance, and multi-mode contrast architecture:', 'nik-voice-ticketing-ai' ); ?>
 								</p>
 								<div class="nik-about-features-grid">
 									<div class="nik-about-feature-box">
 										<strong class="nik-about-feature-title">🍁 <?php esc_html_e( 'Sovereign Cloud Gateway', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span class="nik-about-feature-desc"><?php esc_html_e( 'Instant pairing with voice.nikneural.ca for Groq Whisper-v3 STT. In-flight zero-disk processing (PIPEDA compliant).', 'nik-voice-ticketing-ai' ); ?></span>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Instant pairing with voice.nikneural.ca for Groq Whisper-v3 STT. In-flight zero-disk processing (Engineered for Canadian Data Residency).', 'nik-voice-ticketing-ai' ); ?></span>
 									</div>
 									<div class="nik-about-feature-box">
 										<strong class="nik-about-feature-title">🔒 <?php esc_html_e( 'HMAC-SHA256 Audio Streaming', 'nik-voice-ticketing-ai' ); ?></strong>
@@ -1269,7 +1293,7 @@ class Nikvotia_Settings {
 								<div class="nik-about-suite-list">
 									<div class="nik-about-suite-item" style="border-left-color: #FF6D00;">
 										<strong class="nik-about-suite-title"><?php esc_html_e( 'Nik VoiceDesk AI', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span class="nik-vd-ai-badge"><?php esc_html_e( 'Active Plugin (v1.3.9)', 'nik-voice-ticketing-ai' ); ?></span>
+										<span class="nik-vd-ai-badge"><?php esc_html_e( 'Active Plugin (v1.4.0)', 'nik-voice-ticketing-ai' ); ?></span>
 										<p class="nik-about-suite-desc">
 											<?php esc_html_e( 'AI-powered zero-friction voice ticket submission, Whisper/Modulate transcription, automated triage, and customer portal integration.', 'nik-voice-ticketing-ai' ); ?>
 										</p>

@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.9
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,7 +53,7 @@ This plugin connects to external third-party APIs to process voice audio recordi
 * Privacy Policy: https://nikneural.ca/
 
 4. **Nik Voice Cloud & Canadian Sovereign AI** (Optional)
-* Purpose: Canadian speech-to-text (Groq Whisper-v3) and zero-disk sovereign triage with PIPEDA compliance.
+* Purpose: Canadian speech-to-text (Groq Whisper-v3) and in-flight zero-disk sovereign triage, engineered for Canadian data residency requirements.
 * Service URL: https://voice.nikneural.ca
 * Product Overview: https://nikneural.ca/voicedesk-ai/
 * Terms of Service: https://nikneural.ca/
@@ -96,11 +96,22 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 
 == Changelog ==
 
+= 1.4.0 =
+* Security Remediation: Upgraded .htaccess upload protection with idempotent managed markers (# BEGIN NikVoiceTicketingAI Protection) to protect all audio extensions (webm, ogg, oga, wav, mp3, m4a) while preserving administrator rules.
+* Security Hardening: Completely removed physical audio URLs from customer portal and admin HTML, routing 100% of audio playback through time-bounded HMAC-SHA256 authenticated streaming endpoints.
+* UI/UX Polish: Removed WordPress metabox header bar and up/down handle arrows from Ticket Console on post.php edit screen.
+* Dark Mode Overhaul: Resolved contrast and brightness issues on post.php (transcript, empty replies box, and audit items now use sleek dark backgrounds), and styled list table department badges.
+* Settings & Logs Modernization: Rebuilt API Connected card with a clean, structured key-value table and upgraded Logs tab with responsive action buttons, status bar, and spacious padding.
+* Pro Tab Alignment: Eliminated all references to telephony/VoIP and aligned all feature matrix items to verified capabilities (Sovereign Canadian Cloud, dedicated Groq Whisper-v3 TPU, CRM webhooks, SLA support).
+* Regulatory & Compliance Qualification: Qualified all PIPEDA, BC PIPA, and GDPR claims across documentation and UI to accurately describe technical capabilities and privacy controls.
+* Extended Documentation: Added formal privacy and security references in docs/ (PRIVACY_DATA_FLOW.md, PRIVACY_GAPS.md, SECURITY_CONTROLS.md, THIRD_PARTY_SERVICE_REVIEW.md).
+* Regression Test Suite: Expanded automated test suite with comprehensive assertions covering TEST-01 to TEST-30 with 100% pass rate.
+
 = 1.3.9 =
 * Plugin Check Compliance: Added WordPress-Coding-Standards (WPCS) annotations for direct binary HTTP 206 audio range streaming (fopen, fread, fclose) and Core Privacy Exporter/Eraser and pruning meta queries, resolving all Plugin Check notices.
 * Admin UI Contrast Overhaul: Overhauled API Configuration tab (tab=api) and System & AI Activity Logs tab (tab=logs) with dedicated semantic CSS classes and ultra-high-contrast styling for both Dark and Light modes.
 * Table Hardening: Expanded Category column on logs table with nowrap pill badges, eliminating awkward word-wrapping on long event identifiers (such as SECURITY_VERIFICATION).
-* Pro & Enterprise Architecture: Modernized the Pro tab (tab=pro) with a comprehensive feature matrix comparing Community Edition vs. Sovereign Canadian Cloud, VoIP PBX telephony integration, and enterprise CRM/ERP webhooks.
+* Pro & Enterprise Architecture: Modernized the Pro tab (tab=pro) with a comprehensive feature matrix comparing Community Edition vs. Sovereign Canadian Cloud, dedicated AI processing, and enterprise CRM/ERP webhooks.
 * Corporate Records & About Page: Updated About page (nikvotia-about) with verified corporate information, official plugin links, two verified contributors (nikneuralaiinc, aboozaresmaili), and v1.3.9 architectural highlights.
 * Smart Theming: Added automatic OS (prefers-color-scheme) and admin theme dark mode auto-detection to admin.js to prevent theme flashing.
 
