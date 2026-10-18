@@ -14,7 +14,7 @@ class Nikvotia_API {
 	}
 
 	public function register_routes() {
-		$namespaces = array( 'nikvotia/v1' );
+		$namespaces = array( 'nikvotia/v1', 'nik-voice/v1' );
 
 		foreach ( $namespaces as $ns ) {
 			register_rest_route( $ns, '/submit', array(
@@ -37,6 +37,151 @@ class Nikvotia_API {
 				},
 			) );
 		}
+	}
+
+	/**
+	 * Get or initialize the persistent server-wide HMAC secret key.
+	 *
+	 * @return string
+	 */
+	public static function get_stream_secret() {
+		$secret = get_option( 'nikvotia_audio_secret' );
+		if ( empty( $secret ) ) {
+			$secret = wp_generate_password( 64, true, true );
+			update_option( 'nikvotia_audio_secret', $secret, false );
+		}
+		$salt = defined( 'AUTH_SALT' ) ? AUTH_SALT : 'nikvotia_stream_salt';
+		return hash( 'sha256', $secret . $salt );
+	}
+
+	/**
+	 * Get or initialize the per-ticket cryptographic salt.
+	 * Rotating this salt immediately revokes all previously issued tokens for the ticket.
+	 *
+	 * @param int $post_id
+	 * @return string
+	 */
+	public static function get_ticket_salt( $post_id ) {
+		$salt = get_post_meta( $post_id, '_nikvotia_ticket_salt', true );
+		if ( empty( $salt ) ) {
+			$salt = wp_generate_password( 16, false );
+			update_post_meta( $post_id, '_nikvotia_ticket_salt', $salt );
+		}
+		return (string) $salt;
+	}
+
+	/**
+	 * Generate a time-bounded, cryptographically signed HMAC-SHA256 audio streaming token.
+	 * Format: {expires}.{signature}
+	 *
+	 * @param string   $ticket_number
+	 * @param int      $post_id
+	 * @param int|null $ttl Time to live in seconds (default: 7 days).
+	 * @return string
+	 */
+	public static function generate_audio_stream_token( $ticket_number, $post_id, $ttl = null ) {
+		if ( null === $ttl ) {
+			$ttl = (int) apply_filters( 'nikvotia_audio_token_ttl', 7 * DAY_IN_SECONDS );
+		}
+		$expires     = time() + (int) $ttl;
+		$secret      = self::get_stream_secret();
+		$ticket_salt = self::get_ticket_salt( $post_id );
+		$payload     = $ticket_number . '|' . $post_id . '|' . $expires . '|' . $ticket_salt;
+		$signature   = hash_hmac( 'sha256', $payload, $secret );
+
+		return $expires . '.' . $signature;
+	}
+
+	/**
+	 * Generate a full streaming REST URL including the HMAC access token.
+	 *
+	 * @param string      $ticket_number
+	 * @param int         $post_id
+	 * @param string|null $token Optional existing token.
+	 * @return string
+	 */
+	public static function generate_stream_url( $ticket_number, $post_id, $token = null ) {
+		if ( empty( $token ) ) {
+			$token = self::generate_audio_stream_token( $ticket_number, $post_id );
+		}
+		return add_query_arg( 'token', $token, rest_url( 'nikvotia/v1/audio/' . rawurlencode( $ticket_number ) ) );
+	}
+
+	/**
+	 * Verify an audio streaming token.
+	 *
+	 * @param string $ticket_number
+	 * @param int    $post_id
+	 * @param string $token
+	 * @return bool
+	 */
+	public static function verify_audio_stream_token( $ticket_number, $post_id, $token ) {
+		if ( empty( $token ) || ! is_string( $token ) ) {
+			return false;
+		}
+
+		$parts = explode( '.', $token, 2 );
+		if ( count( $parts ) === 2 && is_numeric( $parts[0] ) ) {
+			$expires   = (int) $parts[0];
+			$signature = $parts[1];
+
+			// 1. Time-bounded validity check
+			if ( time() > $expires ) {
+				return false;
+			}
+
+			// 2. Cryptographic signature verification
+			$secret      = self::get_stream_secret();
+			$ticket_salt = get_post_meta( $post_id, '_nikvotia_ticket_salt', true );
+			if ( empty( $ticket_salt ) ) {
+				return false;
+			}
+
+			$expected_payload   = $ticket_number . '|' . $post_id . '|' . $expires . '|' . $ticket_salt;
+			$expected_signature = hash_hmac( 'sha256', $expected_payload, $secret );
+
+			return hash_equals( $expected_signature, $signature );
+		}
+
+		// Backward compatibility fallback for legacy 32-character static tokens
+		$is_revoked = get_post_meta( $post_id, '_nikvotia_tokens_revoked', true );
+		if ( $is_revoked ) {
+			return false;
+		}
+
+		$stored_token = get_post_meta( $post_id, '_nikvotia_access_token', true ) ?: get_post_meta( $post_id, '_nik_access_token', true );
+		if ( ! empty( $stored_token ) && hash_equals( (string) $stored_token, (string) $token ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Invalidate/revoke all previously issued audio streaming tokens for a ticket.
+	 *
+	 * @param int $post_id
+	 * @return string|false Newly generated stream URL or false on failure.
+	 */
+	public static function revoke_audio_tokens( $post_id ) {
+		// Rotate the per-ticket salt, cryptographically revoking all prior HMAC tokens
+		$new_salt = wp_generate_password( 16, false );
+		update_post_meta( $post_id, '_nikvotia_ticket_salt', $new_salt );
+		update_post_meta( $post_id, '_nikvotia_tokens_revoked', 1 );
+		delete_post_meta( $post_id, '_nikvotia_access_token' );
+		delete_post_meta( $post_id, '_nik_access_token' );
+
+		$ticket_number = get_post_meta( $post_id, '_nikvotia_ticket_number', true ) ?: get_post_meta( $post_id, '_nik_ticket_number', true );
+		if ( $ticket_number ) {
+			$new_token      = self::generate_audio_stream_token( $ticket_number, $post_id );
+			$new_stream_url = self::generate_stream_url( $ticket_number, $post_id, $new_token );
+			update_post_meta( $post_id, '_nikvotia_access_token', $new_token );
+			update_post_meta( $post_id, '_nik_access_token', $new_token );
+			update_post_meta( $post_id, '_nikvotia_audio_stream_url', $new_stream_url );
+			update_post_meta( $post_id, '_nik_audio_stream_url', $new_stream_url );
+			return $new_stream_url;
+		}
+		return false;
 	}
 
 	/**
@@ -353,8 +498,8 @@ class Nikvotia_API {
 		}
 
 		// Secure cryptographic access token for audio streaming
-		$access_token = wp_generate_password( 32, false );
-		$stream_url   = add_query_arg( 'token', $access_token, rest_url( 'nikvotia/v1/audio/' . $ticket_number ) );
+		$access_token = self::generate_audio_stream_token( $ticket_number, $post_id );
+		$stream_url   = self::generate_stream_url( $ticket_number, $post_id, $access_token );
 
 		update_post_meta( $post_id, '_nikvotia_ticket_number', $ticket_number );
 		update_post_meta( $post_id, '_nik_ticket_number', $ticket_number );
@@ -364,8 +509,9 @@ class Nikvotia_API {
 		update_post_meta( $post_id, '_nik_audio_url', $file_url );
 		update_post_meta( $post_id, '_nikvotia_audio_stream_url', $stream_url );
 		update_post_meta( $post_id, '_nik_audio_stream_url', $stream_url );
-		update_post_meta( $post_id, '_nikvotia_audio_path', $filepath );
-		update_post_meta( $post_id, '_nik_audio_path', $filepath );
+		$normalized_audio_path = wp_normalize_path( $filepath );
+		update_post_meta( $post_id, '_nikvotia_audio_path', $normalized_audio_path );
+		update_post_meta( $post_id, '_nik_audio_path', $normalized_audio_path );
 		update_post_meta( $post_id, '_nikvotia_page_url', $page_url  );
 		update_post_meta( $post_id, '_nikvotia_environment', $clean_environment  );
 		update_post_meta( $post_id, '_nikvotia_clicked_elements', $sanitized_clicks  );
@@ -642,9 +788,15 @@ class Nikvotia_API {
 
 		$post = $posts[0];
 
-		// 1. Administrators or agents with edit capabilities
+		// 1. Administrators or agents with edit capabilities always have access
 		if ( current_user_can( 'edit_post', $post->ID ) || current_user_can( 'manage_options' ) ) {
 			return true;
+		}
+
+		// Security Rule: If ticket is closed, audio streaming is disabled for non-staff
+		$ticket_status = get_post_meta( $post->ID, '_nikvotia_status', true ) ?: get_post_meta( $post->ID, '_nik_status', true );
+		if ( 'closed' === strtolower( (string) $ticket_status ) ) {
+			return new WP_Error( 'rest_ticket_closed', __( 'Audio playback is disabled for closed tickets.', 'nik-voice-ticketing-ai' ), array( 'status' => 403 ) );
 		}
 
 		// 2. Ticket author if logged in
@@ -653,10 +805,9 @@ class Nikvotia_API {
 			return true;
 		}
 
-		// 3. Cryptographic token-based authorization (for guest customers or verified direct links)
-		$token = sanitize_text_field( $request->get_param( 'token' ) );
-		$stored_token = get_post_meta( $post->ID, '_nikvotia_access_token', true ) ?: get_post_meta( $post->ID, '_nik_access_token', true );
-		if ( ! empty( $stored_token ) && ! empty( $token ) && hash_equals( (string) $stored_token, (string) $token ) ) {
+		// 3. Cryptographic time-bounded HMAC-SHA256 token verification
+		$token = sanitize_text_field( (string) $request->get_param( 'token' ) );
+		if ( ! empty( $token ) && self::verify_audio_stream_token( $ticket_number, $post->ID, $token ) ) {
 			return true;
 		}
 
@@ -665,6 +816,7 @@ class Nikvotia_API {
 
 	/**
 	 * Securely stream or proxy audio files.
+	 * Supports full downloads and HTTP 206 Partial Content range requests for seekable playback.
 	 */
 	public function stream_audio( WP_REST_Request $request ) {
 		$ticket_number = sanitize_text_field( $request->get_param( 'ticket_number' ) );
@@ -698,7 +850,7 @@ class Nikvotia_API {
 		$base_upload_dir = wp_normalize_path( $upload_dir['basedir'] );
 		$normalized_file = wp_normalize_path( (string) $filepath );
 
-		if ( empty( $filepath ) || ! file_exists( $filepath ) || strpos( $normalized_file, $base_upload_dir ) !== 0 ) {
+		if ( empty( $filepath ) || ! file_exists( $filepath ) || stripos( $normalized_file, $base_upload_dir ) !== 0 ) {
 			return new WP_Error( 'file_not_found', __( 'Audio file not found on server.', 'nik-voice-ticketing-ai' ), array( 'status' => 404 ) );
 		}
 
@@ -714,12 +866,64 @@ class Nikvotia_API {
 		);
 		$mime_type = $mime_map[ $file_ext ] ?? 'audio/webm';
 
-		header( 'Content-Type: ' . $mime_type );
-		header( 'Content-Length: ' . $filesize );
-		header( 'X-Content-Type-Options: nosniff' );
-		header( 'Accept-Ranges: bytes' );
-		header( 'Cache-Control: private, no-transform, max-age=31536000' );
+		$start    = 0;
+		$end      = $filesize > 0 ? ( $filesize - 1 ) : 0;
+		$is_range = false;
 
+		// Handle HTTP Range header for seeking
+		if ( isset( $_SERVER['HTTP_RANGE'] ) ) {
+			$range_header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_RANGE'] ) );
+			if ( preg_match( '/bytes=\s*(\d+)-(\d*)/i', $range_header, $matches ) ) {
+				$start = (int) $matches[1];
+				if ( ! empty( $matches[2] ) ) {
+					$end = min( (int) $matches[2], $filesize - 1 );
+				}
+				if ( $start <= $end && $start < $filesize ) {
+					$is_range = true;
+				}
+			}
+		}
+
+		if ( ob_get_level() ) {
+			ob_end_clean();
+		}
+
+		header( 'Content-Type: ' . $mime_type );
+		header( 'Accept-Ranges: bytes' );
+		header( 'X-Content-Type-Options: nosniff' );
+		header( 'Cache-Control: private, no-transform, max-age=31536000' );
+		header( 'X-Robots-Tag: noindex, nofollow, noarchive' );
+
+		$safe_filename = sanitize_file_name( $ticket_number . '-recording.' . $file_ext );
+		if ( $request->get_param( 'download' ) === '1' ) {
+			header( 'Content-Disposition: attachment; filename="' . $safe_filename . '"' );
+		} else {
+			header( 'Content-Disposition: inline; filename="' . $safe_filename . '"' );
+		}
+
+		if ( $is_range ) {
+			http_response_code( 206 );
+			$length = $end - $start + 1;
+			header( "Content-Range: bytes {$start}-{$end}/{$filesize}" );
+			header( "Content-Length: {$length}" );
+
+			$fp = fopen( $filepath, 'rb' );
+			if ( $fp ) {
+				fseek( $fp, $start );
+				$bytes_remaining = $length;
+				while ( ! feof( $fp ) && $bytes_remaining > 0 ) {
+					$chunk_size = min( 8192, $bytes_remaining );
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
+					echo fread( $fp, $chunk_size );
+					flush();
+					$bytes_remaining -= $chunk_size;
+				}
+				fclose( $fp );
+			}
+			exit;
+		}
+
+		header( 'Content-Length: ' . $filesize );
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Direct output streaming of audio file.
 		readfile( $filepath );
 		exit;

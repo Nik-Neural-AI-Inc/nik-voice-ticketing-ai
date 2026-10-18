@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.6
+Stable tag: 1.3.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,11 +52,19 @@ This plugin connects to external third-party APIs to process voice audio recordi
 * Service URL: https://nikneural.ca/tracking/
 * Privacy Policy: https://nikneural.ca/
 
-4. **Nik Neural AI Cloud & Add-ons** (Optional)
-* Purpose: Commercial support and custom enterprise AI model integrations provided by Nik Neural AI Inc.
-* Service URL: https://nikneural.ca/
+4. **Nik Voice Cloud & Canadian Sovereign AI** (Optional)
+* Purpose: Canadian speech-to-text (Groq Whisper-v3) and zero-disk sovereign triage with PIPEDA compliance.
+* Service URL: https://voice.nikneural.ca
+* Product Overview: https://nikneural.ca/voicedesk-ai/
 * Terms of Service: https://nikneural.ca/
 * Privacy Policy: https://nikneural.ca/
+
+= Official Links & Resources =
+
+* Official Website: https://nikneural.ca/
+* Product Page: https://nikneural.ca/voicedesk-ai/
+* WordPress.org Plugin: https://wordpress.org/plugins/nik-voice-ticketing-ai/
+* GitHub Repository: https://github.com/Nik-Neural-AI-Inc/nik-voice-ticketing-ai
 
 == Installation ==
 
@@ -74,7 +82,7 @@ No. The plugin operates on a Bring Your Own Key (BYOK) model. You only pay your 
 No. The entire frontend recording dock, modal, click tracking, and audio processing are written in pure Vanilla JavaScript (0 dependencies).
 
 = Are voice recordings stored on my WordPress site? =
-Yes. Voice recordings are saved in your WordPress uploads directory and streamed via authenticated REST endpoints.
+Yes. Voice recordings are stored in `wp-content/uploads/nikvotia/` with direct webserver HTTP access denied via `.htaccess`. Playback and downloads are securely routed through authenticated REST streaming endpoints (`/wp-json/nikvotia/v1/audio/{ticket_id}` and `/wp-json/nik-voice/v1/audio/{ticket_id}`) using time-bounded cryptographic HMAC-SHA256 tokens and WordPress user capabilities.
 
 = Is the developer attribution link optional? =
 Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is completely optional and can be toggled on or off under VoiceDesk Settings > Appearance.
@@ -87,6 +95,18 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 4. VoiceDesk Settings page with Dark Mode toggle and AI configuration.
 
 == Changelog ==
+
+= 1.3.7 =
+* Security: Blocked direct HTTP access to audio recordings in `wp-content/uploads/nikvotia/` via automated Apache `.htaccess` directives and added Nginx/IIS/Caddy configuration guidelines.
+* Security: Fully eliminated direct physical audio URLs from rendered admin console and frontend portal HTML templates.
+* Security: Implemented time-bounded, cryptographically signed HMAC-SHA256 streaming tokens with configurable TTL, salt rotation revocation, and automatic playback disabling for closed tickets.
+* Feature: Added HTTP 206 Partial Content Range streaming support for smooth audio seeking in browser audio players.
+* Privacy & Data Retention: Added configurable audio retention window (PIPEDA Limiting Retention Principle 4.5 & GDPR Storage Limitation) with daily automated WP Cron pruning.
+* Privacy Exporter & Eraser: Integrated native WordPress Core Privacy Tools (Tools > Export Personal Data and Tools > Erase Personal Data) for full customer right-to-be-forgotten compliance.
+* Security Hardening: Enforced cross-platform path normalization (wp_normalize_path and case-insensitive containment verification) and X-Robots-Tag: noindex, nofollow, noarchive on audio streams.
+* Consent Controls: Added frontend AI voice processing consent notice on the floating recording dock.
+* Telemetry Privacy: Added site administrator email exclusion toggle ensuring zero personal identifiers in diagnostic telemetry.
+* Automated Testing: Built and verified comprehensive 42-check regression test suite on WordPress 7.1.3 and PHP 8.2+.
 
 = 1.3.6 =
 * UI & Accessibility: Redesigned the ticket submission confirmation modal with ultra-high contrast styling for dark and light modes.

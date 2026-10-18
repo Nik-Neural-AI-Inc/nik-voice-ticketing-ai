@@ -138,6 +138,8 @@ class Nikvotia_Frontend {
 		}
 		
 		$show_attribution = '1' === (string) get_option( 'nikvotia_show_attribution', '0'   );
+		$enable_consent   = '1' === (string) get_option( 'nikvotia_enable_consent_notice', '1' );
+		$consent_text     = get_option( 'nikvotia_consent_notice_text', __( 'By recording, you consent to AI processing of your voice per our privacy policy.', 'nik-voice-ticketing-ai' ) );
 		$custom_icon = get_option( 'nikvotia_custom_icon', ''   );
 		$portal_page_id = get_option( 'nikvotia_portal_page_id', 0   );
 		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : '';
@@ -205,7 +207,7 @@ class Nikvotia_Frontend {
 				</button>
 				
 				<?php if ( $show_attribution ) : ?>
-					<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer">
+					<a id="nik-vd-branding-btn" class="nik-vd-branding" href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer">
 						<?php esc_html_e( 'Powered by', 'nik-voice-ticketing-ai' ); ?>
 						<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo" width="14" height="14" />
 					</a>
@@ -225,6 +227,12 @@ class Nikvotia_Frontend {
 
 				<div id="nik-vd-click-counter" class="nik-vd-hidden">0 Clicks Logged</div>
 
+				<?php if ( $enable_consent && ! empty( $consent_text ) ) : ?>
+					<div id="nik-vd-consent-notice" class="nik-vd-consent-notice">
+						🔒 <?php echo esc_html( $consent_text ); ?>
+					</div>
+				<?php endif; ?>
+
 				<button id="nik-vd-stop-btn" class="nik-vd-dock-btn">
 					✓ <?php esc_html_e( 'Finish & Submit', 'nik-voice-ticketing-ai' ); ?>
 				</button>
@@ -238,7 +246,7 @@ class Nikvotia_Frontend {
 				<!-- Freemium Attribution Bar (Free Tier) -->
 				<div id="nik-vd-attribution-bar" class="nik-vd-attribution-bar nik-vd-hidden">
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voice-ticketing-ai' ); ?> 
-					<a href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer">
+					<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer">
 						Nik Neural AI Inc.
 						<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
 					</a>
@@ -543,7 +551,7 @@ class Nikvotia_Frontend {
 			<?php if ( '1' === (string) get_option( 'nikvotia_show_attribution', '0'   ) ) : ?>
 				<div class="nik-portal-footer-attribution">
 					<?php esc_html_e( 'Voice Support Powered by', 'nik-voice-ticketing-ai' ); ?> 
-					<a href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer">
+					<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer">
 						Nik Neural AI Inc.
 						<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-light" width="14" height="14" />
 						<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-dark-32.png' ); ?>" alt="Nik Neural AI Inc." class="nik-vd-company-logo nik-vd-logo-dark" width="14" height="14" />
@@ -616,8 +624,9 @@ class Nikvotia_Frontend {
 			return;
 		}
 
-		$audio_url = get_post_meta( $post->ID, '_nikvotia_audio_url', true );
-		$stream_url = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nikvotia/v1/audio/' . $ticket_number );
+		$audio_path = get_post_meta( $post->ID, '_nikvotia_audio_path', true ) ?: get_post_meta( $post->ID, '_nik_audio_path', true );
+		$has_audio  = ! empty( $audio_path ) && file_exists( $audio_path );
+		$stream_url = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: ( class_exists( 'Nikvotia_API' ) ? Nikvotia_API::generate_stream_url( $ticket_number, $post->ID ) : rest_url( 'nikvotia/v1/audio/' . $ticket_number ) );
 		$transcript = get_post_meta( $post->ID, '_nikvotia_transcript', true );
 		$summary = get_post_meta( $post->ID, '_nikvotia_summary', true );
 		$dept = get_post_meta( $post->ID, '_nikvotia_department', true ) ?: 'General Support';
@@ -724,13 +733,10 @@ Manage Ticket:
 			<div class="nik-detail-box">
 				<h3>🎙️ <?php esc_html_e( 'Your Voice Note & AI Summary', 'nik-voice-ticketing-ai' ); ?></h3>
 				
-				<?php if ( $audio_url || $stream_url ) : ?>
+				<?php if ( $has_audio && $stream_url ) : ?>
 					<audio controls class="nik-audio-player">
 						<source src="<?php echo esc_url( $stream_url ); ?>" type="audio/webm">
-						<?php if ( $audio_url ) : ?>
-							<source src="<?php echo esc_url( $audio_url ); ?>" type="audio/webm">
-							<source src="<?php echo esc_url( $audio_url ); ?>" type="audio/wav">
-						<?php endif; ?>
+						<?php esc_html_e( 'Your browser does not support the audio element.', 'nik-voice-ticketing-ai' ); ?>
 					</audio>
 				<?php endif; ?>
 

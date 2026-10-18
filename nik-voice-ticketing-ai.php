@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name:       Nik Voice Ticketing AI
- * Plugin URI:        https://nikneural.ca/pl/voicedesk.php
+ * Plugin URI:        https://nikneural.ca/voicedesk-ai/
  * Description:       Zero-friction, AI-powered voice ticketing system for WordPress with 1-Click Nik Voice Cloud, Groq Whisper-v3, and PIPEDA zero-disk retention.
- * Version:           1.3.6
+ * Version:           1.3.7
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Nik Neural AI Inc.
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Plugin Constants
-define( 'NIKVOTIA_VERSION', '1.3.6' );
+define( 'NIKVOTIA_VERSION', '1.3.7' );
 define( 'NIKVOTIA_FILE', __FILE__ );
 define( 'NIKVOTIA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NIKVOTIA_URL', plugin_dir_url( __FILE__ ) );
@@ -42,12 +42,12 @@ function nikvotia_ensure_uploads_dir() {
 
 	$htaccess_file = $plugin_upload_dir . '/.htaccess';
 	$hardened_htaccess = "Options -Indexes\n"
-		. "<FilesMatch \"(?i)\\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js)$\">\n"
+		. "<FilesMatch \"(?i)\\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js|webm|ogg|oga|wav|mp3|m4a)$\">\n"
 		. "    Order allow,deny\n"
 		. "    Deny from all\n"
 		. "</FilesMatch>\n"
 		. "<IfModule mod_authz_core.c>\n"
-		. "    <FilesMatch \"(?i)\\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js)$\">\n"
+		. "    <FilesMatch \"(?i)\\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js|webm|ogg|oga|wav|mp3|m4a)$\">\n"
 		. "        Require all denied\n"
 		. "    </FilesMatch>\n"
 		. "</IfModule>\n"
@@ -63,9 +63,10 @@ function nikvotia_ensure_uploads_dir() {
 		. "<IfModule mod_headers.c>\n"
 		. "    Header set Access-Control-Allow-Origin \"*\"\n"
 		. "    Header set X-Content-Type-Options \"nosniff\"\n"
+		. "    Header set X-Robots-Tag \"noindex, nofollow, noarchive\"\n"
 		. "</IfModule>\n";
 
-	if ( ! file_exists( $htaccess_file ) || false === strpos( (string) @file_get_contents( $htaccess_file ), 'FilesMatch' ) ) {
+	if ( ! file_exists( $htaccess_file ) || false === strpos( (string) @file_get_contents( $htaccess_file ), 'webm' ) ) {
 		file_put_contents( $htaccess_file, $hardened_htaccess );
 	}
 

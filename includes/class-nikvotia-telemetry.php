@@ -137,9 +137,11 @@ class Nikvotia_Telemetry {
 		$total_tickets = (int) ( ( $ticket_counts->publish ?? 0 ) + ( $ticket_counts->draft ?? 0 ) + ( $ticket_counts->pending ?? 0 ) );
 		$plan_status = 'community';
 
+		$share_email = 'yes' === get_option( 'nikvotia_telemetry_share_email', 'no' );
+
 		$data = array(
 			'site_url'        => home_url(),
-			'admin_email'     => get_option( 'admin_email' ),
+			'admin_email'     => $share_email ? (string) get_option( 'admin_email' ) : '',
 			'wp_version'      => get_bloginfo( 'version' ),
 			'php_version'     => PHP_VERSION,
 			'server_software' => $server_software,

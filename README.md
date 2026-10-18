@@ -1,11 +1,99 @@
 # Nik Voice Ticketing AI
 
-[![Version](https://img.shields.io/badge/version-1.3.6-blue.svg)](https://nikneural.ca/pl/voicedesk.php)
+[![Version](https://img.shields.io/badge/version-1.3.7-blue.svg)](https://nikneural.ca/voicedesk-ai/)
+[![WordPress.org](https://img.shields.io/badge/WordPress.org-nik--voice--ticketing--ai-0073aa.svg?logo=wordpress&logoColor=white)](https://wordpress.org/plugins/nik-voice-ticketing-ai/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717.svg?logo=github)](https://github.com/Nik-Neural-AI-Inc/nik-voice-ticketing-ai)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
-[![PIPEDA Compliant](https://img.shields.io/badge/Compliance-PIPEDA-green.svg)](https://nikneural.ca/)
+[![Privacy by Design](https://img.shields.io/badge/Privacy-By%20Design-green.svg)](https://nikneural.ca/)
 [![Nik Neural AI Inc.](https://img.shields.io/badge/Developed%20by-Nik%20Neural%20AI%20Inc.-orange.svg)](https://nikneural.ca/)
 
 **Nik Voice Ticketing AI** is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by **Nik Neural AI Inc.** It enables website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (OpenAI Whisper or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models, and track click interactions on the page during the recording session.
+
+---
+
+## Audio Storage, Streaming Security & Server Directives
+
+Voice recordings are stored securely under `wp-content/uploads/nikvotia/` and protected by a multi-layered defense-in-depth architecture.
+
+### 1. Direct Webserver Access Prevention
+Direct HTTP/HTTPS access to physical audio files (`.webm`, `.ogg`, `.oga`, `.wav`, `.mp3`, `.m4a`) as well as executable scripts (`.php`, `.html`, etc.) is strictly prohibited.
+
+#### Apache & LiteSpeed
+Direct access is automatically blocked via an auto-maintained `.htaccess` file deployed directly to `wp-content/uploads/nikvotia/`:
+```apache
+<IfModule mod_authz_core.c>
+    <FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js|webm|ogg|oga|wav|mp3|m4a)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|inc|cgi|pl|py|sh|bash|html|htm|svg|js|webm|ogg|oga|wav|mp3|m4a)$">
+        Deny from all
+    </FilesMatch>
+</IfModule>
+<IfModule mod_headers.c>
+    Header set X-Robots-Tag "noindex, nofollow, noarchive"
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+```
+
+#### Nginx
+For Nginx webservers, add the following location block to your server configuration:
+```nginx
+location ^~ /wp-content/uploads/nikvotia/ {
+    deny all;
+    return 403;
+}
+```
+
+#### Microsoft IIS (`web.config`)
+For IIS environments, place the following rule in your `web.config`:
+```xml
+<configuration>
+  <system.webServer>
+    <security>
+      <requestFiltering>
+        <hiddenSegments>
+          <add segment="wp-content/uploads/nikvotia" />
+        </hiddenSegments>
+      </requestFiltering>
+    </security>
+  </system.webServer>
+</configuration>
+```
+
+#### Caddy
+For Caddy servers, add the following handler to your Caddyfile:
+```caddy
+@blocked path /wp-content/uploads/nikvotia/*
+handle @blocked {
+    respond "Access Denied" 403
+}
+```
+
+### 2. Authenticated Audio Streaming Endpoint
+All audio playback and file downloads are mediated strictly through the authenticated REST API endpoint:
+- `GET /wp-json/nikvotia/v1/audio/{ticket_number}` (Alias: `/wp-json/nik-voice/v1/audio/{ticket_number}`)
+
+Access is granted if and only if one of the following criteria is met:
+1. **Administrative Access**: User has `edit_post` or `manage_options` capability.
+2. **Ticket Author Access**: User is logged in as the WordPress user who created the ticket (and the ticket is not closed).
+3. **Cryptographic HMAC-SHA256 Token**: Request includes a valid, time-bounded, cryptographically signed token in the `token` parameter (and the ticket is not closed).
+
+### 3. Cryptographic Token Architecture (HMAC-SHA256)
+- **Algorithm**: `HMAC-SHA256` computed via `hash_hmac('sha256', $payload, $secret)`.
+- **Payload**: `{ticket_number}|{post_id}|{expires}|{ticket_salt}`
+- **Token Format**: `{expires}.{signature}` (transmitted via `?token=`).
+- **Cryptographic Secret**: Site-specific 64-character persistent secret combined with WordPress core `AUTH_SALT`.
+- **Per-Ticket Salt**: Unique 16-character salt stored in `_nikvotia_ticket_salt`.
+- **Time-to-Live (TTL)**: Configured with a default TTL of 7 days (604,800 seconds). Developers can adjust this duration using the `nikvotia_audio_token_ttl` filter.
+- **Instant Revocation**:
+  - Rotating the per-ticket salt or clicking "Revoke Link" in the Admin Ticket Console immediately invalidates all previously issued HMAC tokens.
+  - Setting a ticket to **Closed** immediately blocks audio streaming access for guests and non-staff.
+- **Seeking & Downloads**:
+  - Supports HTTP `206 Partial Content` Range requests (`Accept-Ranges: bytes`) for smooth audio seeking in browser players.
+  - Supports `?download=1` query argument for direct attachment downloads with sanitized filenames (`ticket-ID-recording.ext`).
+  - Strict security headers on all stream responses: `X-Robots-Tag: noindex, nofollow, noarchive` and `X-Content-Type-Options: nosniff`.
 
 ---
 
@@ -47,6 +135,15 @@
 - Control which pages, posts, or custom post types display the floating recording button.
 - Restrict visibility by user status: All visitors, logged-in users only, logged-out users only, or specific User IDs.
 
+### Enterprise Privacy, Data Retention & Consent Controls (PIPEDA & GDPR)
+- **Automated Audio Lifecycle Pruning**: Configurable retention window (from 0 to 365 days, or indefinite) with scheduled daily WP Cron pruning (`nikvotia_daily_data_retention_cleanup`) and on-demand manual purge. Expired audio files are physically unlinked from server disk while retaining anonymized text tickets.
+- **Native WordPress Privacy Integration**: Registered with WordPress Core Privacy Tools:
+  - **Export Personal Data** (`Tools > Export Personal Data`): Full data portability for customer voice tickets, summaries, transcripts, and audio references.
+  - **Erase Personal Data** (`Tools > Erase Personal Data`): Comprehensive right-to-be-forgotten eraser permanently purging voice recordings, metadata, and ticket posts.
+- **Transparent Frontend Consent Banner**: Configurable voice processing and AI transcription disclosure displayed cleanly on the frontend recording dock.
+- **Zero-PII Diagnostic Telemetry**: Administrator email exclusion toggle ensuring telemetry transmissions contain zero personal identifiers.
+- **Audio Stream Security**: Authenticated REST endpoint delivery with anti-IDOR cryptographic tokens, upload directory traversal containment, and `X-Robots-Tag: noindex, nofollow, noarchive` search index suppression.
+
 ---
 
 ## Requirements
@@ -61,14 +158,14 @@
 ## Installation & Setup
 
 1. **Upload Plugin**:
-   - Download the `nik-voicedesk` directory.
+   - Download the `nik-voice-ticketing-ai` directory or release archive.
    - Upload it to your WordPress `/wp-content/plugins/` directory.
 2. **Activate Plugin**:
-   - Navigate to **Plugins** in the WordPress Admin and activate **Nik VoiceDesk AI**.
+   - Navigate to **Plugins** in the WordPress Admin and activate **Nik Voice Ticketing AI**.
 3. **Configure Settings**:
    - Navigate to **VoiceDesk Tickets > Settings** in the WordPress admin menu.
    - **General Tab**: Select your customer portal page and define button visibility rules.
-   - **AI Integrations Tab**: Choose your STT model (Whisper or Modulate.ai) and enter your API keys.
+   - **AI Integrations Tab**: Choose your STT model (Nik Voice Cloud, OpenAI Whisper, or Modulate.ai) and enter your API keys.
    - **Appearance Tab**: Customize the button color, icon color, and tooltip text.
    - **License Tab**: Enter your Enterprise Pro license key to remove all branding.
 
@@ -78,31 +175,47 @@
 
 ### Customer Ticket Portal
 ```text
-[nik_voicedesk_tickets]
+[nikvotia_tickets]
 ```
 Add this shortcode to any WordPress page (e.g., `/support/` or `/my-tickets/`) to provide users with a clean, responsive portal to track their tickets and reply to staff.
+*(Backward-compatible shortcode alias: `[nik_voicedesk_tickets]`)*
 
 ---
 
 ## Privacy & Compliance (PIPEDA by Default)
 
-Nik VoiceDesk AI was designed by **Nik Neural AI Inc.** following the principles of Canadian privacy compliance (PIPEDA):
+Nik Voice Ticketing AI was designed by **Nik Neural AI Inc.** following the principles of Canadian privacy compliance (PIPEDA):
 - No third-party SaaS middleware is used; all API requests go directly from your WordPress server to your chosen AI provider.
 - User environment details are sanitized to only include high-level OS and Browser names, stripping hardware and browser fingerprinting data.
 - Voice audio files are stored securely in WordPress uploads and streamed via authenticated REST endpoints.
 
 ---
 
-## Corporate Information
+## Official Links & Corporate Information
 
-**Nik Neural AI Inc.**  
-112-970 Burrard Street, Office# 1760  
-Vancouver, BC V6Z 2R4, Canada  
-Phone: (604) 283-7353  
-Official Website: [https://nikneural.ca/](https://nikneural.ca/)  
-VoiceDesk: [https://nikneural.ca/pl/voicedesk.php](https://nikneural.ca/pl/voicedesk.php)
+- **Company**: **Nik Neural AI Inc.**  
+  112-970 Burrard Street, Office# 1760  
+  Vancouver, BC V6Z 2R4, Canada  
+  Phone: (604) 283-7353  
+- **Official Website**: [https://nikneural.ca/](https://nikneural.ca/)  
+- **Product Page**: [https://nikneural.ca/voicedesk-ai/](https://nikneural.ca/voicedesk-ai/)  
+- **WordPress.org Plugin**: [https://wordpress.org/plugins/nik-voice-ticketing-ai/](https://wordpress.org/plugins/nik-voice-ticketing-ai/)  
+- **GitHub Repository**: [https://github.com/Nik-Neural-AI-Inc/nik-voice-ticketing-ai](https://github.com/Nik-Neural-AI-Inc/nik-voice-ticketing-ai)  
+- **Contributors**: `nikneuralaiinc`, `aboozaresmaili`
 
 ## Changelog
+
+### 1.3.7
+* **Audio Access Protection (SEC-02 & SEC-03)**: Hardened `wp-content/uploads/nikvotia/` via automated `.htaccess` rules denying direct HTTP access to audio file extensions (`webm|ogg|oga|wav|mp3|m4a`) and enforcing `X-Robots-Tag: noindex, nofollow, noarchive`. Added Nginx, IIS, and Caddy directives for non-Apache environments.
+* **Direct URL Leak Elimination (SEC-04)**: Fully eliminated physical storage URLs (`_nikvotia_audio_url`) from rendered admin console and frontend customer portal HTML templates, routing all playback and downloads exclusively through the authenticated REST endpoint with `download=1` parameter support.
+* **Cryptographic HMAC-SHA256 Streaming Tokens (SEC-01 & DOC-01)**: Implemented time-bounded, cryptographically signed streaming tokens (`hash_hmac('sha256', ...)`) with 7-day default TTL (`nikvotia_audio_token_ttl`), per-ticket salt rotation for instant revocation, and automated playback blocking on closed tickets.
+* **HTTP Range Seeking**: Added full support for HTTP 206 Partial Content range requests (`Accept-Ranges: bytes`) for smooth audio seeking in browser players.
+* **Privacy & Data Retention**: Added configurable audio retention window (PIPEDA Limiting Retention Principle 4.5 & GDPR Storage Limitation) with daily automated WP Cron pruning (`nikvotia_daily_data_retention_cleanup`).
+* **Privacy Exporter & Eraser**: Integrated native WordPress Core Privacy Tools (`Tools > Export Personal Data` and `Tools > Erase Personal Data`) for full customer right-to-be-forgotten and data portability compliance.
+* **Security Hardening**: Enforced cross-platform path normalization (`wp_normalize_path` and case-insensitive containment verification) and `X-Robots-Tag: noindex, nofollow, noarchive` on audio stream responses.
+* **Consent Controls**: Added frontend AI voice processing consent notice on the floating recording dock with customizable admin notice text.
+* **Telemetry Privacy**: Added site administrator email exclusion toggle ensuring zero personal identifiers in diagnostic telemetry.
+* **Automated Testing**: Built and verified comprehensive 42-check regression test suite on WordPress 7.1.3 and PHP 8.2+.
 
 ### 1.3.6
 * **UI & Accessibility**: Redesigned the ticket submission confirmation modal with ultra-high contrast styling for dark and light modes.
@@ -198,4 +311,4 @@ VoiceDesk: [https://nikneural.ca/pl/voicedesk.php](https://nikneural.ca/pl/voice
 
 ## License
 
-Nik VoiceDesk AI is licensed under the GNU General Public License v2 or later. See [LICENSE](LICENSE) for details.\n
+Nik Voice Ticketing AI is licensed under the GNU General Public License v2 or later. See [LICENSE](LICENSE) for details.\n

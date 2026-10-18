@@ -19,6 +19,13 @@ class Nikvotia_Settings {
 		add_action( 'admin_post_nikvotia_connect_cloud', array( $this, 'handle_connect_cloud' ) );
 		add_action( 'admin_post_nikvotia_disconnect_cloud', array( $this, 'handle_disconnect_cloud' ) );
 		add_action( 'admin_post_nikvotia_test_cloud', array( $this, 'handle_test_cloud' ) );
+		add_action( 'admin_post_nikvotia_purge_expired_audio', array( $this, 'handle_purge_expired_audio' ) );
+
+		// Scheduled PIPEDA / GDPR daily audio data retention cleanup
+		add_action( 'nikvotia_daily_data_retention_cleanup', array( __CLASS__, 'run_daily_retention_cleanup' ) );
+		if ( ! wp_next_scheduled( 'nikvotia_daily_data_retention_cleanup' ) ) {
+			wp_schedule_event( time(), 'daily', 'nikvotia_daily_data_retention_cleanup' );
+		}
 	}
 
 	public function on_telemetry_toggle( $old_value, $new_value ) {
@@ -107,6 +114,26 @@ class Nikvotia_Settings {
 			'type'              => 'string',
 			'sanitize_callback' => array( $this, 'sanitize_telemetry_optin' ),
 			'default'           => 'no',
+		) );
+		register_setting( 'nikvotia_general', 'nikvotia_telemetry_share_email', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => 'no',
+		) );
+		register_setting( 'nikvotia_general', 'nikvotia_audio_retention_days', array(
+			'type'              => 'integer',
+			'sanitize_callback' => 'intval',
+			'default'           => 30,
+		) );
+		register_setting( 'nikvotia_general', 'nikvotia_enable_consent_notice', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '1',
+		) );
+		register_setting( 'nikvotia_general', 'nikvotia_consent_notice_text', array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => __( 'By recording, you consent to AI processing of your voice per our privacy policy.', 'nik-voice-ticketing-ai' ),
 		) );
 
 		// API Integrations
@@ -510,6 +537,56 @@ class Nikvotia_Settings {
 		</div>
 
 		<div class="nik-vd-settings-section">
+			<h3><span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'PIPEDA & GDPR Privacy, Consent & Retention Controls', 'nik-voice-ticketing-ai' ); ?></h3>
+			<table class="form-table nik-vd-table">
+				<tr>
+					<th scope="row"><label for="nikvotia_audio_retention_days"><?php esc_html_e( 'Audio Data Retention Window', 'nik-voice-ticketing-ai' ); ?></label></th>
+					<td>
+						<?php
+						$retention_days = (int) get_option( 'nikvotia_audio_retention_days', 30 );
+						$purge_url      = wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_purge_expired_audio' ), 'nikvotia_purge_audio_action', 'nikvotia_purge_audio_nonce' );
+						?>
+						<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+							<select id="nikvotia_audio_retention_days" name="nikvotia_audio_retention_days" class="nik-vd-input-select">
+								<option value="0" <?php selected( $retention_days, 0 ); ?>><?php esc_html_e( '0 Days (Purge audio immediately after AI transcription)', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="7" <?php selected( $retention_days, 7 ); ?>><?php esc_html_e( '7 Days (Strict PIPEDA / Financial / Healthcare Privacy)', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="14" <?php selected( $retention_days, 14 ); ?>><?php esc_html_e( '14 Days', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="30" <?php selected( $retention_days, 30 ); ?>><?php esc_html_e( '30 Days (Recommended Support Default)', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="60" <?php selected( $retention_days, 60 ); ?>><?php esc_html_e( '60 Days', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="90" <?php selected( $retention_days, 90 ); ?>><?php esc_html_e( '90 Days (Quarterly)', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="180" <?php selected( $retention_days, 180 ); ?>><?php esc_html_e( '180 Days (Half-Year)', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="365" <?php selected( $retention_days, 365 ); ?>><?php esc_html_e( '365 Days (1 Year)', 'nik-voice-ticketing-ai' ); ?></option>
+								<option value="-1" <?php selected( $retention_days, -1 ); ?>><?php esc_html_e( 'Indefinite (Never auto-delete audio recordings)', 'nik-voice-ticketing-ai' ); ?></option>
+							</select>
+							<a href="<?php echo esc_url( $purge_url ); ?>" class="button button-secondary" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to run audio retention pruning right now? Audio recordings older than the configured retention window will be permanently removed from disk.', 'nik-voice-ticketing-ai' ) ); ?>');">
+								<span class="dashicons dashicons-trash" style="vertical-align: middle; margin-right: 2px;"></span> <?php esc_html_e( 'Purge Expired Audio Now', 'nik-voice-ticketing-ai' ); ?>
+							</a>
+						</div>
+						<p class="description">
+							<?php esc_html_e( 'Automatically purges stored audio recording files from your server once tickets exceed the retention period. AI summaries, ticket metadata, and conversation threads remain intact. Meets Canadian PIPEDA Principle 4.5 and GDPR Article 5(1)(e).', 'nik-voice-ticketing-ai' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Recording Consent Notice', 'nik-voice-ticketing-ai' ); ?></th>
+					<td>
+						<?php
+						$consent_enabled = get_option( 'nikvotia_enable_consent_notice', '1' );
+						$consent_text    = get_option( 'nikvotia_consent_notice_text', __( 'By recording, you consent to AI processing of your voice per our privacy policy.', 'nik-voice-ticketing-ai' ) );
+						?>
+						<label class="nik-vd-checkbox-label" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+							<input type="hidden" name="nikvotia_enable_consent_notice" value="0" />
+							<input type="checkbox" name="nikvotia_enable_consent_notice" value="1" <?php checked( $consent_enabled, '1' ); ?> />
+							<strong><?php esc_html_e( 'Display explicit AI audio processing consent notice on frontend dock', 'nik-voice-ticketing-ai' ); ?></strong>
+						</label>
+						<input type="text" id="nikvotia_consent_notice_text" name="nikvotia_consent_notice_text" value="<?php echo esc_attr( $consent_text ); ?>" class="large-text nik-vd-input-text" />
+						<p class="description"><?php esc_html_e( 'Notice displayed to visitors before/during voice recording to fulfill consent disclosure requirements.', 'nik-voice-ticketing-ai' ); ?></p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="nik-vd-settings-section">
 			<h3><span class="dashicons dashicons-chart-bar"></span> <?php esc_html_e( 'Diagnostics & Usage Telemetry', 'nik-voice-ticketing-ai' ); ?></h3>
 			<table class="form-table nik-vd-table">
 				<tr>
@@ -524,6 +601,18 @@ class Nikvotia_Settings {
 						<p class="description">
 							<?php esc_html_e( 'Share non-sensitive diagnostic environment data (WordPress version, PHP version, server OS, and plugin version) to https://nikneural.ca/tracking/ to assist future development and bug fixes. No customer voice recordings or sensitive personal details are ever collected. You can turn this on or off at any time.', 'nik-voice-ticketing-ai' ); ?>
 						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Telemetry PII Minimization', 'nik-voice-ticketing-ai' ); ?></th>
+					<td>
+						<?php $share_email = get_option( 'nikvotia_telemetry_share_email', 'no' ); ?>
+						<label class="nik-vd-checkbox-label" style="display: flex; align-items: center; gap: 8px;">
+							<input type="hidden" name="nikvotia_telemetry_share_email" value="no" />
+							<input type="checkbox" name="nikvotia_telemetry_share_email" value="yes" <?php checked( $share_email, 'yes' ); ?> />
+							<span><?php esc_html_e( 'Include site administrator email in diagnostic telemetry for direct critical security notifications', 'nik-voice-ticketing-ai' ); ?></span>
+						</label>
+						<p class="description"><?php esc_html_e( 'When unchecked (recommended for strict PIPEDA compliance), telemetry packets contain zero personal identifiers.', 'nik-voice-ticketing-ai' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -832,7 +921,7 @@ class Nikvotia_Settings {
 							<li><strong><?php esc_html_e( '24/7 Enterprise SLA Support:', 'nik-voice-ticketing-ai' ); ?></strong> <?php esc_html_e( 'Direct access to senior AI solutions engineers.', 'nik-voice-ticketing-ai' ); ?></li>
 						</ul>
 						<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-							<a href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer" class="button button-primary button-large" style="background: #0284c7; border-color: #0369a1;">
+							<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer" class="button button-primary button-large" style="background: #0284c7; border-color: #0369a1;">
 								<?php esc_html_e( 'Explore Enterprise Overview →', 'nik-voice-ticketing-ai' ); ?>
 							</a>
 							<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" class="button button-secondary button-large">
@@ -1025,8 +1114,8 @@ class Nikvotia_Settings {
 						</p>
 					</div>
 					<div style="display: flex; flex-direction: column; gap: 10px;">
-						<a href="https://nikneural.ca/pl/voicedesk.php" target="_blank" rel="noopener noreferrer" style="background: #FF6D00; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(255, 109, 0, 0.3);">
-							<?php esc_html_e( 'VoiceDesk Overview →', 'nik-voice-ticketing-ai' ); ?>
+						<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer" style="background: #FF6D00; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(255, 109, 0, 0.3);">
+							<?php esc_html_e( 'VoiceDesk AI Overview →', 'nik-voice-ticketing-ai' ); ?>
 						</a>
 						<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" style="background: rgba(255,255,255,0.12); color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; text-align: center; border: 1px solid rgba(255,255,255,0.25);">
 							<?php esc_html_e( 'Book a Consultation', 'nik-voice-ticketing-ai' ); ?>
@@ -1237,6 +1326,113 @@ class Nikvotia_Settings {
 		$err = $health['message'] ?? 'Could not reach gateway.';
 		Nikvotia_Logger::log( 'ERROR', 'AI_GATEWAY', 'Manual Gateway Health Check failed: ' . $err );
 		wp_safe_redirect( add_query_arg( array( 'tab' => 'api', 'nik_cloud_error' => rawurlencode( $err ) ), admin_url( 'edit.php?post_type=voicedesk_ticket&page=nikvotia-settings' ) ) );
+		exit;
+	}
+
+	/**
+	 * Prune audio recording files older than specified retention window.
+	 *
+	 * Implements Canadian PIPEDA Limiting Retention Principle 4.5 & GDPR Storage Limitation.
+	 *
+	 * @param int|null $days Retention period in days. Defaults to option value.
+	 * @return int Number of audio files pruned.
+	 */
+	public static function prune_expired_audio_files( $days = null ) {
+		if ( null === $days ) {
+			$days = (int) get_option( 'nikvotia_audio_retention_days', 30 );
+		}
+
+		if ( $days < 0 ) {
+			// -1 indicates indefinite retention / no automatic pruning
+			return 0;
+		}
+
+		$pruned_count = 0;
+		$cutoff_time  = time() - ( $days * 86400 );
+		$cutoff_date  = gmdate( 'Y-m-d H:i:s', $cutoff_time );
+
+		// Query tickets with unpruned audio older than cutoff date
+		$posts = get_posts( array(
+			'post_type'      => 'voicedesk_ticket',
+			'post_status'    => 'any',
+			'posts_per_page' => 100,
+			'date_query'     => array(
+				array(
+					'before'    => $cutoff_date,
+					'inclusive' => true,
+				),
+			),
+			'meta_query'     => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_nikvotia_audio_deleted',
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'     => '_nikvotia_audio_path',
+					'value'   => '',
+					'compare' => '!=',
+				),
+			),
+		) );
+
+		$upload_dir      = wp_upload_dir();
+		$base_upload_dir = wp_normalize_path( $upload_dir['basedir'] );
+
+		foreach ( $posts as $post ) {
+			$audio_path      = get_post_meta( $post->ID, '_nikvotia_audio_path', true ) ?: get_post_meta( $post->ID, '_nik_audio_path', true );
+			$normalized_file = wp_normalize_path( (string) $audio_path );
+
+			// Containment check: only unlink files residing strictly within the WordPress uploads directory
+			if ( ! empty( $audio_path ) && stripos( $normalized_file, $base_upload_dir ) === 0 && file_exists( $audio_path ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+				@unlink( $audio_path );
+			}
+
+			update_post_meta( $post->ID, '_nikvotia_audio_deleted', '1' );
+			update_post_meta( $post->ID, '_nikvotia_audio_url', '' );
+			update_post_meta( $post->ID, '_nikvotia_audio_stream_url', '' );
+
+			$ticket_num = get_post_meta( $post->ID, '_nikvotia_ticket_number', true );
+			Nikvotia_Logger::log(
+				'INFO',
+				'RETENTION',
+				sprintf( 'Audio pruned for Ticket #%s (post ID %d) per %d-day data retention policy', $ticket_num, $post->ID, $days ),
+				array(
+					'post_id' => $post->ID,
+					'ticket'  => $ticket_num,
+					'days'    => $days,
+				)
+			);
+
+			$pruned_count++;
+		}
+
+		return $pruned_count;
+	}
+
+	/**
+	 * Daily scheduled WP Cron worker for audio data retention.
+	 */
+	public static function run_daily_retention_cleanup() {
+		$count = self::prune_expired_audio_files();
+		if ( $count > 0 ) {
+			Nikvotia_Logger::log( 'SUCCESS', 'RETENTION', sprintf( 'Daily data retention cycle completed: pruned %d expired audio recordings.', $count ) );
+		}
+	}
+
+	/**
+	 * Handle admin-post action to purge expired audio recordings immediately.
+	 */
+	public function handle_purge_expired_audio() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Unauthorized user.', 'nik-voice-ticketing-ai' ) );
+		}
+		check_admin_referer( 'nikvotia_purge_audio_action', 'nikvotia_purge_audio_nonce' );
+
+		$pruned = self::prune_expired_audio_files();
+
+		wp_safe_redirect( add_query_arg( array( 'tab' => 'general', 'nik_audio_purged' => $pruned ), admin_url( 'edit.php?post_type=voicedesk_ticket&page=nikvotia-settings' ) ) );
 		exit;
 	}
 }

@@ -221,8 +221,9 @@ class Nikvotia_CPT {
 		wp_nonce_field( 'nikvotia_save_ticket', 'nikvotia_ticket_nonce' );
 
 		$ticket_number = get_post_meta( $post->ID, '_nikvotia_ticket_number', true );
-		$audio_url = get_post_meta( $post->ID, '_nikvotia_audio_url', true );
-		$stream_url = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nikvotia/v1/audio/' . $ticket_number );
+		$audio_path    = get_post_meta( $post->ID, '_nikvotia_audio_path', true ) ?: get_post_meta( $post->ID, '_nik_audio_path', true );
+		$has_audio     = ! empty( $audio_path ) && file_exists( $audio_path );
+		$stream_url    = get_post_meta( $post->ID, '_nikvotia_audio_stream_url', true ) ?: rest_url( 'nikvotia/v1/audio/' . $ticket_number );
 		$transcript = get_post_meta( $post->ID, '_nikvotia_transcript', true );
 		$summary = get_post_meta( $post->ID, '_nikvotia_summary', true );
 		$department = get_post_meta( $post->ID, '_nikvotia_department', true ) ?: 'General Support';
@@ -317,21 +318,22 @@ class Nikvotia_CPT {
 					<div class="nik-vd-card">
 						<div class="nik-vd-card-header">
 							<h3><span class="dashicons dashicons-controls-volumeon"></span> <?php esc_html_e( 'Voice Recording', 'nik-voice-ticketing-ai' ); ?></h3>
-							<?php if ( $audio_url ) : ?>
-								<a href="<?php echo esc_url( $audio_url ); ?>" download class="button button-secondary button-small" target="_blank">
-									<span class="dashicons dashicons-download"></span> <?php esc_html_e( 'Download Audio', 'nik-voice-ticketing-ai' ); ?>
-								</a>
+							<?php if ( $has_audio && $stream_url ) : ?>
+								<div style="display: flex; gap: 8px;">
+									<a href="<?php echo esc_url( add_query_arg( 'download', '1', $stream_url ) ); ?>" download class="button button-secondary button-small" target="_blank">
+										<span class="dashicons dashicons-download"></span> <?php esc_html_e( 'Download Audio', 'nik-voice-ticketing-ai' ); ?>
+									</a>
+									<button type="submit" name="nikvotia_revoke_audio_token" value="1" class="button button-secondary button-small" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to revoke current audio playback links for this ticket? A new secure link will be generated.', 'nik-voice-ticketing-ai' ) ); ?>');">
+										<span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'Revoke Link', 'nik-voice-ticketing-ai' ); ?>
+									</button>
+								</div>
 							<?php endif; ?>
 						</div>
 						<div class="nik-vd-card-body">
-							<?php if ( $audio_url || $stream_url ) : ?>
+							<?php if ( $has_audio && $stream_url ) : ?>
 								<div class="nik-vd-player-wrapper">
 									<audio controls preload="metadata" class="nik-vd-audio-player">
 										<source src="<?php echo esc_url( $stream_url ); ?>" type="audio/webm">
-										<?php if ( $audio_url ) : ?>
-											<source src="<?php echo esc_url( $audio_url ); ?>" type="audio/webm">
-											<source src="<?php echo esc_url( $audio_url ); ?>" type="audio/wav">
-										<?php endif; ?>
 										<?php esc_html_e( 'Your browser does not support the audio element.', 'nik-voice-ticketing-ai' ); ?>
 									</audio>
 								</div>
@@ -644,6 +646,11 @@ class Nikvotia_CPT {
 
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
+		}
+
+		// Handle Audio Token Revocation
+		if ( ! empty( $_POST['nikvotia_revoke_audio_token'] ) ) {
+			Nikvotia_API::revoke_audio_tokens( $post_id );
 		}
 
 		// Update Status
