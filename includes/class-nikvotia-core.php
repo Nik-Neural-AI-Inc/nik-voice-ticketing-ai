@@ -99,6 +99,7 @@ class Nikvotia_Core {
 			'post_status'    => 'any',
 			'posts_per_page' => 50,
 			'paged'          => $page,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required to retrieve personal ticket records by customer email for Core Privacy Exporter.
 			'meta_query'     => array(
 				array(
 					'key'     => '_nikvotia_user_email',
@@ -153,6 +154,7 @@ class Nikvotia_Core {
 			'post_status'    => 'any',
 			'posts_per_page' => 50,
 			'paged'          => $page,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required to retrieve personal ticket records by customer email for Core Privacy Eraser.
 			'meta_query'     => array(
 				array(
 					'key'     => '_nikvotia_user_email',

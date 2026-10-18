@@ -5,9 +5,31 @@
 (function() {
     'use strict';
 
-    // Apply theme immediately if stored to prevent theme flash
-    const savedTheme = localStorage.getItem('nikvotia_admin_theme') ;
-    if (savedTheme === 'dark') {
+    // Auto-detect theme preference or load saved theme
+    function getPreferredTheme() {
+        const saved = localStorage.getItem('nikvotia_admin_theme');
+        if (saved === 'dark' || saved === 'light') {
+            return saved;
+        }
+        // Auto-detect dark mode from OS or active admin theme
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+        if (document.body && (
+            document.body.classList.contains('dark') ||
+            document.body.classList.contains('dark-mode') ||
+            document.body.classList.contains('wp-dark-mode-active') ||
+            document.documentElement.getAttribute('data-theme') === 'dark' ||
+            document.documentElement.getAttribute('data-bs-theme') === 'dark'
+        )) {
+            return 'dark';
+        }
+        return 'light';
+    }
+
+    // Apply theme immediately to prevent flashing
+    const initialTheme = getPreferredTheme();
+    if (initialTheme === 'dark') {
         document.body.classList.add('nik-vd-dark-mode');
     }
 
@@ -21,7 +43,7 @@
      */
     function initThemeToggle() {
         const themeButtons = document.querySelectorAll('.nik-vd-theme-btn, #nik-vd-theme-toggle');
-        const currentTheme = localStorage.getItem('nikvotia_admin_theme')  || 'light';
+        const currentTheme = getPreferredTheme();
 
         // Set initial button label and icon based on current state
         updateThemeButtons(themeButtons, currentTheme === 'dark');

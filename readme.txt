@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.8
+Stable tag: 1.3.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,14 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 4. VoiceDesk Settings page with Dark Mode toggle and AI configuration.
 
 == Changelog ==
+
+= 1.3.9 =
+* Plugin Check Compliance: Added WordPress-Coding-Standards (WPCS) annotations for direct binary HTTP 206 audio range streaming (fopen, fread, fclose) and Core Privacy Exporter/Eraser and pruning meta queries, resolving all Plugin Check notices.
+* Admin UI Contrast Overhaul: Overhauled API Configuration tab (tab=api) and System & AI Activity Logs tab (tab=logs) with dedicated semantic CSS classes and ultra-high-contrast styling for both Dark and Light modes.
+* Table Hardening: Expanded Category column on logs table with nowrap pill badges, eliminating awkward word-wrapping on long event identifiers (such as SECURITY_VERIFICATION).
+* Pro & Enterprise Architecture: Modernized the Pro tab (tab=pro) with a comprehensive feature matrix comparing Community Edition vs. Sovereign Canadian Cloud, VoIP PBX telephony integration, and enterprise CRM/ERP webhooks.
+* Corporate Records & About Page: Updated About page (nikvotia-about) with verified corporate information, official plugin links, two verified contributors (nikneuralaiinc, aboozaresmaili), and v1.3.9 architectural highlights.
+* Smart Theming: Added automatic OS (prefers-color-scheme) and admin theme dark mode auto-detection to admin.js to prevent theme flashing.
 
 = 1.3.8 =
 * Fix & Accessibility: Overhauled Customer Ticket Portal and Single Ticket View with ultra-high contrast styling in both Dark and Light modes, eliminating faint/invisible text caused by external theme stylesheet bleeding.

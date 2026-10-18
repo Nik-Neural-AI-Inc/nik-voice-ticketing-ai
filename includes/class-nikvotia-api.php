@@ -915,17 +915,19 @@ class Nikvotia_API {
 			header( "Content-Range: bytes {$start}-{$end}/{$filesize}" );
 			header( "Content-Length: {$length}" );
 
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Direct binary stream required for HTTP 206 byte-range seeking.
 			$fp = fopen( $filepath, 'rb' );
 			if ( $fp ) {
 				fseek( $fp, $start );
 				$bytes_remaining = $length;
 				while ( ! feof( $fp ) && $bytes_remaining > 0 ) {
 					$chunk_size = min( 8192, $bytes_remaining );
-					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Binary audio stream chunk.
 					echo fread( $fp, $chunk_size );
 					flush();
 					$bytes_remaining -= $chunk_size;
 				}
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Direct binary stream handle closure.
 				fclose( $fp );
 			}
 			exit;

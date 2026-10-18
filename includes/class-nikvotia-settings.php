@@ -728,21 +728,21 @@ class Nikvotia_Settings {
 			<h3><span class="dashicons dashicons-rest-api"></span> <?php esc_html_e( 'AI Provider & Engine Configuration', 'nik-voice-ticketing-ai' ); ?></h3>
 
 			<!-- Strict Single-Provider Isolation Notice Banner -->
-			<div class="nik-vd-card" style="border-left: 4px solid #16a34a; background: #f0fdf4; padding: 14px 18px; border-radius: 8px; margin-bottom: 22px;">
-				<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+			<div class="nik-vd-card nik-api-isolation-banner">
+				<div class="nik-api-isolation-content">
 					<div>
-						<strong style="color: #15803d; font-size: 14px;">
-							<span class="dashicons dashicons-shield-alt" style="margin-right: 4px;"></span>
+						<strong class="nik-api-isolation-title">
+							<span class="dashicons dashicons-shield-alt"></span>
 							<?php
 							/* translators: %s: Active AI engine name */
 							printf( esc_html__( 'Active Engine: %s', 'nik-voice-ticketing-ai' ), esc_html( self::get_provider_label( $active_provider ) ) );
 							?>
 						</strong>
-						<p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;">
+						<p class="nik-api-isolation-desc">
 							<?php esc_html_e( 'Strict Single-Provider Isolation Enforced. Incoming voice tickets will only ever contact this chosen provider for both Speech-to-Text and ticket triage. All other configured APIs are strictly dormant.', 'nik-voice-ticketing-ai' ); ?>
 						</p>
 					</div>
-					<span class="nik-ai-pill nik-ai-cloud" style="font-size: 12px; font-weight: 700; padding: 4px 10px;">
+					<span class="nik-ai-pill nik-ai-cloud nik-isolation-pill">
 						🔒 <?php esc_html_e( 'Zero Cross-Leakage', 'nik-voice-ticketing-ai' ); ?>
 					</span>
 				</div>
@@ -781,47 +781,47 @@ class Nikvotia_Settings {
 					</th>
 					<td>
 						<?php if ( $cloud_connected ) : ?>
-							<div class="nik-vd-card" style="border: 1px solid #16a34a; background: rgba(22, 163, 74, 0.05); padding: 16px; border-radius: 12px; margin-bottom: 12px;">
-								<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-									<div style="display: flex; align-items: center; gap: 10px;">
-										<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 8px #16a34a;"></span>
-										<strong style="color: #16a34a; font-size: 15px;"><?php esc_html_e( 'Connected & Synchronized', 'nik-voice-ticketing-ai' ); ?></strong>
+							<div class="nik-vd-card nik-api-cloud-card nik-api-cloud-connected">
+								<div class="nik-api-cloud-header">
+									<div class="nik-api-cloud-status">
+										<span class="nik-api-status-dot"></span>
+										<strong class="nik-api-status-label"><?php esc_html_e( 'Connected & Synchronized', 'nik-voice-ticketing-ai' ); ?></strong>
 									</div>
-									<div style="display: flex; gap: 8px;">
-										<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_test_cloud' ), 'nikvotia_test_cloud_nonce' ) ); ?>" class="button button-secondary" style="font-size: 12px;">
-											<span class="dashicons dashicons-heart" style="font-size: 14px; margin-top: 3px; color: #16a34a;"></span> <?php esc_html_e( 'Test Gateway Health', 'nik-voice-ticketing-ai' ); ?>
+									<div class="nik-api-cloud-actions">
+										<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_test_cloud' ), 'nikvotia_test_cloud_nonce' ) ); ?>" class="button button-secondary nik-api-btn-sm">
+											<span class="dashicons dashicons-heart" style="color: #16a34a;"></span> <?php esc_html_e( 'Test Gateway Health', 'nik-voice-ticketing-ai' ); ?>
 										</a>
-										<a href="<?php echo esc_url( $active_gateway . '/dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="font-size: 12px;">
-											<span class="dashicons dashicons-chart-pie" style="font-size: 14px; margin-top: 3px;"></span> <?php esc_html_e( 'View Cloud Quota & Invoices', 'nik-voice-ticketing-ai' ); ?>
+										<a href="<?php echo esc_url( $active_gateway . '/dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary nik-api-btn-sm">
+											<span class="dashicons dashicons-chart-pie"></span> <?php esc_html_e( 'View Cloud Quota & Invoices', 'nik-voice-ticketing-ai' ); ?>
 										</a>
-										<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_disconnect_cloud' ), 'nikvotia_disconnect_cloud_nonce' ) ); ?>" onclick="return confirm('<?php esc_attr_e( 'Disconnect from Nik Voice Cloud? This will remove your active API keys from this site.', 'nik-voice-ticketing-ai' ); ?>');" class="button button-link-delete" style="color: #dc2626; text-decoration: none; font-size: 12px; line-height: 28px; padding: 0 8px;">
+										<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_disconnect_cloud' ), 'nikvotia_disconnect_cloud_nonce' ) ); ?>" onclick="return confirm('<?php esc_attr_e( 'Disconnect from Nik Voice Cloud? This will remove your active API keys from this site.', 'nik-voice-ticketing-ai' ); ?>');" class="button button-link-delete nik-api-btn-disconnect">
 											<?php esc_html_e( 'Disconnect Site', 'nik-voice-ticketing-ai' ); ?>
 										</a>
 									</div>
 								</div>
-								<div style="margin-top: 12px; font-size: 13px; color: #475569; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;">
+								<div class="nik-api-meta-grid">
 									<div><strong><?php esc_html_e( 'API Key ID:', 'nik-voice-ticketing-ai' ); ?></strong> <code><?php echo esc_html( $cloud_key ); ?></code></div>
 									<div><strong><?php esc_html_e( 'Domain Binding:', 'nik-voice-ticketing-ai' ); ?></strong> <code><?php echo esc_html( wp_parse_url( home_url(), PHP_URL_HOST ) ); ?></code></div>
 									<div><strong><?php esc_html_e( 'Gateway URL:', 'nik-voice-ticketing-ai' ); ?></strong> <code><?php echo esc_html( $active_gateway ); ?></code></div>
 								</div>
-								<div style="margin-top: 12px; padding: 10px 14px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; font-size: 12px; color: #92400e; line-height: 1.5;">
+								<div class="nik-api-tip-box">
 									<strong><?php esc_html_e( '💡 Production Tip for Real-Time Speech:', 'nik-voice-ticketing-ai' ); ?></strong>
 									<?php esc_html_e( 'If your tickets display "[Nik Voice Cloud Demo]", the gateway at voice.nikneural.ca is running in demo fallback mode. To enable live speech transcription of customer voices, configure GROQ_API_KEY=gsk_... on your gateway server environment (in docker-compose or .env) and restart the gateway container.', 'nik-voice-ticketing-ai' ); ?>
 								</div>
 							</div>
 						<?php else : ?>
-							<div class="nik-vd-card" style="border: 1px solid #1282a2; background: linear-gradient(180deg, rgba(18, 130, 162, 0.05) 0%, rgba(14, 23, 54, 0.03) 100%); padding: 18px; border-radius: 12px; margin-bottom: 12px;">
-								<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+							<div class="nik-vd-card nik-api-cloud-card nik-api-cloud-unconnected">
+								<div class="nik-api-cloud-inner">
 									<div>
-										<h4 style="margin: 0 0 6px 0; font-size: 15px; color: #0a1128;">
-											<span class="dashicons dashicons-cloud" style="color: #1282a2;"></span> <?php esc_html_e( 'Nik Voice Cloud • Groq Whisper v3 Gateway', 'nik-voice-ticketing-ai' ); ?>
+										<h4 class="nik-api-cloud-title">
+											<span class="dashicons dashicons-cloud"></span> <?php esc_html_e( 'Nik Voice Cloud • Groq Whisper v3 Gateway', 'nik-voice-ticketing-ai' ); ?>
 										</h4>
-										<p style="margin: 0; font-size: 13px; color: #64748b; max-width: 580px;">
+										<p class="nik-api-cloud-desc">
 											<?php esc_html_e( 'Instant zero-configuration pairing. Provisions 50 free transcription requests/month immediately on Free Starter. Audio streams in-flight with Zero Local Disk Retention (Canadian PIPEDA compliant).', 'nik-voice-ticketing-ai' ); ?>
 										</p>
 									</div>
 									<div>
-										<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_connect_cloud' ), 'nikvotia_connect_cloud_nonce' ) ); ?>" class="button button-primary button-large" style="background: #ff6d00; border-color: #ff6d00; color: #ffffff; font-weight: 700; padding: 6px 20px; font-size: 14px; box-shadow: 0 4px 14px rgba(255, 109, 0, 0.35);">
+										<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=nikvotia_connect_cloud' ), 'nikvotia_connect_cloud_nonce' ) ); ?>" class="button button-primary button-large nik-api-connect-btn">
 											⚡ <?php esc_html_e( '1-Click Connect to Nik Voice Cloud', 'nik-voice-ticketing-ai' ); ?>
 										</a>
 									</div>
@@ -829,25 +829,25 @@ class Nikvotia_Settings {
 							</div>
 						<?php endif; ?>
 
-						<details style="margin-top: 10px; font-size: 13px; color: #64748b; cursor: pointer;" <?php echo ! empty( $cloud_key ) ? 'open' : ''; ?>>
-							<summary style="font-weight: 600; color: #1282a2;">
+						<details class="nik-api-byok-details" <?php echo ! empty( $cloud_key ) ? 'open' : ''; ?>>
+							<summary class="nik-api-byok-summary">
 								<?php esc_html_e( '⚙️ Manual API Keys & Custom Gateway Settings (BYOK)', 'nik-voice-ticketing-ai' ); ?>
 							</summary>
-							<div style="margin-top: 12px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-								<div style="margin-bottom: 10px;">
-									<label style="display: block; font-weight: 600; margin-bottom: 4px;" for="nikvotia_cloud_key"><?php esc_html_e( 'Nik Voice Cloud Key ID (nik_live_...):', 'nik-voice-ticketing-ai' ); ?></label>
+							<div class="nik-api-byok-box">
+								<div class="nik-api-field-group">
+									<label class="nik-api-label" for="nikvotia_cloud_key"><?php esc_html_e( 'Nik Voice Cloud Key ID (nik_live_...):', 'nik-voice-ticketing-ai' ); ?></label>
 									<input type="text" id="nikvotia_cloud_key" name="nikvotia_cloud_key" value="<?php echo esc_attr( $cloud_key ); ?>" placeholder="nik_live_..." class="regular-text nik-vd-input-text" />
-									<p class="description" style="margin-top: 2px; font-size: 12px;"><?php esc_html_e( 'Enter your license or customer API Key ID (nik_live_...). Saving your key connects immediately and activates Groq Whisper-v3 Speech-to-Text.', 'nik-voice-ticketing-ai' ); ?></p>
+									<p class="description"><?php esc_html_e( 'Enter your license or customer API Key ID (nik_live_...). Saving your key connects immediately and activates Groq Whisper-v3 Speech-to-Text.', 'nik-voice-ticketing-ai' ); ?></p>
 								</div>
-								<div style="margin-bottom: 10px;">
-									<label style="display: block; font-weight: 600; margin-bottom: 4px;" for="nikvotia_cloud_secret"><?php esc_html_e( 'Nik Voice Cloud API Secret (nik_sec_... - Optional):', 'nik-voice-ticketing-ai' ); ?></label>
+								<div class="nik-api-field-group">
+									<label class="nik-api-label" for="nikvotia_cloud_secret"><?php esc_html_e( 'Nik Voice Cloud API Secret (nik_sec_... - Optional):', 'nik-voice-ticketing-ai' ); ?></label>
 									<input type="password" id="nikvotia_cloud_secret" name="nikvotia_cloud_secret" value="<?php echo esc_attr( $cloud_secret ); ?>" placeholder="nik_sec_..." class="regular-text nik-vd-input-text" autocomplete="off" />
-									<p class="description" style="margin-top: 2px; font-size: 12px;"><?php esc_html_e( 'Optional. Only required if your custom gateway enforces HMAC-SHA256 signature verification. Standard API keys do not require a secret.', 'nik-voice-ticketing-ai' ); ?></p>
+									<p class="description"><?php esc_html_e( 'Optional. Only required if your custom gateway enforces HMAC-SHA256 signature verification. Standard API keys do not require a secret.', 'nik-voice-ticketing-ai' ); ?></p>
 								</div>
-								<div>
-									<label style="display: block; font-weight: 600; margin-bottom: 4px;" for="nikvotia_gateway_url"><?php esc_html_e( 'Custom Gateway URL (Optional):', 'nik-voice-ticketing-ai' ); ?></label>
+								<div class="nik-api-field-group">
+									<label class="nik-api-label" for="nikvotia_gateway_url"><?php esc_html_e( 'Custom Gateway URL (Optional):', 'nik-voice-ticketing-ai' ); ?></label>
 									<input type="url" id="nikvotia_gateway_url" name="nikvotia_gateway_url" value="<?php echo esc_attr( $cloud_gateway ); ?>" placeholder="https://voice.nikneural.ca" class="regular-text nik-vd-input-text" />
-									<p class="description" style="margin-top: 2px; font-size: 12px;"><?php esc_html_e( 'Leave empty for official production gateway (https://voice.nikneural.ca). Set to http://127.0.0.1:8080 for local development.', 'nik-voice-ticketing-ai' ); ?></p>
+									<p class="description"><?php esc_html_e( 'Leave empty for official production gateway (https://voice.nikneural.ca). Set to http://127.0.0.1:8080 for local development.', 'nik-voice-ticketing-ai' ); ?></p>
 								</div>
 							</div>
 						</details>
@@ -903,32 +903,127 @@ class Nikvotia_Settings {
 	private function render_pro_tab() {
 		?>
 		<div class="nik-vd-settings-section">
-			<h3><span class="dashicons dashicons-awards"></span> <?php esc_html_e( 'Pro & Cloud Add-ons', 'nik-voice-ticketing-ai' ); ?></h3>
-			<p class="description" style="margin-bottom: 20px; font-size: 13.5px; line-height: 1.5;">
-				<?php esc_html_e( 'Nik Voice Ticketing AI is 100% free and fully functional out-of-the-box with no artificial limits. For organizations requiring managed private cloud infrastructure, custom telephony integrations, or dedicated SLAs, Nik Neural AI Inc. offers tailored enterprise engineering.', 'nik-voice-ticketing-ai' ); ?>
-			</p>
+			<div class="nik-pro-hero-banner">
+				<div class="nik-pro-hero-left">
+					<div class="nik-pro-badge">
+						<span class="dashicons dashicons-shield"></span>
+						<?php esc_html_e( 'Nik Neural AI Inc. • Sovereign Canadian Enterprise', 'nik-voice-ticketing-ai' ); ?>
+					</div>
+					<h3 class="nik-pro-hero-title"><?php esc_html_e( 'Enterprise Cloud & Sovereign Telephony Solutions', 'nik-voice-ticketing-ai' ); ?></h3>
+					<p class="nik-pro-hero-desc">
+						<?php esc_html_e( 'Nik Voice Ticketing AI is 100% free and open-source with zero artificial limits. For organizations requiring managed private cloud gateways, Canadian data residency SLAs, custom VoIP PBX telephony integration, or enterprise ERP connectors, Nik Neural AI Inc. delivers bespoke mission-critical engineering.', 'nik-voice-ticketing-ai' ); ?>
+					</p>
+				</div>
+				<div class="nik-pro-hero-actions">
+					<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer" class="button button-primary button-large nik-pro-hero-btn">
+						<?php esc_html_e( 'Explore VoiceDesk AI Enterprise →', 'nik-voice-ticketing-ai' ); ?>
+					</a>
+					<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" class="button button-secondary button-large nik-pro-hero-btn-alt">
+						<?php esc_html_e( 'Contact Solutions Team', 'nik-voice-ticketing-ai' ); ?>
+					</a>
+				</div>
+			</div>
 
-			<div class="nik-vd-grid-layout" style="margin-top: 16px;">
-				<div class="nik-vd-card" style="border: 1px solid #38bdf8; background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, rgba(2, 132, 199, 0.06) 100%);">
-					<div class="nik-vd-card-header">
-						<h4 style="margin: 0; font-size: 16px;"><span class="dashicons dashicons-cloud" style="color: #0284c7;"></span> <?php esc_html_e( 'Canadian Private Cloud & Enterprise AI Solutions', 'nik-voice-ticketing-ai' ); ?></h4>
+			<!-- 3 Pillar Feature Cards -->
+			<div class="nik-pro-cards-grid">
+				<div class="nik-vd-card nik-pro-card">
+					<div class="nik-pro-card-header">
+						<span class="dashicons dashicons-cloud nik-pro-card-icon" style="color: #0284c7;"></span>
+						<h4><?php esc_html_e( 'Sovereign Canadian Cloud', 'nik-voice-ticketing-ai' ); ?></h4>
 					</div>
-					<div class="nik-vd-card-body" style="font-size: 13.5px; line-height: 1.6;">
-						<ul style="list-style: disc; padding-left: 20px; color: #475569; margin: 0 0 18px 0;">
-							<li><strong><?php esc_html_e( 'PIPEDA & PHIPA Data Residency:', 'nik-voice-ticketing-ai' ); ?></strong> <?php esc_html_e( 'Zero cloud data leakage; customer audio processed entirely within sovereign Canadian borders.', 'nik-voice-ticketing-ai' ); ?></li>
-							<li><strong><?php esc_html_e( 'Dedicated High-Speed Inference:', 'nik-voice-ticketing-ai' ); ?></strong> <?php esc_html_e( 'Sub-second transcription and triage pipelines engineered on enterprise hardware.', 'nik-voice-ticketing-ai' ); ?></li>
-							<li><strong><?php esc_html_e( 'Custom ERP & CRM Webhooks:', 'nik-voice-ticketing-ai' ); ?></strong> <?php esc_html_e( 'Direct automated routing to Salesforce, Zendesk, HubSpot, and custom insurance management systems.', 'nik-voice-ticketing-ai' ); ?></li>
-							<li><strong><?php esc_html_e( '24/7 Enterprise SLA Support:', 'nik-voice-ticketing-ai' ); ?></strong> <?php esc_html_e( 'Direct access to senior AI solutions engineers.', 'nik-voice-ticketing-ai' ); ?></li>
+					<div class="nik-pro-card-body">
+						<p><?php esc_html_e( 'Zero cloud data leakage; customer audio processed entirely within sovereign Canadian borders with PIPEDA, BC PIPA, and PHIPA compliance guarantees.', 'nik-voice-ticketing-ai' ); ?></p>
+						<ul class="nik-pro-bullet-list">
+							<li>✓ <?php esc_html_e( 'Managed Gateway at voice.nikneural.ca', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'Sub-second Groq Whisper-v3 Inference', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'In-Flight Zero-Disk Processing', 'nik-voice-ticketing-ai' ); ?></li>
 						</ul>
-						<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-							<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer" class="button button-primary button-large" style="background: #0284c7; border-color: #0369a1;">
-								<?php esc_html_e( 'Explore Enterprise Overview →', 'nik-voice-ticketing-ai' ); ?>
-							</a>
-							<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" class="button button-secondary button-large">
-								<?php esc_html_e( 'Contact Our Canadian Team', 'nik-voice-ticketing-ai' ); ?>
-							</a>
-						</div>
 					</div>
+				</div>
+
+				<div class="nik-vd-card nik-pro-card">
+					<div class="nik-pro-card-header">
+						<span class="dashicons dashicons-phone nik-pro-card-icon" style="color: #16a34a;"></span>
+						<h4><?php esc_html_e( 'Telephony & VoIP PBX Integration', 'nik-voice-ticketing-ai' ); ?></h4>
+					</div>
+					<div class="nik-pro-card-body">
+						<p><?php esc_html_e( 'Bridge your physical phone system directly to WordPress tickets. Converts after-hours customer voicemails into AI-summarized support cases instantly.', 'nik-voice-ticketing-ai' ); ?></p>
+						<ul class="nik-pro-bullet-list">
+							<li>✓ <?php esc_html_e( 'SIP PBX & Asterisk Trunk Connectors', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'Twilio, FreePBX & 3CX Direct Hooks', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'Automatic Caller ID Account Matching', 'nik-voice-ticketing-ai' ); ?></li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="nik-vd-card nik-pro-card">
+					<div class="nik-vd-card-header">
+						<span class="dashicons dashicons-rest-api nik-pro-card-icon" style="color: #f59e0b;"></span>
+						<h4><?php esc_html_e( 'Enterprise CRM & ERP Webhooks', 'nik-voice-ticketing-ai' ); ?></h4>
+					</div>
+					<div class="nik-pro-card-body">
+						<p><?php esc_html_e( 'Automatically dispatch parsed voice tickets, audio streams, and sentiment scores to your core enterprise software in real time.', 'nik-voice-ticketing-ai' ); ?></p>
+						<ul class="nik-pro-bullet-list">
+							<li>✓ <?php esc_html_e( 'Salesforce & HubSpot Live Sync', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'Zendesk & Jira Service Desk Integration', 'nik-voice-ticketing-ai' ); ?></li>
+							<li>✓ <?php esc_html_e( 'Applied Epic & Insurance CRM Connectors', 'nik-voice-ticketing-ai' ); ?></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<!-- Plan Matrix Table -->
+			<div class="nik-vd-card nik-pro-matrix-card">
+				<div class="nik-vd-card-header">
+					<h4><span class="dashicons dashicons-list-view"></span> <?php esc_html_e( 'Feature Matrix: Community vs. Enterprise Cloud', 'nik-voice-ticketing-ai' ); ?></h4>
+				</div>
+				<div class="nik-pro-matrix-wrapper">
+					<table class="widefat fixed striped nik-pro-matrix-table">
+						<thead>
+							<tr>
+								<th style="width: 40%; font-weight: 700;"><?php esc_html_e( 'Capability', 'nik-voice-ticketing-ai' ); ?></th>
+								<th style="width: 30%; font-weight: 700; text-align: center;"><?php esc_html_e( 'Community Edition (Active)', 'nik-voice-ticketing-ai' ); ?></th>
+								<th style="width: 30%; font-weight: 700; text-align: center; color: #0284c7;"><?php esc_html_e( 'Nik Voice Cloud Enterprise', 'nik-voice-ticketing-ai' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><strong><?php esc_html_e( 'Audio Capture & In-Browser Recording', 'nik-voice-ticketing-ai' ); ?></strong></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Unlimited', 'nik-voice-ticketing-ai' ); ?></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Unlimited + VoIP', 'nik-voice-ticketing-ai' ); ?></td>
+							</tr>
+							<tr>
+								<td><strong><?php esc_html_e( 'AI Speech-to-Text & Triage Engine', 'nik-voice-ticketing-ai' ); ?></strong></td>
+								<td style="text-align: center;"><?php esc_html_e( 'BYOK (OpenAI, Modulate, Free Cloud)', 'nik-voice-ticketing-ai' ); ?></td>
+								<td style="text-align: center; font-weight: 600; color: #0284c7;"><?php esc_html_e( 'Dedicated Groq Whisper-v3 TPU', 'nik-voice-ticketing-ai' ); ?></td>
+							</tr>
+							<tr>
+								<td><strong><?php esc_html_e( 'Audio Stream Security', 'nik-voice-ticketing-ai' ); ?></strong></td>
+								<td style="text-align: center;"><?php esc_html_e( 'Time-Bounded HMAC-SHA256', 'nik-voice-ticketing-ai' ); ?></td>
+								<td style="text-align: center;"><?php esc_html_e( 'HMAC-SHA256 + Private S3 / KMS', 'nik-voice-ticketing-ai' ); ?></td>
+							</tr>
+							<tr>
+								<td><strong><?php esc_html_e( 'PIPEDA Automated Audio Pruning', 'nik-voice-ticketing-ai' ); ?></strong></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Daily WP Cron', 'nik-voice-ticketing-ai' ); ?></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Instant Zero-Disk In-Flight', 'nik-voice-ticketing-ai' ); ?></td>
+							</tr>
+							<tr>
+								<td><strong><?php esc_html_e( 'WordPress Core Privacy Exporter & Eraser', 'nik-voice-ticketing-ai' ); ?></strong></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Included', 'nik-voice-ticketing-ai' ); ?></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Included + CRM Cascading', 'nik-voice-ticketing-ai' ); ?></td>
+							</tr>
+							<tr>
+								<td><strong><?php esc_html_e( 'Customer Portal Integration', 'nik-voice-ticketing-ai' ); ?></strong></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Self-Healing Auto-Page', 'nik-voice-ticketing-ai' ); ?></td>
+								<td style="text-align: center;"><span class="nik-matrix-check">✓</span> <?php esc_html_e( 'Auto-Page + SSO / SAML', 'nik-voice-ticketing-ai' ); ?></td>
+							</tr>
+							<tr>
+								<td><strong><?php esc_html_e( 'Support & Service Level Agreement', 'nik-voice-ticketing-ai' ); ?></strong></td>
+								<td style="text-align: center;"><?php esc_html_e( 'Community Forums', 'nik-voice-ticketing-ai' ); ?></td>
+								<td style="text-align: center; font-weight: 600; color: #16a34a;"><?php esc_html_e( '24/7 Dedicated SLA & Engineering', 'nik-voice-ticketing-ai' ); ?></td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</div>
@@ -976,39 +1071,39 @@ class Nikvotia_Settings {
 			</div>
 
 			<!-- Environment & Engine Status Bar -->
-			<div class="nik-vd-card" style="border: 1px solid #e2e8f0; background: #f8fafc; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;">
-				<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 13px;">
+			<div class="nik-vd-card nik-logs-status-bar">
+				<div class="nik-logs-status-grid">
 					<div>
 						<strong><?php esc_html_e( 'Active AI Provider:', 'nik-voice-ticketing-ai' ); ?></strong>
-						<span style="margin-left: 6px;"><?php echo esc_html( self::get_provider_label( $active_provider ) ); ?></span>
+						<span class="nik-logs-status-val"><?php echo esc_html( self::get_provider_label( $active_provider ) ); ?></span>
 					</div>
 					<div>
 						<strong><?php esc_html_e( 'Nik Cloud Gateway:', 'nik-voice-ticketing-ai' ); ?></strong>
-						<code><?php echo esc_html( Nikvotia_Cloud_Client::get_gateway_url() ); ?></code>
+						<code class="nik-logs-code"><?php echo esc_html( Nikvotia_Cloud_Client::get_gateway_url() ); ?></code>
 					</div>
 					<div>
 						<strong><?php esc_html_e( 'WordPress Debug Log:', 'nik-voice-ticketing-ai' ); ?></strong>
-						<span style="margin-left: 6px;"><?php echo ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) ? '<span style="color:#16a34a; font-weight:600;">✓ Enabled (wp-content/debug.log)</span>' : '<span style="color:#64748b;">Standard (options-backed)</span>'; ?></span>
+						<span class="nik-logs-status-val"><?php echo ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) ? '<span class="nik-logs-val-success">✓ Enabled (wp-content/debug.log)</span>' : '<span class="nik-logs-val-muted">Standard (options-backed)</span>'; ?></span>
 					</div>
 				</div>
 			</div>
 
 			<!-- Logs Table -->
 			<?php if ( empty( $logs ) ) : ?>
-				<div class="nik-vd-card" style="padding: 30px; text-align: center; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 8px;">
-					<span class="dashicons dashicons-yes" style="font-size: 36px; width: 36px; height: 36px; color: #16a34a; margin-bottom: 8px;"></span>
-					<p style="margin: 0; font-size: 14px;"><strong><?php esc_html_e( 'No log entries recorded yet.', 'nik-voice-ticketing-ai' ); ?></strong></p>
-					<p style="margin: 4px 0 0 0; font-size: 12.5px;"><?php esc_html_e( 'Logs will automatically populate when customers submit tickets or when the gateway processes requests.', 'nik-voice-ticketing-ai' ); ?></p>
+				<div class="nik-vd-card nik-logs-empty-card">
+					<span class="dashicons dashicons-yes nik-logs-empty-icon"></span>
+					<p class="nik-logs-empty-title"><strong><?php esc_html_e( 'No log entries recorded yet.', 'nik-voice-ticketing-ai' ); ?></strong></p>
+					<p class="nik-logs-empty-desc"><?php esc_html_e( 'Logs will automatically populate when customers submit tickets or when the gateway processes requests.', 'nik-voice-ticketing-ai' ); ?></p>
 				</div>
 			<?php else : ?>
-				<div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #ffffff;">
-					<table class="widefat fixed striped" style="border: none; margin: 0;">
+				<div class="nik-logs-table-wrapper">
+					<table class="widefat fixed striped nik-logs-table">
 						<thead>
 							<tr>
-								<th style="width: 160px; font-weight: 600;"><?php esc_html_e( 'Timestamp', 'nik-voice-ticketing-ai' ); ?></th>
-								<th style="width: 100px; font-weight: 600;"><?php esc_html_e( 'Severity', 'nik-voice-ticketing-ai' ); ?></th>
-								<th style="width: 140px; font-weight: 600;"><?php esc_html_e( 'Category', 'nik-voice-ticketing-ai' ); ?></th>
-								<th style="font-weight: 600;"><?php esc_html_e( 'Event & Details', 'nik-voice-ticketing-ai' ); ?></th>
+								<th class="nik-col-timestamp"><?php esc_html_e( 'Timestamp', 'nik-voice-ticketing-ai' ); ?></th>
+								<th class="nik-col-severity"><?php esc_html_e( 'Severity', 'nik-voice-ticketing-ai' ); ?></th>
+								<th class="nik-col-category"><?php esc_html_e( 'Category', 'nik-voice-ticketing-ai' ); ?></th>
+								<th class="nik-col-event"><?php esc_html_e( 'Event & Details', 'nik-voice-ticketing-ai' ); ?></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -1029,28 +1124,28 @@ class Nikvotia_Settings {
 								}
 							?>
 								<tr>
-									<td style="font-size: 12px; color: #64748b; vertical-align: top;">
+									<td class="nik-cell-timestamp">
 										<strong><?php echo esc_html( $time ); ?></strong>
 										<?php if ( ! empty( $l['time_ago'] ) ) : ?>
-											<br><small style="color: #94a3b8;"><?php echo esc_html( $l['time_ago'] . ' ago' ); ?></small>
+											<br><small class="nik-logs-time-ago"><?php echo esc_html( $l['time_ago'] . ' ago' ); ?></small>
 										<?php endif; ?>
 									</td>
-									<td style="vertical-align: top;">
-										<span class="nik-status-pill <?php echo esc_attr( $badge_class ); ?>" style="font-size: 10.5px; font-weight: 700; padding: 2px 7px;">
+									<td class="nik-cell-severity">
+										<span class="nik-status-pill <?php echo esc_attr( $badge_class ); ?> nik-logs-sev-pill">
 											<?php echo esc_html( $lvl ); ?>
 										</span>
 									</td>
-									<td style="vertical-align: top;">
-										<span class="nik-dept-badge" style="font-size: 11px;">
+									<td class="nik-cell-category">
+										<span class="nik-dept-badge nik-logs-cat-pill">
 											<?php echo esc_html( $cat ); ?>
 										</span>
 									</td>
-									<td style="vertical-align: top; font-size: 13px;">
-										<strong><?php echo esc_html( $msg ); ?></strong>
+									<td class="nik-cell-event">
+										<strong class="nik-logs-event-msg"><?php echo esc_html( $msg ); ?></strong>
 										<?php if ( ! empty( $ctx ) ) : ?>
-											<details style="margin-top: 6px; font-size: 12px; color: #64748b;">
-												<summary style="cursor: pointer; color: #0284c7;"><?php esc_html_e( 'View Context Data', 'nik-voice-ticketing-ai' ); ?></summary>
-												<pre style="margin-top: 6px; background: #f1f5f9; padding: 8px; border-radius: 4px; overflow-x: auto; font-size: 11.5px;"><?php echo esc_html( wp_json_encode( $ctx, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) ); ?></pre>
+											<details class="nik-logs-context-details">
+												<summary class="nik-logs-context-summary"><?php esc_html_e( 'View Context Data', 'nik-voice-ticketing-ai' ); ?></summary>
+												<pre class="nik-logs-context-pre"><?php echo esc_html( wp_json_encode( $ctx, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) ); ?></pre>
 											</details>
 										<?php endif; ?>
 									</td>
@@ -1099,25 +1194,25 @@ class Nikvotia_Settings {
 				</div>
 
 				<!-- About Hero Banner -->
-				<div style="background: linear-gradient(135deg, #0A1128 0%, #001F54 50%, #0B618D 100%); color: #ffffff; border-radius: 12px; padding: 32px 28px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
-					<div style="max-width: 680px;">
-						<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(18, 130, 162, 0.25); border: 1px solid rgba(18, 130, 162, 0.5); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-							<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." width="16" height="16" style="vertical-align: middle;" />
-							<?php esc_html_e( 'Canadian Enterprise AI &bull; Self-Hosted', 'nik-voice-ticketing-ai' ); ?>
+				<div class="nik-about-hero-banner">
+					<div class="nik-about-hero-text">
+						<div class="nik-about-hero-pill">
+							<img src="<?php echo esc_url( NIKVOTIA_URL . 'assets/images/favicon-light-32.png' ); ?>" alt="Nik Neural AI Inc." width="16" height="16" class="nik-about-favicon" />
+							<?php esc_html_e( 'Canadian Enterprise AI • Self-Hosted', 'nik-voice-ticketing-ai' ); ?>
 						</div>
-						<h2 style="font-size: 26px; font-weight: 800; margin: 0 0 10px 0; color: #ffffff; line-height: 1.25;">
+						<h2 class="nik-about-hero-heading">
 							<?php esc_html_e( 'Absolute Privacy. Zero SaaS Tax.', 'nik-voice-ticketing-ai' ); ?><br>
-							<span style="color: #38bdf8;"><?php esc_html_e( 'AI Automation for Canadian Enterprises.', 'nik-voice-ticketing-ai' ); ?></span>
+							<span class="nik-about-hero-highlight"><?php esc_html_e( 'AI Automation for Canadian Enterprises.', 'nik-voice-ticketing-ai' ); ?></span>
 						</h2>
-						<p style="font-size: 14px; line-height: 1.6; color: #cbd5e1; margin: 0;">
+						<p class="nik-about-hero-summary">
 							<?php esc_html_e( 'Nik Neural AI Inc. engineers production-ready, self-hosted AI automation platforms for brokerages, financial institutions, and enterprises. Deployed on your infrastructure — your data never leaves your servers.', 'nik-voice-ticketing-ai' ); ?>
 						</p>
 					</div>
-					<div style="display: flex; flex-direction: column; gap: 10px;">
-						<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer" style="background: #FF6D00; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(255, 109, 0, 0.3);">
+					<div class="nik-about-hero-ctas">
+						<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer" class="nik-about-btn-primary">
 							<?php esc_html_e( 'VoiceDesk AI Overview →', 'nik-voice-ticketing-ai' ); ?>
 						</a>
-						<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" style="background: rgba(255,255,255,0.12); color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; text-align: center; border: 1px solid rgba(255,255,255,0.25);">
+						<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" class="nik-about-btn-secondary">
 							<?php esc_html_e( 'Book a Consultation', 'nik-voice-ticketing-ai' ); ?>
 						</a>
 					</div>
@@ -1127,68 +1222,76 @@ class Nikvotia_Settings {
 				<div class="nik-vd-grid-layout">
 					<!-- Left Column: Mission & Platform -->
 					<div class="nik-vd-col-main">
-						<!-- Mission & Philosophy -->
-						<div class="nik-vd-card">
+						<!-- v1.3.9 Architecture & Security Highlights Card -->
+						<div class="nik-vd-card nik-about-card">
 							<div class="nik-vd-card-header">
-								<h3><span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'Built for Institutions, Not Experiments', 'nik-voice-ticketing-ai' ); ?></h3>
+								<h3><span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'v1.3.9 Architecture & Security Highlights', 'nik-voice-ticketing-ai' ); ?></h3>
 							</div>
-							<div class="nik-vd-card-body" style="font-size: 13.5px; line-height: 1.6;">
-								<p>
-									<?php esc_html_e( 'Unlike generic third-party SaaS chatbots that ingest sensitive client data into multi-tenant cloud servers, Nik Neural AI Inc. designs architectures where privacy is foundational.', 'nik-voice-ticketing-ai' ); ?>
+							<div class="nik-vd-card-body">
+								<p class="nik-about-intro">
+									<?php esc_html_e( 'Nik Voice Ticketing AI v1.3.9 introduces hardened enterprise security, privacy compliance, and multi-mode contrast architecture:', 'nik-voice-ticketing-ai' ); ?>
 								</p>
-								<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 16px;">
-									<div style="background: rgba(18, 130, 162, 0.08); border: 1px solid rgba(18, 130, 162, 0.2); border-radius: 8px; padding: 14px;">
-										<strong style="color: #0284c7; display: block; margin-bottom: 4px;">🍁 <?php esc_html_e( 'PIPEDA by Default', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span style="color: #64748b; font-size: 12.5px;"><?php esc_html_e( 'Structured strictly around Canadian privacy laws and data residency requirements from day one.', 'nik-voice-ticketing-ai' ); ?></span>
+								<div class="nik-about-features-grid">
+									<div class="nik-about-feature-box">
+										<strong class="nik-about-feature-title">🍁 <?php esc_html_e( 'Sovereign Cloud Gateway', 'nik-voice-ticketing-ai' ); ?></strong>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Instant pairing with voice.nikneural.ca for Groq Whisper-v3 STT. In-flight zero-disk processing (PIPEDA compliant).', 'nik-voice-ticketing-ai' ); ?></span>
 									</div>
-									<div style="background: rgba(18, 130, 162, 0.08); border: 1px solid rgba(18, 130, 162, 0.2); border-radius: 8px; padding: 14px;">
-										<strong style="color: #0284c7; display: block; margin-bottom: 4px;">🔓 <?php esc_html_e( 'No Vendor Lock-In', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span style="color: #64748b; font-size: 12.5px;"><?php esc_html_e( 'Full code ownership on delivery. Zero mandatory recurring cloud subscriptions or forced dependencies.', 'nik-voice-ticketing-ai' ); ?></span>
+									<div class="nik-about-feature-box">
+										<strong class="nik-about-feature-title">🔒 <?php esc_html_e( 'HMAC-SHA256 Audio Streaming', 'nik-voice-ticketing-ai' ); ?></strong>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Direct physical upload access is blocked with .htaccess. Playback routes through cryptographic time-bounded HMAC tokens.', 'nik-voice-ticketing-ai' ); ?></span>
 									</div>
-									<div style="background: rgba(18, 130, 162, 0.08); border: 1px solid rgba(18, 130, 162, 0.2); border-radius: 8px; padding: 14px;">
-										<strong style="color: #0284c7; display: block; margin-bottom: 4px;">🏢 <?php esc_html_e( 'Domain Expertise', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span style="color: #64748b; font-size: 12.5px;"><?php esc_html_e( 'Specialized in P&C insurance, commercial lines, strata, and enterprise ticketing workflows.', 'nik-voice-ticketing-ai' ); ?></span>
+									<div class="nik-about-feature-box">
+										<strong class="nik-about-feature-title">🧹 <?php esc_html_e( 'Daily Data Retention Cron', 'nik-voice-ticketing-ai' ); ?></strong>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Configurable 0-365 day retention window. Automatically unlinks expired physical recordings from disk to guarantee right-to-be-forgotten.', 'nik-voice-ticketing-ai' ); ?></span>
 									</div>
-									<div style="background: rgba(18, 130, 162, 0.08); border: 1px solid rgba(18, 130, 162, 0.2); border-radius: 8px; padding: 14px;">
-										<strong style="color: #0284c7; display: block; margin-bottom: 4px;">⚡ <?php esc_html_e( 'Zero SaaS Tax', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span style="color: #64748b; font-size: 12.5px;"><?php esc_html_e( 'Eliminate per-seat monthly billing fees by running models on your own servers or bring-your-own-keys.', 'nik-voice-ticketing-ai' ); ?></span>
+									<div class="nik-about-feature-box">
+										<strong class="nik-about-feature-title">⚖️ <?php esc_html_e( 'WP Core Privacy Exporter/Eraser', 'nik-voice-ticketing-ai' ); ?></strong>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Native integration with Tools > Export Personal Data and Tools > Erase Personal Data for full statutory compliance.', 'nik-voice-ticketing-ai' ); ?></span>
+									</div>
+									<div class="nik-about-feature-box">
+										<strong class="nik-about-feature-title">🚪 <?php esc_html_e( 'Customer Portal Auto-Creation', 'nik-voice-ticketing-ai' ); ?></strong>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Self-healing auto-provisioning creates and publishes Support Tickets page with [nikvotia_tickets] and WooCommerce sync.', 'nik-voice-ticketing-ai' ); ?></span>
+									</div>
+									<div class="nik-about-feature-box">
+										<strong class="nik-about-feature-title">🌓 <?php esc_html_e( 'Unified High-Contrast Theming', 'nik-voice-ticketing-ai' ); ?></strong>
+										<span class="nik-about-feature-desc"><?php esc_html_e( 'Zero text bleeding on dark themes with smart automatic luminance detection and manual toggle.', 'nik-voice-ticketing-ai' ); ?></span>
 									</div>
 								</div>
 							</div>
 						</div>
 
 						<!-- The Nik AI Platform Showcase -->
-						<div class="nik-vd-card">
+						<div class="nik-vd-card nik-about-card">
 							<div class="nik-vd-card-header">
 								<h3><span class="dashicons dashicons-grid-view"></span> <?php esc_html_e( 'The Nik Neural AI Enterprise Suite', 'nik-voice-ticketing-ai' ); ?></h3>
 							</div>
 							<div class="nik-vd-card-body">
-								<div style="display: flex; flex-direction: column; gap: 14px;">
-									<div style="border-left: 3px solid #FF6D00; padding-left: 14px;">
-										<strong style="font-size: 15px; color: #0f172a;"><?php esc_html_e( 'Nik VoiceDesk AI', 'nik-voice-ticketing-ai' ); ?></strong>
-										<span class="nik-vd-ai-badge" style="margin-left: 8px;"><?php esc_html_e( 'Active Plugin', 'nik-voice-ticketing-ai' ); ?></span>
-										<p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">
+								<div class="nik-about-suite-list">
+									<div class="nik-about-suite-item" style="border-left-color: #FF6D00;">
+										<strong class="nik-about-suite-title"><?php esc_html_e( 'Nik VoiceDesk AI', 'nik-voice-ticketing-ai' ); ?></strong>
+										<span class="nik-vd-ai-badge"><?php esc_html_e( 'Active Plugin (v1.3.9)', 'nik-voice-ticketing-ai' ); ?></span>
+										<p class="nik-about-suite-desc">
 											<?php esc_html_e( 'AI-powered zero-friction voice ticket submission, Whisper/Modulate transcription, automated triage, and customer portal integration.', 'nik-voice-ticketing-ai' ); ?>
 										</p>
 									</div>
 
-									<div style="border-left: 3px solid #1282A2; padding-left: 14px;">
-										<strong style="font-size: 15px; color: #0f172a;"><?php esc_html_e( 'Nik P&C Retention', 'nik-voice-ticketing-ai' ); ?></strong>
-										<p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">
+									<div class="nik-about-suite-item" style="border-left-color: #1282A2;">
+										<strong class="nik-about-suite-title"><?php esc_html_e( 'Nik P&C Retention', 'nik-voice-ticketing-ai' ); ?></strong>
+										<p class="nik-about-suite-desc">
 											<?php esc_html_e( 'Automated renewal outreach and policy lifecycle management for property & casualty brokerages. Predict churn and re-engage clients proactively.', 'nik-voice-ticketing-ai' ); ?>
 										</p>
 									</div>
 
-									<div style="border-left: 3px solid #0B618D; padding-left: 14px;">
-										<strong style="font-size: 15px; color: #0f172a;"><?php esc_html_e( 'Nik Enterprise Hub', 'nik-voice-ticketing-ai' ); ?></strong>
-										<p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">
+									<div class="nik-about-suite-item" style="border-left-color: #0B618D;">
+										<strong class="nik-about-suite-title"><?php esc_html_e( 'Nik Enterprise Hub', 'nik-voice-ticketing-ai' ); ?></strong>
+										<p class="nik-about-suite-desc">
 											<?php esc_html_e( 'Centralised AI operations dashboard for multi-branch brokerages and institutions with multi-tier permissions and unified telemetry.', 'nik-voice-ticketing-ai' ); ?>
 										</p>
 									</div>
 
-									<div style="border-left: 3px solid #16a34a; padding-left: 14px;">
-										<strong style="font-size: 15px; color: #0f172a;"><?php esc_html_e( 'Nik Privacy Shield', 'nik-voice-ticketing-ai' ); ?></strong>
-										<p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">
+									<div class="nik-about-suite-item" style="border-left-color: #16a34a;">
+										<strong class="nik-about-suite-title"><?php esc_html_e( 'Nik Privacy Shield', 'nik-voice-ticketing-ai' ); ?></strong>
+										<p class="nik-about-suite-desc">
 											<?php esc_html_e( 'On-premise Personally Identifiable Information (PII) detection, automated document redaction, and audit-trail generation for regulated industries.', 'nik-voice-ticketing-ai' ); ?>
 										</p>
 									</div>
@@ -1200,13 +1303,13 @@ class Nikvotia_Settings {
 					<!-- Right Column: Company Info & Contact -->
 					<div class="nik-vd-col-side">
 						<!-- Official Corporate Profile -->
-						<div class="nik-vd-card">
+						<div class="nik-vd-card nik-about-card">
 							<div class="nik-vd-card-header">
-								<h3><span class="dashicons dashicons-building"></span> <?php esc_html_e( 'Corporate Information', 'nik-voice-ticketing-ai' ); ?></h3>
+								<h3><span class="dashicons dashicons-building"></span> <?php esc_html_e( 'Corporate & Plugin Records', 'nik-voice-ticketing-ai' ); ?></h3>
 							</div>
-							<div class="nik-vd-card-body" style="font-size: 13px;">
+							<div class="nik-vd-card-body">
 								<div class="nik-vd-meta-row">
-									<strong><?php esc_html_e( 'Legal Name:', 'nik-voice-ticketing-ai' ); ?></strong>
+									<strong><?php esc_html_e( 'Company:', 'nik-voice-ticketing-ai' ); ?></strong>
 									<span>Nik Neural AI Inc.</span>
 								</div>
 								<div class="nik-vd-meta-row">
@@ -1215,36 +1318,52 @@ class Nikvotia_Settings {
 								</div>
 								<div class="nik-vd-meta-row">
 									<strong><?php esc_html_e( 'Headquarters:', 'nik-voice-ticketing-ai' ); ?></strong>
-									<span>112-970 Burrard Street, Office# 1760<br>Vancouver, BC V6Z 2R4, Canada</span>
+									<span>112-970 Burrard St, Suite 1760<br>Vancouver, BC V6Z 2R4</span>
 								</div>
 								<div class="nik-vd-meta-row">
 									<strong><?php esc_html_e( 'Telephone:', 'nik-voice-ticketing-ai' ); ?></strong>
-									<a href="tel:6042837353" style="color: #0284c7; text-decoration: none;">(604) 283-7353</a>
+									<a href="tel:6042837353">(604) 283-7353</a>
 								</div>
 								<div class="nik-vd-meta-row">
-									<strong><?php esc_html_e( 'Official Web:', 'nik-voice-ticketing-ai' ); ?></strong>
-									<a href="https://nikneural.ca/" target="_blank" rel="noopener noreferrer" style="color: #0284c7; text-decoration: none;">https://nikneural.ca/</a>
+									<strong><?php esc_html_e( 'Company Web:', 'nik-voice-ticketing-ai' ); ?></strong>
+									<a href="https://nikneural.ca/" target="_blank" rel="noopener noreferrer">https://nikneural.ca/</a>
+								</div>
+								<div class="nik-vd-meta-row">
+									<strong><?php esc_html_e( 'Product Page:', 'nik-voice-ticketing-ai' ); ?></strong>
+									<a href="https://nikneural.ca/voicedesk-ai/" target="_blank" rel="noopener noreferrer">VoiceDesk AI Overview</a>
+								</div>
+								<div class="nik-vd-meta-row">
+									<strong><?php esc_html_e( 'Contributors:', 'nik-voice-ticketing-ai' ); ?></strong>
+									<span>nikneuralaiinc, aboozaresmaili</span>
+								</div>
+								<div class="nik-vd-meta-row">
+									<strong><?php esc_html_e( 'GitHub:', 'nik-voice-ticketing-ai' ); ?></strong>
+									<a href="https://github.com/Nik-Neural-AI-Inc/nik-voice-ticketing-ai" target="_blank" rel="noopener noreferrer">nik-voice-ticketing-ai</a>
+								</div>
+								<div class="nik-vd-meta-row">
+									<strong><?php esc_html_e( 'WordPress.org:', 'nik-voice-ticketing-ai' ); ?></strong>
+									<a href="https://wordpress.org/plugins/nik-voice-ticketing-ai/" target="_blank" rel="noopener noreferrer">nik-voice-ticketing-ai</a>
 								</div>
 
-								<div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
-									<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" class="button button-primary" style="width: 100%; text-align: center; justify-content: center; height: 38px; line-height: 36px;">
-										<span class="dashicons dashicons-email-alt" style="margin-top: 8px;"></span> <?php esc_html_e( 'Get in Touch with Team', 'nik-voice-ticketing-ai' ); ?>
+								<div class="nik-about-card-footer">
+									<a href="https://nikneural.ca/#contact" target="_blank" rel="noopener noreferrer" class="button button-primary nik-about-contact-btn">
+										<span class="dashicons dashicons-email-alt"></span> <?php esc_html_e( 'Get in Touch with Team', 'nik-voice-ticketing-ai' ); ?>
 									</a>
 								</div>
 							</div>
 						</div>
 
 						<!-- Enterprise Cloud Card -->
-						<div class="nik-vd-card" style="border: 1px solid #38bdf8; background: linear-gradient(180deg, rgba(56, 189, 248, 0.04) 0%, rgba(2, 132, 199, 0.08) 100%);">
+						<div class="nik-vd-card nik-about-card nik-about-pro-cta-card">
 							<div class="nik-vd-card-header">
 								<h3><span class="dashicons dashicons-awards" style="color: #0284c7;"></span> <?php esc_html_e( 'Enterprise Services', 'nik-voice-ticketing-ai' ); ?></h3>
 							</div>
-							<div class="nik-vd-card-body" style="font-size: 13px; line-height: 1.5;">
-								<p>
-									<?php esc_html_e( 'Need dedicated private cloud hosting, custom CRM integrations, or SLA coverage? Discover our Canadian enterprise solutions.', 'nik-voice-ticketing-ai' ); ?>
+							<div class="nik-vd-card-body">
+								<p class="nik-about-cta-text">
+									<?php esc_html_e( 'Need dedicated private cloud hosting, custom VoIP telephony integrations, or 24/7 SLA coverage? Explore our Canadian enterprise solutions.', 'nik-voice-ticketing-ai' ); ?>
 								</p>
 								<div style="margin-top: 14px;">
-									<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=voicedesk_ticket&page=nikvotia-settings&tab=pro' ) ); ?>" class="button button-secondary" style="width: 100%; text-align: center; justify-content: center;">
+									<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=voicedesk_ticket&page=nikvotia-settings&tab=pro' ) ); ?>" class="button button-secondary nik-about-pro-link">
 										<?php esc_html_e( 'Explore Pro Services →', 'nik-voice-ticketing-ai' ); ?>
 									</a>
 								</div>
@@ -1362,6 +1481,7 @@ class Nikvotia_Settings {
 					'inclusive' => true,
 				),
 			),
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Batch pruning requires filtering tickets by unpruned audio status.
 			'meta_query'     => array(
 				'relation' => 'AND',
 				array(

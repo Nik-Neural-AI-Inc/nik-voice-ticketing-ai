@@ -2172,3 +2172,877 @@ body.nik-vd-dark-mode #nikvotia_custom_icon:focus {
     }
 }
 
+/* ==========================================================================
+   v1.3.9 API Tab Styles (tab=api) - High-Contrast Light & Dark Mode
+   ========================================================================== */
+.nik-api-isolation-banner {
+    border-left: 4px solid #16a34a !important;
+    background: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+    padding: 14px 18px !important;
+    border-radius: 8px !important;
+    margin-bottom: 22px !important;
+}
+.nik-api-isolation-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.nik-api-isolation-title {
+    color: #15803d !important;
+    font-size: 14px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.nik-api-isolation-desc {
+    margin: 4px 0 0 0 !important;
+    font-size: 13px !important;
+    color: #166534 !important;
+    line-height: 1.45 !important;
+}
+.nik-isolation-pill {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 4px 10px !important;
+}
+
+/* Cloud Cards */
+.nik-api-cloud-card {
+    padding: 16px 18px !important;
+    border-radius: 12px !important;
+    margin-bottom: 12px !important;
+}
+.nik-api-cloud-connected {
+    border: 1px solid #16a34a !important;
+    background: rgba(22, 163, 74, 0.05) !important;
+}
+.nik-api-cloud-unconnected {
+    border: 1px solid #1282a2 !important;
+    background: linear-gradient(180deg, rgba(18, 130, 162, 0.05) 0%, rgba(14, 23, 54, 0.03) 100%) !important;
+}
+.nik-api-cloud-header,
+.nik-api-cloud-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.nik-api-cloud-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.nik-api-status-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #16a34a;
+    box-shadow: 0 0 8px #16a34a;
+}
+.nik-api-status-label {
+    color: #16a34a !important;
+    font-size: 15px !important;
+}
+.nik-api-cloud-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.nik-api-btn-sm {
+    font-size: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+.nik-api-btn-disconnect {
+    color: #dc2626 !important;
+    text-decoration: none !important;
+    font-size: 12px !important;
+    line-height: 28px !important;
+    padding: 0 8px !important;
+}
+.nik-api-meta-grid {
+    margin-top: 12px !important;
+    font-size: 13px !important;
+    color: #475569 !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: 8px !important;
+}
+.nik-api-meta-grid code {
+    background: rgba(0, 0, 0, 0.05) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+}
+.nik-api-tip-box {
+    margin-top: 12px !important;
+    padding: 10px 14px !important;
+    background: #fffbeb !important;
+    border: 1px solid #fef3c7 !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    color: #92400e !important;
+    line-height: 1.5 !important;
+}
+.nik-api-cloud-title {
+    margin: 0 0 6px 0 !important;
+    font-size: 15px !important;
+    color: #0a1128 !important;
+}
+.nik-api-cloud-desc {
+    margin: 0 !important;
+    font-size: 13px !important;
+    color: #64748b !important;
+    max-width: 580px !important;
+}
+.nik-api-connect-btn {
+    background: #ff6d00 !important;
+    border-color: #ff6d00 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    padding: 6px 20px !important;
+    font-size: 14px !important;
+    box-shadow: 0 4px 14px rgba(255, 109, 0, 0.35) !important;
+}
+
+/* BYOK Box */
+.nik-api-byok-details {
+    margin-top: 12px !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+}
+.nik-api-byok-summary {
+    font-weight: 600 !important;
+    color: #1282a2 !important;
+    padding: 4px 0 !important;
+}
+.nik-api-byok-box {
+    margin-top: 12px !important;
+    padding: 16px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+}
+.nik-api-field-group {
+    margin-bottom: 12px !important;
+}
+.nik-api-field-group:last-child {
+    margin-bottom: 0 !important;
+}
+.nik-api-label {
+    display: block !important;
+    font-weight: 600 !important;
+    margin-bottom: 5px !important;
+    color: #0f172a !important;
+    font-size: 13px !important;
+}
+
+/* ==========================================================================
+   v1.3.9 Logs Tab Styles (tab=logs) - High-Contrast Light & Dark Mode
+   ========================================================================== */
+.nik-logs-status-bar {
+    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    padding: 14px 18px !important;
+    border-radius: 8px !important;
+    margin-bottom: 20px !important;
+}
+.nik-logs-status-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: 12px !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+}
+.nik-logs-status-val {
+    margin-left: 6px !important;
+    font-weight: 600 !important;
+}
+.nik-logs-code {
+    background: rgba(0, 0, 0, 0.05) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+}
+.nik-logs-val-success {
+    color: #16a34a !important;
+    font-weight: 600 !important;
+}
+.nik-logs-val-muted {
+    color: #64748b !important;
+}
+.nik-logs-empty-card {
+    padding: 30px !important;
+    text-align: center !important;
+    color: #64748b !important;
+    border: 1px dashed #cbd5e1 !important;
+    border-radius: 8px !important;
+}
+.nik-logs-empty-icon {
+    font-size: 36px !important;
+    width: 36px !important;
+    height: 36px !important;
+    color: #16a34a !important;
+    margin-bottom: 8px !important;
+}
+.nik-logs-empty-title {
+    margin: 0 !important;
+    font-size: 14px !important;
+    color: #0f172a !important;
+}
+.nik-logs-empty-desc {
+    margin: 4px 0 0 0 !important;
+    font-size: 12.5px !important;
+    color: #64748b !important;
+}
+
+.nik-logs-table-wrapper {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+}
+.nik-logs-table {
+    border: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+}
+.nik-col-timestamp {
+    width: 175px !important;
+    font-weight: 700 !important;
+}
+.nik-col-severity {
+    width: 105px !important;
+    font-weight: 700 !important;
+}
+.nik-col-category {
+    width: 185px !important;
+    min-width: 180px !important;
+    font-weight: 700 !important;
+}
+.nik-col-event {
+    font-weight: 700 !important;
+}
+.nik-cell-timestamp {
+    font-size: 12px !important;
+    color: #64748b !important;
+    vertical-align: top !important;
+    white-space: nowrap !important;
+}
+.nik-logs-time-ago {
+    color: #94a3b8 !important;
+}
+.nik-cell-severity {
+    vertical-align: top !important;
+    white-space: nowrap !important;
+}
+.nik-logs-sev-pill {
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    padding: 2px 7px !important;
+}
+.nik-cell-category {
+    vertical-align: top !important;
+    white-space: nowrap !important;
+}
+.nik-logs-cat-pill {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    letter-spacing: 0.3px !important;
+}
+.nik-cell-event {
+    vertical-align: top !important;
+    font-size: 13px !important;
+}
+.nik-logs-event-msg {
+    color: #0f172a !important;
+    display: block !important;
+    line-height: 1.45 !important;
+}
+.nik-logs-context-details {
+    margin-top: 6px !important;
+    font-size: 12px !important;
+    color: #64748b !important;
+}
+.nik-logs-context-summary {
+    cursor: pointer !important;
+    color: #0284c7 !important;
+    font-weight: 600 !important;
+}
+.nik-logs-context-pre {
+    margin-top: 6px !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    overflow-x: auto !important;
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+}
+
+/* ==========================================================================
+   v1.3.9 Pro Tab Styles (tab=pro) - High-Contrast Light & Dark Mode
+   ========================================================================== */
+.nik-pro-hero-banner {
+    background: linear-gradient(135deg, #0a1128 0%, #001f54 50%, #0b618d 100%) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 28px 24px !important;
+    margin-bottom: 24px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+}
+.nik-pro-hero-left {
+    max-width: 680px !important;
+}
+.nik-pro-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: rgba(56, 189, 248, 0.2) !important;
+    border: 1px solid rgba(56, 189, 248, 0.45) !important;
+    padding: 3px 10px !important;
+    border-radius: 20px !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    color: #38bdf8 !important;
+    margin-bottom: 10px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+.nik-pro-hero-title {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    margin: 0 0 8px 0 !important;
+    color: #ffffff !important;
+    line-height: 1.3 !important;
+}
+.nik-pro-hero-desc {
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+    color: #cbd5e1 !important;
+    margin: 0 !important;
+}
+.nik-pro-hero-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+}
+.nik-pro-hero-btn {
+    background: #ff6d00 !important;
+    border-color: #ff6d00 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    padding: 8px 20px !important;
+    height: auto !important;
+    text-align: center !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 12px rgba(255, 109, 0, 0.35) !important;
+}
+.nik-pro-hero-btn-alt {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 6px 16px !important;
+    height: auto !important;
+    text-align: center !important;
+    border-radius: 6px !important;
+}
+
+.nik-pro-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 18px !important;
+    margin-bottom: 24px !important;
+}
+.nik-pro-card {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 18px !important;
+    background: #ffffff !important;
+}
+.nik-pro-card-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+}
+.nik-pro-card-header h4 {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+}
+.nik-pro-card-icon {
+    font-size: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+.nik-pro-card-body p {
+    margin: 0 0 12px 0 !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    color: #64748b !important;
+}
+.nik-pro-bullet-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 12.5px !important;
+    line-height: 1.8 !important;
+    color: #334155 !important;
+}
+.nik-pro-bullet-list li {
+    margin-bottom: 4px !important;
+}
+
+.nik-pro-matrix-card {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+}
+.nik-pro-matrix-card .nik-vd-card-header {
+    background: #f8fafc !important;
+    padding: 14px 18px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+.nik-pro-matrix-card .nik-vd-card-header h4 {
+    margin: 0 !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+.nik-pro-matrix-wrapper {
+    overflow-x: auto !important;
+}
+.nik-pro-matrix-table {
+    border: none !important;
+    margin: 0 !important;
+}
+.nik-pro-matrix-table th {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    padding: 10px 14px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+.nik-pro-matrix-table td {
+    padding: 10px 14px !important;
+    color: #334155 !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 13px !important;
+}
+.nik-matrix-check {
+    color: #16a34a !important;
+    font-weight: 700 !important;
+    margin-right: 2px !important;
+}
+
+/* ==========================================================================
+   v1.3.9 About Page Styles (nikvotia-about) - High-Contrast
+   ========================================================================== */
+.nik-about-hero-banner {
+    background: linear-gradient(135deg, #0a1128 0%, #001f54 50%, #0b618d 100%) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 32px 28px !important;
+    margin-bottom: 24px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+}
+.nik-about-hero-text {
+    max-width: 680px !important;
+}
+.nik-about-hero-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: rgba(18, 130, 162, 0.25) !important;
+    border: 1px solid rgba(18, 130, 162, 0.5) !important;
+    padding: 4px 12px !important;
+    border-radius: 20px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #38bdf8 !important;
+    margin-bottom: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+.nik-about-favicon {
+    vertical-align: middle !important;
+}
+.nik-about-hero-heading {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    margin: 0 0 10px 0 !important;
+    color: #ffffff !important;
+    line-height: 1.25 !important;
+}
+.nik-about-hero-highlight {
+    color: #38bdf8 !important;
+}
+.nik-about-hero-summary {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    color: #cbd5e1 !important;
+    margin: 0 !important;
+}
+.nik-about-hero-ctas {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+.nik-about-btn-primary {
+    background: #ff6d00 !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    text-align: center !important;
+    box-shadow: 0 4px 12px rgba(255, 109, 0, 0.3) !important;
+}
+.nik-about-btn-secondary {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    text-align: center !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+.nik-about-card {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+    margin-bottom: 20px !important;
+}
+.nik-about-intro {
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+    color: #334155 !important;
+    margin: 0 0 16px 0 !important;
+}
+.nik-about-features-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: 14px !important;
+}
+.nik-about-feature-box {
+    background: rgba(18, 130, 162, 0.06) !important;
+    border: 1px solid rgba(18, 130, 162, 0.18) !important;
+    border-radius: 8px !important;
+    padding: 14px !important;
+}
+.nik-about-feature-title {
+    color: #0284c7 !important;
+    display: block !important;
+    margin-bottom: 4px !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+}
+.nik-about-feature-desc {
+    color: #475569 !important;
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
+    display: block !important;
+}
+
+.nik-about-suite-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+}
+.nik-about-suite-item {
+    border-left: 3px solid #ff6d00 !important;
+    padding-left: 14px !important;
+}
+.nik-about-suite-title {
+    font-size: 15px !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+}
+.nik-about-suite-desc {
+    margin: 4px 0 0 0 !important;
+    font-size: 13px !important;
+    color: #64748b !important;
+    line-height: 1.45 !important;
+}
+.nik-about-card-footer {
+    margin-top: 18px !important;
+    padding-top: 14px !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+.nik-about-contact-btn {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    height: 38px !important;
+    line-height: 36px !important;
+    font-weight: 600 !important;
+}
+.nik-about-pro-cta-card {
+    border: 1px solid #38bdf8 !important;
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.04) 0%, rgba(2, 132, 199, 0.08) 100%) !important;
+}
+.nik-about-cta-text {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    color: #475569 !important;
+    margin: 0 !important;
+}
+.nik-about-pro-link {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   v1.3.9 DARK MODE OVERRIDES (body.nik-vd-dark-mode)
+   ========================================================================== */
+body.nik-vd-dark-mode .nik-api-isolation-banner {
+    background: rgba(22, 163, 74, 0.12) !important;
+    border-left-color: #22c55e !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+}
+body.nik-vd-dark-mode .nik-api-isolation-title {
+    color: #4ade80 !important;
+}
+body.nik-vd-dark-mode .nik-api-isolation-desc {
+    color: #86efac !important;
+}
+
+body.nik-vd-dark-mode .nik-api-cloud-connected {
+    background: rgba(22, 163, 74, 0.1) !important;
+    border-color: rgba(34, 197, 94, 0.4) !important;
+}
+body.nik-vd-dark-mode .nik-api-cloud-unconnected {
+    background: linear-gradient(180deg, rgba(18, 130, 162, 0.12) 0%, rgba(15, 23, 42, 0.4) 100%) !important;
+    border-color: #0284c7 !important;
+}
+body.nik-vd-dark-mode .nik-api-status-label {
+    color: #4ade80 !important;
+}
+body.nik-vd-dark-mode .nik-api-meta-grid {
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-api-meta-grid strong {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-api-meta-grid code {
+    background: #090d16 !important;
+    color: #38bdf8 !important;
+    border: 1px solid #334155 !important;
+}
+body.nik-vd-dark-mode .nik-api-tip-box {
+    background: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    color: #fde047 !important;
+}
+body.nik-vd-dark-mode .nik-api-cloud-title {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-api-cloud-desc {
+    color: #cbd5e1 !important;
+}
+
+body.nik-vd-dark-mode .nik-api-byok-summary {
+    color: #38bdf8 !important;
+}
+body.nik-vd-dark-mode .nik-api-byok-box {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-api-label {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-api-field-group .description {
+    color: #94a3b8 !important;
+}
+
+body.nik-vd-dark-mode .nik-logs-status-bar {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-logs-status-grid {
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-logs-status-grid strong {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-logs-code {
+    background: #090d16 !important;
+    color: #38bdf8 !important;
+    border: 1px solid #334155 !important;
+}
+body.nik-vd-dark-mode .nik-logs-val-muted {
+    color: #94a3b8 !important;
+}
+body.nik-vd-dark-mode .nik-logs-empty-card {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+body.nik-vd-dark-mode .nik-logs-empty-title {
+    color: #f8fafc !important;
+}
+
+body.nik-vd-dark-mode .nik-logs-table-wrapper {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+}
+body.nik-vd-dark-mode .nik-logs-table {
+    background: #0f172a !important;
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-logs-table thead th {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border-bottom: 2px solid #334155 !important;
+}
+body.nik-vd-dark-mode .nik-logs-table tbody tr {
+    background: #0f172a !important;
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-logs-table tbody tr:nth-child(even) {
+    background: #111b2e !important;
+}
+body.nik-vd-dark-mode .nik-logs-table tbody tr:hover {
+    background: #1e293b !important;
+}
+body.nik-vd-dark-mode .nik-logs-table td {
+    border-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-cell-timestamp strong {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-logs-event-msg {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-logs-context-summary {
+    color: #38bdf8 !important;
+}
+body.nik-vd-dark-mode .nik-logs-context-pre {
+    background: #090d16 !important;
+    border-color: #334155 !important;
+    color: #38bdf8 !important;
+}
+
+body.nik-vd-dark-mode .nik-pro-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-pro-card-header h4 {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-pro-card-body p {
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-pro-bullet-list {
+    color: #e2e8f0 !important;
+}
+
+body.nik-vd-dark-mode .nik-pro-matrix-card {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+}
+body.nik-vd-dark-mode .nik-pro-matrix-card .nik-vd-card-header {
+    background: #1e293b !important;
+    border-bottom-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-pro-matrix-card .nik-vd-card-header h4 {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-pro-matrix-table th {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border-bottom-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-pro-matrix-table td {
+    color: #cbd5e1 !important;
+    border-bottom-color: #1e293b !important;
+}
+body.nik-vd-dark-mode .nik-pro-matrix-table td strong {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-pro-matrix-table tbody tr:hover {
+    background: #1e293b !important;
+}
+
+body.nik-vd-dark-mode .nik-about-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-about-card .nik-vd-card-header h3 {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-about-intro {
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-about-feature-box {
+    background: rgba(18, 130, 162, 0.15) !important;
+    border-color: rgba(56, 189, 248, 0.25) !important;
+}
+body.nik-vd-dark-mode .nik-about-feature-title {
+    color: #38bdf8 !important;
+}
+body.nik-vd-dark-mode .nik-about-feature-desc {
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-about-suite-title {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-about-suite-desc {
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-about-card-footer {
+    border-top-color: #334155 !important;
+}
+body.nik-vd-dark-mode .nik-about-pro-cta-card {
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.08) 0%, rgba(2, 132, 199, 0.16) 100%) !important;
+    border-color: #0284c7 !important;
+}
+body.nik-vd-dark-mode .nik-about-cta-text {
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-about-card .nik-vd-meta-row strong {
+    color: #f8fafc !important;
+}
+body.nik-vd-dark-mode .nik-about-card .nik-vd-meta-row span,
+body.nik-vd-dark-mode .nik-about-card .nik-vd-meta-row a {
+    color: #cbd5e1 !important;
+}
+body.nik-vd-dark-mode .nik-about-card .nik-vd-meta-row a:hover {
+    color: #38bdf8 !important;
+}
+
+

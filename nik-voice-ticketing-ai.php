@@ -3,7 +3,7 @@
  * Plugin Name:       Nik Voice Ticketing AI
  * Plugin URI:        https://nikneural.ca/voicedesk-ai/
  * Description:       Zero-friction, AI-powered voice ticketing system for WordPress with 1-Click Nik Voice Cloud, Groq Whisper-v3, and PIPEDA zero-disk retention.
- * Version:           1.3.8
+ * Version:           1.3.9
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Nik Neural AI Inc.
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Plugin Constants
-define( 'NIKVOTIA_VERSION', '1.3.8' );
+define( 'NIKVOTIA_VERSION', '1.3.9' );
 define( 'NIKVOTIA_FILE', __FILE__ );
 define( 'NIKVOTIA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NIKVOTIA_URL', plugin_dir_url( __FILE__ ) );
