@@ -5,7 +5,7 @@ Tags: voice, ai, ticketing, helpdesk, audio
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.7
+Stable tag: 1.3.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,13 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 4. VoiceDesk Settings page with Dark Mode toggle and AI configuration.
 
 == Changelog ==
+
+= 1.3.8 =
+* Fix & Accessibility: Overhauled Customer Ticket Portal and Single Ticket View with ultra-high contrast styling in both Dark and Light modes, eliminating faint/invisible text caused by external theme stylesheet bleeding.
+* Feature: Added smart automatic theme detection (system preference, theme dark classes, and body background luminance) and seamless Dark/Light mode switcher toggle for the single ticket detail view.
+* Fix: Resolved modal "View Ticket" endless page reload bug by implementing automatic provisioning for the default portal page when WooCommerce is inactive.
+* Security & Routing: Enforced authentication-aware routing in customer portal: unauthenticated guests are securely redirected to login with safe redirect_to parameter, and guest tickets auto-bind to customer accounts upon login.
+* Packaging: Removed development/CI test suite folder from production distribution archive to deliver a lightweight, clean package for end users.
 
 = 1.3.7 =
 * Security: Blocked direct HTTP access to audio recordings in `wp-content/uploads/nikvotia/` via automated Apache `.htaccess` directives and added Nginx/IIS/Caddy configuration guidelines.

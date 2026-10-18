@@ -626,11 +626,11 @@ class Nikvotia_Frontend {
 			: __( 'Please sign in to your account to view your voice tickets, track status, and read replies from our support team.', 'nik-voice-ticketing-ai' );
 
 		return '
-		<div style="max-width: 540px; margin: 40px auto; padding: 32px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: -apple-system, sans-serif;">
-			<div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
-			<h3 style="margin: 0 0 10px 0; color: #0f172a; font-size: 20px;">' . esc_html( $title ) . '</h3>
-			<p style="color: #64748b; font-size: 14px; margin-bottom: 24px; line-height: 1.6;">' . esc_html( $desc ) . '</p>
-			<a href="' . esc_url( $login_url ) . '" style="display: inline-block; background: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 14px;">' . esc_html__( 'Sign In to Your Account', 'nik-voice-ticketing-ai' ) . '</a>
+		<div class="nik-portal-guest-card">
+			<div class="nik-portal-guest-icon">🔒</div>
+			<h3 class="nik-portal-guest-title">' . esc_html( $title ) . '</h3>
+			<p class="nik-portal-guest-desc">' . esc_html( $desc ) . '</p>
+			<a href="' . esc_url( $login_url ) . '" class="nik-portal-guest-btn">' . esc_html__( 'Sign In to Your Account', 'nik-voice-ticketing-ai' ) . '</a>
 		</div>';
 	}
 
@@ -873,7 +873,7 @@ Manage Ticket:
 		}
 		?>
 		<div class="nik-detail-wrap" id="nik-detail-root">
-			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+			<div class="nik-detail-topbar">
 				<a href="<?php echo esc_url( $back_url ); ?>" class="nik-detail-back">
 					← <?php esc_html_e( 'Back to All Tickets', 'nik-voice-ticketing-ai' ); ?>
 				</a>
@@ -886,13 +886,13 @@ Manage Ticket:
 			<!-- Header -->
 			<div class="nik-detail-header">
 				<div>
-					<div style="font-size: 22px; font-weight: 800; color: #38bdf8;">#<?php echo esc_html( $ticket_number ); ?></div>
-					<div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">
+					<div class="nik-detail-ticket-id">#<?php echo esc_html( $ticket_number ); ?></div>
+					<div class="nik-detail-meta">
 						<?php echo esc_html( $dept ); ?> &bull; <?php echo esc_html( get_the_date( 'M j, Y \a\t g:i A', $post->ID ) ); ?>
 					</div>
 				</div>
 				<div>
-					<span style="background: #2563eb; color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+					<span class="nik-portal-pill <?php echo esc_attr( 'nik-p-' . sanitize_html_class( strtolower( str_replace( ' ', '-', $status ) ) ) ); ?>">
 						<?php echo esc_html( $status ); ?>
 					</span>
 				</div>
@@ -909,9 +909,9 @@ Manage Ticket:
 					</audio>
 				<?php endif; ?>
 
-				<div style="margin-top: 18px; background: #f8fafc; border-left: 4px solid #38bdf8; padding: 14px 18px; border-radius: 0 8px 8px 0; font-size: 14px; line-height: 1.6;">
-					<strong><?php esc_html_e( 'AI Summary:', 'nik-voice-ticketing-ai' ); ?></strong>
-					<p style="margin: 6px 0 0 0;"><?php echo esc_html( $summary ?: __( 'Voice ticket received and being processed.', 'nik-voice-ticketing-ai' ) ); ?></p>
+				<div class="nik-detail-summary-box">
+					<strong class="nik-detail-summary-title"><?php esc_html_e( 'AI Summary:', 'nik-voice-ticketing-ai' ); ?></strong>
+					<p class="nik-detail-summary-text"><?php echo esc_html( $summary ?: __( 'Voice ticket received and being processed.', 'nik-voice-ticketing-ai' ) ); ?></p>
 				</div>
 			</div>
 
@@ -919,7 +919,7 @@ Manage Ticket:
 			<div class="nik-detail-box">
 				<h3>💬 <?php esc_html_e( 'Support Conversation & Updates', 'nik-voice-ticketing-ai' ); ?></h3>
 
-				<div style="margin-bottom: 20px;">
+				<div class="nik-replies-list">
 					<?php if ( ! empty( $replies ) ) : ?>
 						<?php foreach ( $replies as $r ) :
 							$is_staff = ( $r['role'] ?? '' ) === 'staff' || ( $r['author'] ?? '' ) === 'Admin';
@@ -928,28 +928,28 @@ Manage Ticket:
 							$badge_color = $is_staff ? '#0284c7' : '#475569';
 						?>
 							<div class="nik-reply-card <?php echo esc_attr( $card_class ); ?>">
-								<div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12.5px;">
+								<div class="nik-reply-meta">
 									<strong>
 										<?php echo esc_html( $r['author'] ); ?> 
-										<span style="background: <?php echo esc_attr( $badge_color ); ?>; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 4px;"><?php echo esc_html( $badge_title ); ?></span>
+										<span class="nik-reply-badge" style="background: <?php echo esc_attr( $badge_color ); ?>;"><?php echo esc_html( $badge_title ); ?></span>
 									</strong>
-									<span style="color: #94a3b8;"><?php echo esc_html( date_i18n( 'M j, g:i A', strtotime( $r['date'] ?? 'now' ) ) ); ?></span>
+									<span class="nik-reply-date"><?php echo esc_html( date_i18n( 'M j, g:i A', strtotime( $r['date'] ?? 'now' ) ) ); ?></span>
 								</div>
-								<div style="margin: 0; color: #1e293b;">
+								<div class="nik-reply-message">
 									<?php echo wp_kses_post( wpautop( esc_html( $r['message'] ) ) ); ?>
 								</div>
 							</div>
 						<?php endforeach; ?>
 					<?php else : ?>
-						<p style="color: #64748b; font-size: 13.5px;"><?php esc_html_e( 'Our support team has received your ticket and is preparing a response.', 'nik-voice-ticketing-ai' ); ?></p>
+						<p class="nik-reply-empty"><?php esc_html_e( 'Our support team has received your ticket and is preparing a response.', 'nik-voice-ticketing-ai' ); ?></p>
 					<?php endif; ?>
 				</div>
 
 				<!-- Customer Reply Box -->
-				<form method="post" style="border-top: 1px solid #edf2f7; padding-top: 20px;">
+				<form method="post" class="nik-reply-form">
 					<?php wp_nonce_field( 'nikvotia_user_reply', 'nikvotia_user_reply_nonce' ); ?>
-					<h4 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600;"><?php esc_html_e( 'Send a Message to Support', 'nik-voice-ticketing-ai' ); ?></h4>
-					<textarea name="nikvotia_user_message" rows="4" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; font-size: 14px; margin-bottom: 12px; box-sizing: border-box;" placeholder="<?php esc_attr_e( 'Type your question or additional details here...', 'nik-voice-ticketing-ai' ); ?>" required></textarea>
+					<h4 class="nik-reply-form-title"><?php esc_html_e( 'Send a Message to Support', 'nik-voice-ticketing-ai' ); ?></h4>
+					<textarea name="nikvotia_user_message" rows="4" class="nik-reply-textarea" placeholder="<?php esc_attr_e( 'Type your question or additional details here...', 'nik-voice-ticketing-ai' ); ?>" required></textarea>
 					<button type="submit" class="nik-reply-btn">
 						<?php esc_html_e( 'Submit Reply', 'nik-voice-ticketing-ai' ); ?>
 					</button>

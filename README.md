@@ -1,6 +1,6 @@
 # Nik Voice Ticketing AI
 
-[![Version](https://img.shields.io/badge/version-1.3.7-blue.svg)](https://nikneural.ca/voicedesk-ai/)
+[![Version](https://img.shields.io/badge/version-1.3.8-blue.svg)](https://nikneural.ca/voicedesk-ai/)
 [![WordPress.org](https://img.shields.io/badge/WordPress.org-nik--voice--ticketing--ai-0073aa.svg?logo=wordpress&logoColor=white)](https://wordpress.org/plugins/nik-voice-ticketing-ai/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717.svg?logo=github)](https://github.com/Nik-Neural-AI-Inc/nik-voice-ticketing-ai)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
@@ -204,6 +204,13 @@ Nik Voice Ticketing AI was designed by **Nik Neural AI Inc.** following the prin
 - **Contributors**: `nikneuralaiinc`, `aboozaresmaili`
 
 ## Changelog
+
+### 1.3.8
+* **Fix & Accessibility**: Overhauled Customer Ticket Portal and Single Ticket View with ultra-high contrast styling in both Dark and Light modes, eliminating faint/invisible text caused by external theme stylesheet bleeding.
+* **Feature**: Added smart automatic theme detection (system preference, theme dark classes, and body background luminance) and seamless Dark/Light mode switcher toggle for the single ticket detail view.
+* **Fix**: Resolved modal "View Ticket" endless page reload bug by implementing automatic provisioning for the default portal page when WooCommerce is inactive.
+* **Security & Routing**: Enforced authentication-aware routing in customer portal: unauthenticated guests are securely redirected to login with safe `redirect_to` parameter, and guest tickets auto-bind to customer accounts upon login.
+* **Packaging**: Removed development/CI test suite folder from production distribution archive to deliver a lightweight, clean package for end users.
 
 ### 1.3.7
 * **Audio Access Protection (SEC-02 & SEC-03)**: Hardened `wp-content/uploads/nikvotia/` via automated `.htaccess` rules denying direct HTTP access to audio file extensions (`webm|ogg|oga|wav|mp3|m4a`) and enforcing `X-Robots-Tag: noindex, nofollow, noarchive`. Added Nginx, IIS, and Caddy directives for non-Apache environments.

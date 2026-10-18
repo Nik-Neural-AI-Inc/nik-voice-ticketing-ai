@@ -79,49 +79,79 @@ document.addEventListener('DOMContentLoaded', function() {
         noticeCloseBtn.addEventListener('click', hideNotification);
     }
 
-    // Initialize Customer Portal Dark/Light mode if present on page
+    // Initialize Customer Portal Dark/Light mode with Smart Auto-Detection
     (function initPortalTheme() {
         const portalBtn = document.getElementById('nik-portal-theme-btn');
         const portalRoot = document.getElementById('nik-portal-root');
         const detailBtn = document.getElementById('nik-detail-theme-btn');
         const detailRoot = document.getElementById('nik-detail-root');
 
-        const savedTheme = localStorage.getItem('nikvotia_portal_theme') ;
+        function detectAutoTheme() {
+            const saved = localStorage.getItem('nikvotia_portal_theme');
+            if (saved === 'dark' || saved === 'light') return saved;
 
-        if (portalBtn && portalRoot) {
-            if (savedTheme === 'dark') {
-                portalRoot.classList.add('nik-portal-dark');
-                const icon = portalBtn.querySelector('.nik-portal-theme-icon');
-                const txt = portalBtn.querySelector('.nik-portal-theme-text');
-                if (icon) icon.textContent = '☀️';
-                if (txt) txt.textContent = 'Light Mode';
+            const darkClasses = ['dark', 'dark-mode', 'theme-dark', 'is-dark-theme', 'wp-dark-mode-active'];
+            for (let i = 0; i < darkClasses.length; i++) {
+                if (document.body.classList.contains(darkClasses[i]) || document.documentElement.classList.contains(darkClasses[i])) {
+                    return 'dark';
+                }
             }
-            portalBtn.addEventListener('click', function() {
-                const isDark = portalRoot.classList.toggle('nik-portal-dark');
-                localStorage.setItem('nikvotia_portal_theme', isDark ? 'dark' : 'light');
-                const icon = portalBtn.querySelector('.nik-portal-theme-icon');
-                const txt = portalBtn.querySelector('.nik-portal-theme-text');
-                if (icon) icon.textContent = isDark ? '☀️' : '🌙';
-                if (txt) txt.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-            });
+            if (document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark' || document.documentElement.getAttribute('data-bs-theme') === 'dark') {
+                return 'dark';
+            }
+
+            try {
+                const bg = window.getComputedStyle(document.body).backgroundColor;
+                const rgb = bg.match(/\d+/g);
+                if (rgb && rgb.length >= 3) {
+                    const lum = (0.299 * parseInt(rgb[0], 10) + 0.587 * parseInt(rgb[1], 10) + 0.114 * parseInt(rgb[2], 10)) / 255;
+                    if (lum < 0.45) return 'dark';
+                }
+            } catch (err) {}
+
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+            return 'light';
         }
 
-        if (detailBtn && detailRoot) {
-            if (savedTheme === 'dark') {
-                detailRoot.classList.add('nik-portal-dark');
-                const icon = detailBtn.querySelector('.nik-detail-theme-icon');
-                const txt = detailBtn.querySelector('.nik-detail-theme-text');
-                if (icon) icon.textContent = '☀️';
-                if (txt) txt.textContent = 'Light Mode';
+        const activeTheme = detectAutoTheme();
+
+        function applyThemeToRoot(root, btn, isDark) {
+            if (!root) return;
+            if (isDark) {
+                root.classList.add('nik-portal-dark');
+            } else {
+                root.classList.remove('nik-portal-dark');
             }
-            detailBtn.addEventListener('click', function() {
-                const isDark = detailRoot.classList.toggle('nik-portal-dark');
-                localStorage.setItem('nikvotia_portal_theme', isDark ? 'dark' : 'light');
-                const icon = detailBtn.querySelector('.nik-detail-theme-icon');
-                const txt = detailBtn.querySelector('.nik-detail-theme-text');
+            if (btn) {
+                const icon = btn.querySelector('.nik-portal-theme-icon') || btn.querySelector('.nik-detail-theme-icon');
+                const txt = btn.querySelector('.nik-portal-theme-text') || btn.querySelector('.nik-detail-theme-text');
                 if (icon) icon.textContent = isDark ? '☀️' : '🌙';
                 if (txt) txt.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-            });
+            }
+        }
+
+        if (portalRoot) {
+            applyThemeToRoot(portalRoot, portalBtn, activeTheme === 'dark');
+            if (portalBtn) {
+                portalBtn.addEventListener('click', function() {
+                    const isDark = !portalRoot.classList.contains('nik-portal-dark');
+                    applyThemeToRoot(portalRoot, portalBtn, isDark);
+                    localStorage.setItem('nikvotia_portal_theme', isDark ? 'dark' : 'light');
+                });
+            }
+        }
+
+        if (detailRoot) {
+            applyThemeToRoot(detailRoot, detailBtn, activeTheme === 'dark');
+            if (detailBtn) {
+                detailBtn.addEventListener('click', function() {
+                    const isDark = !detailRoot.classList.contains('nik-portal-dark');
+                    applyThemeToRoot(detailRoot, detailBtn, isDark);
+                    localStorage.setItem('nikvotia_portal_theme', isDark ? 'dark' : 'light');
+                });
+            }
         }
     })();
 
