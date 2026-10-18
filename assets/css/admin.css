@@ -1677,6 +1677,8 @@ body.nik-vd-dark-mode .nik-vd-status-indicator.is-invalid {
     background: rgba(245, 158, 11, 0.15) !important;
     color: #fbbf24 !important;
     border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
 /* Dark Mode Console Components */
 body.nik-vd-dark-mode .nik-vd-player-wrapper {
     background: #0f172a !important;
