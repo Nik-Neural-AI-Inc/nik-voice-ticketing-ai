@@ -1,13 +1,13 @@
 # Nik Voice Ticketing AI
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://nikneural.ca/voicedesk-ai/)
+[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](https://nikneural.ca/voicedesk-ai/)
 [![WordPress.org](https://img.shields.io/badge/WordPress.org-nik--voice--ticketing--ai-0073aa.svg?logo=wordpress&logoColor=white)](https://wordpress.org/plugins/nik-voice-ticketing-ai/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717.svg?logo=github)](https://github.com/Nik-Neural-AI-Inc/nik-voice-ticketing-ai)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 [![Privacy by Design](https://img.shields.io/badge/Privacy-By%20Design-green.svg)](https://nikneural.ca/)
 [![Nik Neural AI Inc.](https://img.shields.io/badge/Developed%20by-Nik%20Neural%20AI%20Inc.-orange.svg)](https://nikneural.ca/)
 
-**Nik Voice Ticketing AI** is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by **Nik Neural AI Inc.** It enables website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (OpenAI Whisper or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models, and track click interactions on the page during the recording session.
+**Nik Voice Ticketing AI** is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by **Nik Neural AI Inc.** It enables website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (1-Click Nik Voice Cloud, OpenAI Whisper, or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models (OpenAI GPT-4o-mini or Nik Sovereign AI), and track click interactions on the page during the recording session.
 
 ---
 
@@ -111,13 +111,15 @@ Access is granted if and only if one of the following criteria is met:
 - Automatically places temporary visual numbered ripple pins on clicked elements so the user sees their clicks being logged.
 - Disables link navigation and form submissions while recording to ensure uninterrupted voice capture.
 
-### Bring Your Own Key (BYOK) Multi-Model AI Engine
-- **Speech-to-Text (STT)**:
+### Multi-Model AI Engine & Single-Provider Isolation
+- **1-Click Nik Voice Cloud**: Sovereign Canadian Cloud integration featuring sub-second Groq Whisper-v3 TPU acceleration, ephemeral cloud inference, and sovereign local triage fallback.
+- **Bring Your Own Key (BYOK) Speech-to-Text (STT)**:
   - **OpenAI Whisper** (`whisper-1`): High-accuracy global speech recognition.
-  - **Modulate.ai API**: Ultra-fast voice transcription and toxicity/emotion analysis.
-- **Language Models (LLM)**:
-  - Supports `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`, etc., for automated summaries, issue categorization, and department routing.
-- **Direct WordPress to AI Communication**: Uses `wp_remote_post` without external middleware, maintaining strict data sovereignty.
+  - **Modulate.ai API** (`Velma-2`): Ultra-fast voice transcription and toxicity/emotion analysis.
+- **Language Models (LLM) & Smart Triage**:
+  - Supports `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`, or Nik Sovereign AI for automated summaries, issue categorization, sentiment scoring, and department routing.
+- **Strict Single-Provider Isolation**: Enforces single-engine mode across transcription and triage with zero unintended secondary API calls or cross-provider data leakage.
+- **Direct WordPress to AI Communication**: Direct outbound API communication via native `wp_remote_post` without external middleware relays.
 
 ### Unique Ticket ID & Confirmation Email
 - Every voice submission generates a unique Ticket ID (e.g., `#VD-1LSS67KO`).
@@ -146,6 +148,13 @@ Access is granted if and only if one of the following criteria is met:
 - **Data-Minimizing Diagnostic Telemetry**: Uses a pseudonymous SHA-256 site identifier (no raw domain transmitted) and includes an administrator email exclusion toggle to ensure transmissions contain zero personal identifiers when disabled.
 - **Audio Stream Security**: Authenticated REST endpoint delivery with anti-IDOR cryptographic tokens, upload directory traversal containment, and `X-Robots-Tag: noindex, nofollow, noarchive` search index suppression.
 
+### System & AI Activity Logs Console
+- **Dedicated Audit & Diagnostics Tab** (`tab=logs`): Centralized observability console under VoiceDesk Settings.
+- **Severity Filtering**: Filter events dynamically by severity level (`ALL`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`).
+- **Live Gateway Monitoring**: Real-time status indicators and gateway health probe diagnostics.
+- **1-Click Text Log Export**: Export formatted diagnostic logs directly for troubleshooting.
+- **Defensive Credential Sanitization**: Automatically redacts sensitive keys, secrets, and authorization tokens (`key_id`, `api_key`, `token`, `secret`, `bearer`) from all database logs, PHP error logs, and exported files.
+
 ---
 
 ## Requirements
@@ -165,11 +174,12 @@ Access is granted if and only if one of the following criteria is met:
 2. **Activate Plugin**:
    - Navigate to **Plugins** in the WordPress Admin and activate **Nik Voice Ticketing AI**.
 3. **Configure Settings**:
-   - Navigate to **VoiceDesk Tickets > Settings** in the WordPress admin menu.
-   - **General Tab**: Select your customer portal page and define button visibility rules.
-   - **AI Integrations Tab**: Choose your STT model (Nik Voice Cloud, OpenAI Whisper, or Modulate.ai) and enter your API keys.
-   - **Appearance Tab**: Customize the button color, icon color, and tooltip text.
-   - **License Tab**: Enter your Enterprise Pro license key to remove all branding.
+   - Navigate to **VoiceDesk Tickets > Settings** in the WordPress admin menu:
+     - **General & Visibility Tab** (`tab=general`): Select customer portal page, set data retention threshold (0–365 days), customize consent notice, and configure button visibility rules.
+     - **Button & Appearance Tab** (`tab=appearance`): Customize button color, icon color, tooltip text, custom SVG icon, and attribution badge.
+     - **AI & API Providers Tab** (`tab=api`): Connect to Nik Voice Cloud with 1-click or configure BYOK providers (OpenAI Whisper or Modulate.ai) with strict single-provider isolation.
+     - **System & AI Logs Tab** (`tab=logs`): Monitor live gateway health, view categorized audit events, and export diagnostic logs.
+     - **Pro & Cloud Add-ons Tab** (`tab=pro`): Explore Sovereign Canadian Cloud, dedicated TPU inference, and enterprise CRM/ERP webhooks.
 
 ---
 

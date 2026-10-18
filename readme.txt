@@ -9,22 +9,26 @@ Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Zero-friction, AI-powered voice ticketing system for WordPress with Whisper & Modulate.ai speech-to-text.
+Zero-friction, AI-powered voice ticketing system for WordPress with Nik Voice Cloud, Whisper & Modulate.ai speech-to-text.
 
 == Description ==
 
-Nik Voice Ticketing AI is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by Nik Neural AI Inc. It allows website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (OpenAI Whisper or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models (OpenAI GPT-4o-mini), and track click interactions on the page during the recording session.
+Nik Voice Ticketing AI is a production-ready, zero-friction, AI-powered voice ticketing system for WordPress developed by Nik Neural AI Inc. It allows website visitors and logged-in customers to record voice messages, automatically transcribe them using advanced Speech-to-Text models (Nik Voice Cloud, OpenAI Whisper, or Modulate.ai), intelligently categorize and summarize the issue using Large Language Models (OpenAI GPT-4o-mini or Nik Sovereign AI), and track click interactions on the page during the recording session.
 
 = Core Features =
 
-* **Vanilla JS Floating Mic Button**: Lightweight, ultra-responsive microphone trigger positioned cleanly on the screen.
+* **1-Click Nik Voice Cloud**: Sovereign Canadian Cloud integration with sub-second Groq Whisper-v3 TPU acceleration, ephemeral cloud inference, and sovereign local triage fallback.
+* **BYOK Multi-Model STT Support**: Bring Your Own Key integration with OpenAI Whisper (`whisper-1`) or Modulate.ai Velma-2.
+* **Strict Single-Provider Isolation**: Enforces single-engine mode across transcription and triage with zero unintended secondary API calls or data leakage.
+* **Vanilla JS Floating Mic Button**: Lightweight, ultra-responsive microphone trigger positioned cleanly on the screen (0 dependencies).
 * **Modern Recording Dock**: Real-time recording indicator with pulsating red dot, live elapsed timer, and dynamic animated audio waveform.
-* **Interactive Click Tracking & Visual Pinning**: Captures DOM element clicks, CSS selectors, coordinates, and millisecond time offsets during voice recording.
-* **Speech-to-Text Multi-Model Support**: Bring Your Own Key (BYOK) integration with OpenAI Whisper (`whisper-1`) or Modulate.ai Velma-2.
-* **Automated AI Summary & Triage**: Uses LLMs to generate a concise summary and intelligently categorize issues into departments (Sales, Technical Support, Billing, General Support).
-* **Unique Ticket ID & Email Delivery**: Generates a unique Ticket ID and sends an email confirmation directly to the user.
-* **Comprehensive Admin Console**: Clean 2-column layout with dark mode/light mode switcher, audio playback, download link, click timeline, and deduplicated reply thread.
-* **Customer Ticket Portal & WooCommerce Integration**: Embed ticket portal via `[nikvotia_tickets]` shortcode or access via WooCommerce "My Account" dashboard endpoint.
+* **Interactive Click Tracking & Visual Pinning**: Captures DOM element clicks, CSS selectors, coordinates, and millisecond time offsets during voice recording with visual ripple pins.
+* **Automated AI Summary & Triage**: Uses LLMs to generate concise summaries, urgency classification, sentiment scores, and intelligently categorize issues into departments (Sales, Technical Support, Billing, General Support).
+* **Hardened Audio Storage & Authenticated Streaming**: Direct `.htaccess` upload protection blocking all audio formats (`webm`, `ogg`, `oga`, `wav`, `mp3`, `m4a`) and scripts; time-bounded HMAC-SHA256 tokens (1-hour TTL); dynamic server-side token refresh; strict anti-caching headers (`Cache-Control: private, no-cache, no-store, must-revalidate, max-age=0`); HTTP 206 partial content byte-range seeking; attachment downloads (`?download=1`).
+* **Customer Ticket Portal & Self-Healing Navigation**: Dedicated portal via shortcode `[nikvotia_tickets]`, auto-provisioning of default portal page when WooCommerce is inactive, seamless WooCommerce "My Account" integration, context-aware login routing, and automatic guest ticket reconciliation.
+* **Comprehensive Admin Ticket Console**: Clean 2-column layout with dark mode/light mode switcher, audio playback, download link, click timeline, deduplicated staff replies with Post-Redirect-Get pattern, and sanitized client environment (OS/Browser).
+* **Enterprise Privacy & Data Retention**: Configurable audio retention window (0 to 365 days, or indefinite) with scheduled daily WP Cron pruning; native WordPress Core Privacy Tools (`Tools > Export Personal Data` and `Tools > Erase Personal Data`); frontend consent notice; defensive credential redaction in logger and exports.
+* **System & AI Activity Logs**: Dedicated audit console (`tab=logs`) with severity filtering, live status monitoring, 1-click text log export, and automatic credential sanitization.
 * **Advanced Visibility Controls**: Target specific post types, pages, user login states, or specific User IDs.
 * **Zero 3rd-Party Frontend Dependencies**: Built entirely with pure Vanilla JavaScript and CSS. No jQuery, React, or bulky frameworks.
 
@@ -70,13 +74,13 @@ This plugin connects to external third-party APIs to process voice audio recordi
 
 1. Upload the `nik-voice-ticketing-ai` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Navigate to **VoiceDesk Tickets > Settings** to configure your API keys (OpenAI or Modulate.ai) and portal page.
+3. Navigate to **VoiceDesk Tickets > Settings** to connect to Nik Voice Cloud with 1-click or configure your BYOK API keys (OpenAI or Modulate.ai), customize retention rules, and select your customer portal page.
 4. (Optional) Add the `[nikvotia_tickets]` shortcode to a WordPress page for your customer support portal.
 
 == Frequently Asked Questions ==
 
 = Does this plugin require external subscriptions? =
-No. The plugin operates on a Bring Your Own Key (BYOK) model. You only pay your respective AI provider (OpenAI or Modulate.ai) directly for the API tokens you consume.
+No. You can connect to Nik Voice Cloud with 1-click or operate on a Bring Your Own Key (BYOK) model with OpenAI or Modulate.ai, paying your chosen provider directly for consumed tokens.
 
 = Are third-party frontend libraries like jQuery or React loaded? =
 No. The entire frontend recording dock, modal, click tracking, and audio processing are written in pure Vanilla JavaScript (0 dependencies).
@@ -235,6 +239,12 @@ Yes. Per WordPress.org guidelines, the "Powered by Nik Neural AI Inc." badge is 
 * Initial release of Nik VoiceDesk AI.
 
 == Upgrade Notice ==
+
+= 1.4.1 =
+Essential update: Standardizes 1-hour token TTL with dynamic authenticated URL refresh, eliminates static token fallbacks, sanitizes credentials in logs, implements private audio anti-caching, aligns diagnostic telemetry, and polishes portal styles.
+
+= 1.4.0 =
+Security and maintenance release: Hardens .htaccess upload protection with idempotent markers, eliminates direct physical audio URLs, updates dark mode contrast, modernizes settings and logs tabs, and documents privacy safeguards.
 
 = 1.3.6 =
 Recommended update: Resolves low contrast and faint text on the ticket submission modal across dark and light themes, and adds an interactive modal theme switcher.
