@@ -828,10 +828,6 @@ class Nikvotia_Settings {
 										</tr>
 									</tbody>
 								</table>
-								<div class="nik-api-tip-box">
-									<strong><?php esc_html_e( '💡 Production Tip for Real-Time Speech:', 'nik-voice-ticketing-ai' ); ?></strong>
-									<?php esc_html_e( 'If your tickets display "[Nik Voice Cloud Demo]", the gateway at voice.nikneural.ca is running in demo fallback mode. To enable live speech transcription of customer voices, configure GROQ_API_KEY=gsk_... on your gateway server environment (in docker-compose or .env) and restart the gateway container.', 'nik-voice-ticketing-ai' ); ?>
-								</div>
 							</div>
 						<?php else : ?>
 							<div class="nik-vd-card nik-api-cloud-card nik-api-cloud-unconnected">
